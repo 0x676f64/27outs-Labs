@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Box - Diamond Analytics</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="game-box.js" defer></script>
+    <script src="mlb-video-matcher.js" defer></script>
+    <script src="mlb-video-matcher-float.js" defer></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            transition: background-color 0.3s ease;
+        }
+
+        body.light {
+            background-color: #f7fafc;
+            color: #1e293b;
+        }
+
+        body.dark {
+            background-color: #0a0e1a;
+            color: #e2e8f0;
+        }
+
+        nav {
+            border-bottom: 1px solid;
+            transition: all 0.3s ease;
+        }
+
+        body.light nav {
+            background-color: #ffffff;
+            border-color: #e2e8f0;
+        }
+
+        body.dark nav {
+            background-color: #151b2e;
+            border-color: #1e293b;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 80px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 60px;
+        }
+
+        .logo {
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            height: 40px;
+            display: flex;
+            align-items: center;
+        }
+
+        .logo img {
+            height: 3rem;
+            width: auto;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 32px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            font-size: 13px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: opacity 0.2s;
+        }
+
+        body.light .nav-links a {
+            color: #1e293b;
+        }
+
+        body.dark .nav-links a {
+            color: #e2e8f0;
+        }
+
+        .nav-links a:hover {
+            opacity: 0.7;
+        }
+
+        .theme-toggle {
+            background: transparent;
+            border: 1px solid;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        body.light .theme-toggle {
+            border-color: #e2e8f0;
+            color: #1e293b;
+        }
+
+        body.dark .theme-toggle {
+            border-color: #1e293b;
+            color: #e2e8f0;
+        }
+
+        .popup-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px 80px;
+        }
+
+        #game-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 24px;
+            border-radius: 5px;
+            margin-bottom: 16px;
+            border: 1px solid;
+        }
+
+        body.light #game-info {
+            background-color: #ffffff;
+            border-color: #e2e8f0;
+        }
+
+        body.dark #game-info {
+            background-color: #151b2e;
+            border-color: #1e293b;
+        }
+
+        .team-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 20px;
+        }
+
+        .team-logo {
+            width: 48px;
+            height: 48px;
+            object-fit: contain;
+        }
+
+        .team-record {
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        body.light .team-record {
+            color: #64748b;
+        }
+
+        body.dark .team-record {
+            color: #94a3b8;
+        }
+
+        .team-score {
+            font-size: 32px;
+            font-weight: 700;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        body.light .team-score {
+            color: #041e42;
+        }
+
+        body.dark .team-score {
+            color: #e2e8f0;
+        }
+
+        .game-status {
+            text-align: center;
+            padding: 10px 20px;
+            background: #bf0d3d;
+            color: white;
+            border-radius: 5px;
+            font-weight: 600;
+            font-size: 12px;
+            min-width: 100px;
+        }
+
+        .linescore-wrapper {
+            padding: 16px;
+            border-radius: 5px;
+            margin-bottom: 16px;
+            border: 1px solid;
+            overflow-x: auto;
+        }
+
+        body.light .linescore-wrapper {
+            background-color: #ffffff;
+            border-color: #e2e8f0;
+        }
+
+        body.dark .linescore-wrapper {
+            background-color: #151b2e;
+            border-color: #1e293b;
+        }
+
+        .boxscore-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .boxscore-table th {
+            padding: 8px;
+            font-weight: 600;
+            text-align: center;
+            border: 1px solid;
+            font-size: 11px;
+        }
+
+        body.light .boxscore-table th {
+            background: #f7fafc;
+            color: #1e293b;
+            border-color: #e2e8f0;
+        }
+
+        body.dark .boxscore-table th {
+            background: #0a0e1a;
+            color: #e2e8f0;
+            border-color: #1e293b;
+        }
+
+        .boxscore-table td {
+            padding: 8px;
+            text-align: center;
+            border: 1px solid;
+            font-size: 11px;
+        }
+
+        body.light .boxscore-table td {
+            border-color: #e2e8f0;
+        }
+
+        body.dark .boxscore-table td {
+            border-color: #1e293b;
+        }
+
+        .team-name {
+            font-weight: 600;
+            text-align: left;
+            padding-left: 12px;
+        }
+
+        .inning-score {
+            font-weight: 600;
+        }
+
+        body.light .inning-score {
+            color: #041e42;
+        }
+
+        body.dark .inning-score {
+            color: #e2e8f0;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        #scoring-plays-container,
+        #all-plays-container {
+            height: 500px;
+            overflow-y: auto;
+            padding: 12px;
+            border-radius: 5px;
+            scrollbar-width: thin;
+            border: 1px solid;
+        }
+
+        body.light #scoring-plays-container,
+        body.light #all-plays-container {
+            background-color: #f7fafc;
+            border-color: #e2e8f0;
+        }
+
+        body.dark #scoring-plays-container,
+        body.dark #all-plays-container {
+            background-color: #0a0e1a;
+            border-color: #1e293b;
+        }
+
+        #scoring-plays-container::-webkit-scrollbar,
+        #all-plays-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        body.light #scoring-plays-container::-webkit-scrollbar-track,
+        body.light #all-plays-container::-webkit-scrollbar-track {
+            background: #f1f3f5;
+        }
+
+        body.dark #scoring-plays-container::-webkit-scrollbar-track,
+        body.dark #all-plays-container::-webkit-scrollbar-track {
+            background: #151b2e;
+        }
+
+        #scoring-plays-container::-webkit-scrollbar-thumb,
+        #all-plays-container::-webkit-scrollbar-thumb {
+            background: #bf0d3d;
+            border-radius: 5px;
+        }
+
+        .container-title {
+            text-align: center;
+            padding: 6px;
+            margin-bottom: 12px;
+            border-radius: 5px;
+            font-weight: 600;
+            font-size: 12px;
+            background-color: #bf0d3d;
+            color: white;
+        }
+
+        .play-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            position: relative;
+            animation: slideIn 0.3s ease-out forwards;
+            border: 1px solid;
+        }
+
+        body.light .play-item {
+            background-color: #ffffff;
+            border-color: #e2e8f0;
+        }
+
+        body.dark .play-item {
+            background-color: #151b2e;
+            border-color: #1e293b;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .inning-indicator {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background-color: #bf0d3d;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: capitalize;
+        }
+
+        .player-image-container {
+            flex-shrink: 0;
+            margin-right: 10px;
+            margin-left: 45px;
+            position: relative;
+        }
+
+        .player-image {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: 2px solid #bf0d3d;
+            background-color: #041e42;
+            object-fit: cover;
+        }
+
+        .event-icon {
+            position: absolute;
+            bottom: -4px;
+            right: -4px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background-color: #bf0d3d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: white;
+            border: 2px solid white;
+            font-weight: 700;
+        }
+
+        .content-wrapper {
+            display: flex;
+            flex: 1;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .play-details {
+            flex: 1;
+            margin-top: 4px;
+        }
+
+        .event-name {
+            border: 2px solid #bf0d3d;
+            color: #bf0d3d;
+            padding: 3px 8px;
+            border-radius: 10rem;
+            font-weight: 600;
+            font-size: 11px;
+            display: inline-block;
+            margin-bottom: 6px;
+        }
+
+        .play-description {
+            font-size: 11px;
+            line-height: 1.4;
+            margin: 0 0 6px 0;
+            font-weight: 400;
+        }
+
+        body.light .play-description {
+            color: #1e293b;
+        }
+
+        body.dark .play-description {
+            color: #e2e8f0;
+        }
+
+        .statcast-stats {
+            display: flex;
+            gap: 12px;
+            margin-top: 8px;
+            padding: 8px;
+            border-radius: 5px;
+            border-left: 3px solid #bf0d3d;
+        }
+
+        body.light .statcast-stats {
+            background: #f7fafc;
+        }
+
+        body.dark .statcast-stats {
+            background: #0a0e1a;
+        }
+
+        .stat-item {
+            text-align: center;
+            flex: 1;
+        }
+
+        .stat-item div:first-child {
+            font-size: 9px;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 2px;
+        }
+
+        body.light .stat-item div:first-child {
+            color: #64748b;
+        }
+
+        body.dark .stat-item div:first-child {
+            color: #94a3b8;
+        }
+
+        .stat-item div:last-child {
+            font-size: 11px;
+            font-weight: 700;
+            color: #bf0d3d;
+        }
+
+        .game-situation {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 8px;
+            border-radius: 5px;
+            margin-top: 4px;
+            min-width: 70px;
+        }
+
+        body.light .game-situation {
+            background: #f7fafc;
+        }
+
+        body.dark .game-situation {
+            background: #0a0e1a;
+        }
+
+        .count-info {
+            font-size: 10px;
+            font-weight: 700;
+            color: #bf0d3d;
+            margin-bottom: 6px;
+            text-align: center;
+        }
+
+        .video-button {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            border: 1px solid;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 9px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            z-index: 10;
+        }
+
+        body.light .video-button {
+            background: #ffffff;
+            border-color: #e2e8f0;
+            color: #bf0d3d;
+        }
+
+        body.dark .video-button {
+            background: #151b2e;
+            border-color: #1e293b;
+            color: #bf0d3d;
+        }
+
+        .video-button:hover {
+            background-color: #bf0d3d;
+            color: white;
+            border-color: #bf0d3d;
+        }
+
+        .tab-navigation {
+            display: flex;
+            border-radius: 5px 5px 0 0;
+            overflow: hidden;
+            border: 1px solid;
+            border-bottom: none;
+        }
+
+        body.light .tab-navigation {
+            background: #f7fafc;
+            border-color: #e2e8f0;
+        }
+
+        body.dark .tab-navigation {
+            background: #0a0e1a;
+            border-color: #1e293b;
+        }
+
+        .tab-navigation button {
+            flex: 1;
+            padding: 10px;
+            background: transparent;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 11px;
+        }
+
+        body.light .tab-navigation button {
+            color: #64748b;
+        }
+
+        body.dark .tab-navigation button {
+            color: #94a3b8;
+        }
+
+        .tab-navigation button.active {
+            background: #bf0d3d;
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 16px;
+            border-radius: 0 0 5px 5px;
+            border: 1px solid;
+        }
+
+        body.light .tab-content {
+            background-color: #ffffff;
+            border-color: #e2e8f0;
+        }
+
+        body.dark .tab-content {
+            background-color: #151b2e;
+            border-color: #1e293b;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .stats-table-wrapper {
+            margin-bottom: 20px;
+        }
+
+        .section-subtitle {
+            font-size: 12px;
+            font-weight: 600;
+            margin: 12px 0 8px 0;
+            padding-bottom: 6px;
+            border-bottom: 2px solid #bf0d3d;
+        }
+
+        body.light .section-subtitle {
+            color: #1e293b;
+        }
+
+        body.dark .section-subtitle {
+            color: #e2e8f0;
+        }
+
+        .stats-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 12px;
+        }
+
+        .stats-table th {
+            padding: 8px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 1px solid;
+            font-size: 10px;
+        }
+
+        body.light .stats-table th {
+            background: #f7fafc;
+            color: #64748b;
+            border-color: #e2e8f0;
+        }
+
+        body.dark .stats-table th {
+            background: #0a0e1a;
+            color: #94a3b8;
+            border-color: #1e293b;
+        }
+
+        .stats-table td {
+            padding: 6px 8px;
+            border-bottom: 1px solid;
+            font-size: 10px;
+        }
+
+        body.light .stats-table td {
+            border-color: #f1f3f5;
+        }
+
+        body.dark .stats-table td {
+            border-color: #1e293b;
+        }
+
+        .stats-table tr:hover {
+            background: rgba(191, 13, 61, 0.05);
+        }
+
+        .video-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            padding: 16px;
+            border-radius: 5px;
+            margin-bottom: 16px;
+            border: 1px solid;
+        }
+
+        body.light .video-buttons {
+            background-color: #ffffff;
+            border-color: #e2e8f0;
+        }
+
+        body.dark .video-buttons {
+            background-color: #151b2e;
+            border-color: #1e293b;
+        }
+
+        .video-buttons button {
+            padding: 8px 16px;
+            background: #bf0d3d;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            font-size: 11px;
+        }
+
+        .video-buttons button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(191, 13, 62, 0.3);
+        }
+
+        .score-update {
+            font-weight: 600;
+            font-size: 10px;
+            margin-top: 4px;
+        }
+
+        body.light .score-update {
+            color: #063069;
+        }
+
+        body.dark .score-update {
+            color: #60a5fa;
+        }
+
+        .rbi-info {
+            font-weight: 600;
+            font-size: 10px;
+            color: #10b981;
+        }
+
+        .field-display {
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body class="light">
+    <nav>
+        <div class="nav-container">
+            <div class="logo">
+                <a href="default.html">
+                    <img id="logoImg" src="assets/site-logos/logo-dark.svg" alt="Diamond Analytics">
+                </a>
+            </div>
+            <div class="nav-links">
+                <a href="#">Players</a>
+                <a href="#">Teams</a>
+                <a href="#">Gamefeed</a>
+                <a href="#">Predictions</a>
+                <a href="#">Metrics</a>
+                <a href="#">Research</a>
+                <button class="theme-toggle" id="themeToggle">Dark</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="popup-container">
+        <!-- Game Info Section -->
+        <div id="game-info">
+            <div class="team-container">
+                <img class="team-logo away-logo" src="https://www.mlbstatic.com/team-logos/141.svg" alt="Away Team">
+                <span class="team-record away-record">75-65</span>
+            </div>
+            
+            <span class="team-score away-score">3</span>
+            
+            <div class="game-status">Final</div>
+            
+            <span class="team-score home-score">7</span>
+            
+            <div class="team-container">
+                <img class="team-logo home-logo" src="https://www.mlbstatic.com/team-logos/134.svg" alt="Home Team">
+                <span class="team-record home-record">82-58</span>
+            </div>
+        </div>
+
+        <!-- Linescore -->
+        <div class="linescore-wrapper">
+            <table class="boxscore-table">
+                <thead>
+                    <tr>
+                        <th>Team</th>
+                        <th>1</th>
+                        <th>2</th>
+                        <th>3</th>
+                        <th>4</th>
+                        <th>5</th>
+                        <th>6</th>
+                        <th>7</th>
+                        <th>8</th>
+                        <th>9</th>
+                        <th>R</th>
+                        <th>H</th>
+                        <th>E</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="team-name">TOR</td>
+                        <td class="inning-score">1</td>
+                        <td class="inning-score">0</td>
+                        <td class="inning-score">1</td>
+                        <td class="inning-score">0</td>
+                        <td class="inning-score">0</td>
+                        <td class="inning-score">0</td>
+                        <td class="inning-score">1</td>
+                        <td class="inning-score">0</td>
+                        <td class="inning-score">0</td>
+                        <td class="inning-score">3</td>
+                        <td class="inning-score">8</td>
+                        <td class="inning-score">1</td>
+                    </tr>
+                    <tr>
+                        <td class="team-name">PIT</td>
+                        <td class="inning-score">0</td>
+                        <td class="inning-score">2</td>
+                        <td class="inning-score">0</td>
+                        <td class="inning-score">3</td>
+                        <td class="inning-score">0</td>
+                        <td class="inning-score">2</td>
+                        <td class="inning-score">0</td>
+                        <td class="inning-score">0</td>
+                        <td class="inning-score">0</td>
+                        <td class="inning-score">7</td>
+                        <td class="inning-score">11</td>
+                        <td class="inning-score">0</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Video Buttons -->
+        <div class="video-buttons">
+            <button>Game Recap</button>
+            <button>Condensed Game</button>
+        </div>
+
+        <!-- Content Grid: Scoring Plays and All Plays -->
+        <div class="content-grid">
+            <!-- Scoring Plays Section -->
+            <div id="scoring-plays-container">
+                <div class="container-title">Scoring Plays</div>
+                
+                <div class="play-item">
+                    <div class="inning-indicator">Top 1</div>
+                    <div class="player-image-container">
+                        <img class="player-image" src="https://midfield.mlbstatic.com/v1/people/543807/spots/60" alt="George Springer">
+                        <div class="event-icon">HR</div>
+                    </div>
+                    <div class="content-wrapper">
+                        <div class="play-details">
+                            <div class="event-name">Home Run</div>
+                            <p class="play-description">George Springer homers (21) on a fly ball to left field.</p>
+                            <div class="score-update">Score: TOR 1 - PIT 0</div>
+                            <div class="rbi-info">RBI: 1</div>
+                            <div class="statcast-stats">
+                                <div class="stat-item">
+                                    <div>Exit Velo</div>
+                                    <div>93 mph</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div>Launch Angle</div>
+                                    <div>40°</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div>Distance</div>
+                                    <div>355 ft</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="game-situation">
+                            <div class="count-info">3-2</div>
+                            <div class="field-display">
+                                <svg width="50" height="50" viewBox="0 0 58 79" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="13" cy="61" r="6" fill="#e2e8f0" stroke="#bf0d3e" stroke-width="1" opacity="0.8"></circle>
+                                    <circle cx="30" cy="61" r="6" fill="#e2e8f0" stroke="#bf0d3e" stroke-width="1" opacity="0.8"></circle>
+                                    <circle cx="47" cy="61" r="6" fill="#e2e8f0" stroke="#bf0d3e" stroke-width="1" opacity="0.8"></circle>
+                                    <rect x="17.6066" y="29.7071" width="14" height="14" transform="rotate(45 17.6066 29.7071)" fill="#e2e8f0" stroke="#bf0d3e" stroke-width="1" opacity="0.8"></rect>
+                                    <rect x="29.364" y="17.7071" width="14" height="14" transform="rotate(45 29.364 17.7071)" fill="#e2e8f0" stroke="#bf0d3e" stroke-width="1" opacity="0.8"></rect>
+                                    <rect x="41.6066" y="29.7071" width="14" height="14" transform="rotate(45 41.6066 29.7071)" fill="#e2e8f0" stroke="#bf0d3e" stroke-width="1" opacity="0.8"></rect>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="video-button">VIDEO</button>
+                </div> 
+            </div>
+            <!-- All Plays Section -->
+            <div id="all-plays-container">
+                <div class="container-title">All Plays</div>
+                
+                <div class="play-item">
+                    <div class="inning-indicator">Top 1</div>
+                    <div class="player-image-container">
+                        <img class="player-image" src="https://midfield.mlbstatic.com/v1/people/543807/spots/60" alt="George Springer">
+                        <div class="event-icon">HR</div>
+                    </div>
+                    <div class="content-wrapper">
+                        <div class="play-details">
+                            <div class="event-name">Home Run</div>
+                            <p class="play-description">George Springer homers (21) on a fly ball to left field.</p>
+                            <div class="score-update">Score: TOR 1 - PIT 0</div>
+                            <div class="rbi-info">RBI: 1</div>
+                            <div class="statcast-stats">
+                                <div class="stat-item">
+                                    <div>Exit Velo</div>
+                                    <div>93 mph</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div>Launch Angle</div>
+                                    <div>40°</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div>Distance</div>
+                                    <div>355 ft</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="game-situation">
+                            <div class="count-info">3-2</div>
+                            <div class="field-display">
+                                <svg width="50" height="50" viewBox="0 0 58 79" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="13" cy="61" r="6" fill="#e2e8f0" stroke="#bf0d3e" stroke-width="1" opacity="0.8"></circle>
+                                    <circle cx="30" cy="61" r="6" fill="#e2e8f0" stroke="#bf0d3e" stroke-width="1" opacity="0.8"></circle>
+                                    <circle cx="47" cy="61" r="6" fill="#e2e8f0" stroke="#bf0d3e" stroke-width="1" opacity="0.8"></circle>
+                                    <rect x="17.6066" y="29.7071" width="14" height="14" transform="rotate(45 17.6066 29.7071)" fill="#e2e8f0" stroke="#bf0d3e" stroke-width="1" opacity="0.8"></rect>
+                                    <rect x="29.364" y="17.7077777777 height="14""="="44" transform="rotate(45 29.364 17.7071)" fill="#e2e8f0" stroke="#bf0d3e" stroke-width="1" opacity="0.8"></rect>
+                                    <rect x="41.6066" y="29.7071" width="14" height="14" transform="rotate(45 41.6066 29.7071)" fill="#e2e8f0" stroke="#bf0d3e" stroke-width="1" opacity="0.8"></rect>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
