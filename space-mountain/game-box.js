@@ -316,6 +316,48 @@
   };
 
   // ===========================
+  // TOP PERFORMERS
+  // ===========================
+  const renderTopPerformers = (data) => {
+    const container = document.querySelector('.top-performers-case');
+    if (!container) return;
+
+    container.innerHTML = '';
+
+    const topPerformers = data.liveData?.boxscore?.topPerformers;
+
+    if (!topPerformers || topPerformers.length === 0) {
+      container.innerHTML = '<div class="no-data">No top performers available</div>';
+      return;
+    }
+
+    topPerformers.forEach(performer => {
+      const player = performer.player;
+      const playerId = player.person.id;
+      const playerName = player.person.fullName;
+
+      const battingSummary = player.stats?.batting?.summary;
+      const pitchingSummary = player.stats?.pitching?.summary;
+      const statSummary = battingSummary || pitchingSummary || 'No stats available';
+
+      const playerDiv = document.createElement('div');
+      playerDiv.className = 'top-performer-player';
+
+      playerDiv.innerHTML = `
+        <div class="performer-image">
+          <img src="https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${playerId}/headshot/67/current" 
+               alt="${playerName}"
+               onerror="this.src='https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/generic/headshot/67/current.png'">
+        </div>
+        <div class="performer-name">${playerName}</div>
+        <div class="performer-stats">${statSummary}</div>
+      `;
+
+      container.appendChild(playerDiv);
+    });
+  };
+
+  // ===========================
   // RENDER FUNCTIONS
   // ===========================
   const renderHeader = (gameData, liveData) => {
@@ -443,6 +485,7 @@
 
       renderHeader(gameData, liveData);
       renderBoxscore(gameData, liveData);
+      renderTopPerformers(data);
       
       if (phase === 'LIVE') {
         updateScorebug(data);

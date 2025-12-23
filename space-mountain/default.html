@@ -9,10 +9,51 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Inter', -apple-system, sans-serif; transition: background-color 0.3s ease; }
-    body.light { background-color: #f7fafc; color: #1e293b; }
-    body.dark { background-color: #0a0e1a; color: #e2e8f0; }
+   * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      font-family: 'Inter', -apple-system, sans-serif; 
+      transition: background-color 0.3s ease;
+      min-height: 100vh;
+      background-size: 200% 200%;
+      animation: glowShift 30s ease-in-out infinite;
+    }
+    @keyframes glowShift {
+      0% { background-position: center top; }
+      50% { background-position: center 15%; }
+      100% { background-position: center top; }
+    }
+    body.light { 
+      background:
+        radial-gradient(
+          ellipse at center,
+          rgba(0, 0, 0, 0) 40%,
+          rgba(0, 0, 0, 0.02) 100%
+        ),
+        radial-gradient(
+          circle at top center,
+          rgba(191, 13, 61, 0.03) 0%,
+          rgba(191, 13, 61, 0.01) 35%,
+          rgba(247, 250, 252, 0.95) 70%
+        ),
+        #f0f4f8;
+      color: #1e293b; 
+    }
+    body.dark { 
+      background:
+        radial-gradient(
+          ellipse at center,
+          rgba(0, 0, 0, 0) 40%,
+          rgba(0, 0, 0, 0.65) 100%
+        ),
+        radial-gradient(
+          circle at top center,
+          rgba(4, 30, 65, 0.45) 0%,
+          rgba(4, 30, 65, 0.15) 35%,
+          rgba(10, 14, 26, 0.9) 70%
+        ),
+        #0a0e1a;
+      color: #e2e8f0; 
+    }
     nav { border-bottom: 1px solid; transition: all 0.3s ease; }
     body.light nav { background-color: #ffffff; border-color: #e2e8f0; }
     body.dark nav { background-color: #151b2e; border-color: #1e293b; }
