@@ -262,490 +262,819 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
   <script>
-    const topPerformers = [
-      { name: 'Shohei Ohtani', team: 'LAD', rating: 98 },
-      { name: 'Aaron Judge', team: 'NYY', rating: 95 },
-      { name: 'Mookie Betts', team: 'LAD', rating: 93 },
-      { name: 'Bobby Witt Jr.', team: 'KC', rating: 87 },
-      { name: 'Bryce Harper', team: 'PHI', rating: 85 }
-    ];
+   // ===========================
+// CONSTANTS & CONFIGURATION
+// ===========================
+const CONFIG = {
+  API: {
+    BASE: 'https://statsapi.mlb.com/api/v1',
+    GAME_FEED: 'https://statsapi.mlb.com/api/v1.1/game',
+    LOGO_BASE: 'https://www.mlbstatic.com/team-logos',
+    LOGO_DARK: 'https://www.mlbstatic.com/team-logos/team-cap-on-dark'
+  },
+  REFRESH_INTERVAL: 30000, // 30 seconds
+  GAMES_PER_VIEW: 4
+};
 
-    const wsPredictions = [
-      { teamId: 119, percentage: 28 },
-      { teamId: 147, percentage: 22 },
-      { teamId: 144, percentage: 18 },
-      { teamId: 117, percentage: 15 }
-    ];
+const MOCK_DATA = {
+  topPerformers: [
+    { name: 'Shohei Ohtani', team: 'LAD', rating: 98 },
+    { name: 'Aaron Judge', team: 'NYY', rating: 95 },
+    { name: 'Mookie Betts', team: 'LAD', rating: 93 },
+    { name: 'Bobby Witt Jr.', team: 'KC', rating: 87 },
+    { name: 'Bryce Harper', team: 'PHI', rating: 85 }
+  ],
+  wsPredictions: [
+    { teamId: 119, percentage: 28 },
+    { teamId: 147, percentage: 22 },
+    { teamId: 144, percentage: 18 },
+    { teamId: 117, percentage: 15 }
+  ],
+  metrics: [
+    { label: 'wRC+', value: '168', change: '+12' },
+    { label: 'ISO', value: '.312', change: '+.045' },
+    { label: 'BABIP', value: '.298', change: '-.015' },
+    { label: 'K%', value: '23.1%', change: '-2.3%' },
+    { label: 'BB%', value: '14.8%', change: '+1.9%' },
+    { label: 'Hard%', value: '48.2%', change: '+5.1%' }
+  ]
+};
 
-    let currentLeague = 'AL';
-    let standingsData = { AL: { East: [], Central: [], West: [] }, NL: { East: [], Central: [], West: [] } };
+// ===========================
+// STATE MANAGEMENT
+// ===========================
+const state = {
+  currentLeague: 'AL',
+  currentDate: new Date(),
+  currentSlide: 0,
+  standingsData: {
+    AL: { East: [], Central: [], West: [] },
+    NL: { East: [], Central: [], West: [] }
+  },
+  charts: {
+    performance: null,
+    projection: null
+  }
+};
 
-    function getRatingColor(rating) {
-      if (rating >= 88) return '#3b82f6';
-      if (rating >= 76) return '#14b8a6';
-      if (rating >= 66) return '#22c55e';
-      if (rating >= 56) return '#eab308';
-      if (rating >= 46) return '#fb923c';
-      if (rating >= 31) return '#f97316';
-      return '#ef4444';
+// ===========================
+// UTILITY FUNCTIONS
+// ===========================
+const utils = {
+  formatDate: (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  },
+
+  formatTime: (dateString) => {
+    return new Date(dateString).toLocaleTimeString([], {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+  },
+
+  isDarkMode: () => document.body.classList.contains('dark'),
+
+  getLogoUrl: (teamId) => {
+    const isDark = utils.isDarkMode();
+    return isDark
+      ? `${CONFIG.API.LOGO_DARK}/${teamId}.svg`
+      : `${CONFIG.API.LOGO_BASE}/${teamId}.svg`;
+  },
+
+  getRatingColor: (rating) => {
+    if (rating >= 88) return '#3b82f6';
+    if (rating >= 76) return '#14b8a6';
+    if (rating >= 66) return '#22c55e';
+    if (rating >= 56) return '#eab308';
+    if (rating >= 46) return '#fb923c';
+    if (rating >= 31) return '#f97316';
+    return '#ef4444';
+  },
+
+  getDivisionInfo: (divisionId) => {
+    const divisions = {
+      201: { league: 'AL', division: 'East' },
+      202: { league: 'AL', division: 'Central' },
+      200: { league: 'AL', division: 'West' },
+      204: { league: 'NL', division: 'East' },
+      205: { league: 'NL', division: 'Central' },
+      203: { league: 'NL', division: 'West' }
+    };
+    return divisions[divisionId] || { league: 'AL', division: 'East' };
+  },
+
+  getChartColors: () => {
+    const isDark = utils.isDarkMode();
+    return {
+      text: isDark ? '#94a3b8' : '#64748b',
+      grid: isDark ? '#1e293b' : '#e2e8f0',
+      primary: isDark ? '#ffffff' : '#041e41'
+    };
+  }
+};
+
+// ===========================
+// API FUNCTIONS
+// ===========================
+const api = {
+  fetchTeamAbbr: async (teamId) => {
+    try {
+      const response = await fetch(`${CONFIG.API.BASE}/teams/${teamId}`);
+      const data = await response.json();
+      return data.teams[0].abbreviation || 'N/A';
+    } catch (error) {
+      console.error('Error fetching team abbreviation:', error);
+      return 'N/A';
     }
+  },
 
-    function getDivisionInfo(divisionId) {
-      switch (divisionId) {
-        case 201: return { league: 'AL', division: 'East' };
-        case 202: return { league: 'AL', division: 'Central' };
-        case 200: return { league: 'AL', division: 'West' };
-        case 204: return { league: 'NL', division: 'East' };
-        case 205: return { league: 'NL', division: 'Central' };
-        case 203: return { league: 'NL', division: 'West' };
-        default: return { league: 'AL', division: 'East' };
+  fetchGameDetails: async (gamePk) => {
+    try {
+      const response = await fetch(`${CONFIG.API.GAME_FEED}/${gamePk}/feed/live`);
+      const data = await response.json();
+      
+      if (data?.liveData) {
+        const linescore = data.liveData.linescore;
+        const inningHalf = linescore.inningHalf === 'Top' ? 'TOP' : 'BOT';
+        const currentInning = linescore.currentInning || '';
+        return `${inningHalf} ${currentInning}`;
       }
+    } catch (error) {
+      console.error('Error fetching game details:', error);
     }
+    return 'In Progress';
+  },
 
-    async function fetchStandings() {
-      try {
-        const response = await fetch('https://statsapi.mlb.com/api/v1/standings?leagueId=103,104&season=2025&standingsTypes=regularSeason');
-        const data = await response.json();
+  fetchStandings: async () => {
+    try {
+      const url = `${CONFIG.API.BASE}/standings?leagueId=103,104&season=2025&standingsTypes=regularSeason`;
+      const response = await fetch(url);
+      const data = await response.json();
 
-        // reset divisions
-        standingsData.AL = { East: [], Central: [], West: [] };
-        standingsData.NL = { East: [], Central: [], West: [] };
+      // Reset standings data
+      state.standingsData.AL = { East: [], Central: [], West: [] };
+      state.standingsData.NL = { East: [], Central: [], West: [] };
 
-        data.records.forEach(division => {
-          // Get division ID and map to league/division
-          const divisionId = division.division ? division.division.id : null;
-          if (!divisionId) return;
+      data.records.forEach(division => {
+        const divisionId = division.division?.id;
+        if (!divisionId) return;
 
-          const { league, division: divKey } = getDivisionInfo(divisionId);
+        const { league, division: divKey } = utils.getDivisionInfo(divisionId);
 
-          // Add teams to the correct league and division
-          (division.teamRecords || []).forEach(team => {
-            standingsData[league][divKey].push({
-              teamId: team.team.id,
-              wins: team.wins,
-              losses: team.losses,
-              gamesBack: team.gamesBack,
-              divisionRank: team.divisionRank
-            });
+        (division.teamRecords || []).forEach(team => {
+          state.standingsData[league][divKey].push({
+            teamId: team.team.id,
+            wins: team.wins,
+            losses: team.losses,
+            gamesBack: team.gamesBack,
+            divisionRank: team.divisionRank
           });
         });
+      });
 
-        // sort each division by division rank
-        ['East', 'Central', 'West'].forEach(d => {
-          standingsData.AL[d].sort((a, b) => a.divisionRank - b.divisionRank);
-          standingsData.NL[d].sort((a, b) => a.divisionRank - b.divisionRank);
-        });
+      // Sort each division by rank
+      ['East', 'Central', 'West'].forEach(div => {
+        state.standingsData.AL[div].sort((a, b) => a.divisionRank - b.divisionRank);
+        state.standingsData.NL[div].sort((a, b) => a.divisionRank - b.divisionRank);
+      });
 
-        renderStandings();
-      } catch (error) {
-        console.error('fetchStandings error', error);
-        document.getElementById('standingsList').innerHTML = '<div class="loading">Failed to load standings</div>';
-      }
-    }
-
-    function renderStandings() {
+      standings.render();
+    } catch (error) {
+      console.error('Error fetching standings:', error);
       const list = document.getElementById('standingsList');
-      const leagueData = standingsData[currentLeague];
-      const isDark = document.body.classList.contains('dark');
+      if (list) list.innerHTML = '<div class="loading">Failed to load standings</div>';
+    }
+  },
 
-      if (!leagueData) {
-        list.innerHTML = '<div class="loading">No standings available</div>';
+  fetchGames: async () => {
+    const slider = document.getElementById('gamesSlider');
+    if (!slider) return;
+
+    const dateStr = utils.formatDate(state.currentDate);
+    const url = `${CONFIG.API.BASE}/schedule?sportId=1&date=${dateStr}`;
+    
+    slider.innerHTML = '<div class="loading">Loading games...</div>';
+    state.currentSlide = 0;
+
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (!data.dates.length || !data.dates[0].games.length) {
+        slider.innerHTML = '<div class="game-box"><div class="no-games">No Games Today</div></div>';
+        games.updateNavButtons(false);
         return;
       }
 
-      const divOrder = ['East', 'Central', 'West'];
-      list.innerHTML = divOrder.map(div => {
-        const teams = leagueData[div] || [];
-        const rows = teams.map(team => {
-          const logoUrl = isDark 
-            ? `https://www.mlbstatic.com/team-logos/team-cap-on-dark/${team.teamId}.svg`
-            : `https://www.mlbstatic.com/team-logos/${team.teamId}.svg`;
-          const gb = team.gamesBack === '0.0' ? '-' : team.gamesBack;
-          return `
-            <div class="standing-row">
-              <img src="${logoUrl}" alt="Team" class="standing-logo">
-              <div class="standing-record">${team.wins}-${team.losses}</div>
-              <div class="standing-gb">${gb}</div>
-            </div>
-          `;
-        }).join('');
+      const gameBoxes = await Promise.all(
+        data.dates[0].games.map(game => games.createGameBox(game))
+      );
 
-        return `
-          <div class="division-column">
-            <div class="division-title">${currentLeague} ${div}</div>
-            <div class="division-list">${rows || '<div class="loading">No teams</div>'}</div>
-          </div>
-        `;
-      }).join('');
+      // Sort games: Live first, then scheduled, then final
+      gameBoxes.sort((a, b) => {
+        if (a.isLive && !b.isLive) return -1;
+        if (!a.isLive && b.isLive) return 1;
+        if (a.isFinal && !b.isFinal) return 1;
+        if (!a.isFinal && b.isFinal) return -1;
+        return a.gameDate - b.gameDate;
+      });
+
+      slider.innerHTML = '';
+      gameBoxes.forEach(({ element }) => slider.appendChild(element));
+
+      games.updateNavButtons(gameBoxes.length > CONFIG.GAMES_PER_VIEW);
+    } catch (error) {
+      console.error('Error fetching games:', error);
+      slider.innerHTML = '<div class="game-box"><div class="no-games">Failed to load games</div></div>';
+    }
+  }
+};
+
+// ===========================
+// CALENDAR MODULE
+// ===========================
+const calendar = {
+  render: () => {
+    const grid = document.getElementById('calendarGrid');
+    const monthEl = document.getElementById('calendarMonth');
+    if (!grid || !monthEl) return;
+
+    const year = state.currentDate.getFullYear();
+    const month = state.currentDate.getMonth();
+    
+    monthEl.textContent = state.currentDate.toLocaleDateString('en-US', {
+      month: 'long',
+      year: 'numeric'
+    });
+
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const dayLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+    
+    let html = dayLabels.map(d => `<div class="calendar-day-label">${d}</div>`).join('');
+    
+    // Empty cells before first day
+    for (let i = 0; i < firstDay; i++) {
+      html += '<div class="calendar-day empty"></div>';
+    }
+    
+    const selectedDay = state.currentDate.getDate();
+    
+    for (let day = 1; day <= daysInMonth; day++) {
+      const isSelected = day === selectedDay ? 'selected' : '';
+      html += `<div class="calendar-day ${isSelected}" data-day="${day}">${day}</div>`;
+    }
+    
+    grid.innerHTML = html;
+    
+    // Add click handlers
+    grid.querySelectorAll('.calendar-day:not(.empty)').forEach(el => {
+      el.addEventListener('click', (e) => {
+        state.currentDate.setDate(parseInt(e.target.dataset.day));
+        calendar.updateDateText();
+        calendar.render();
+        api.fetchGames();
+        document.getElementById('calendarDropdown')?.classList.remove('open');
+      });
+    });
+  },
+
+  updateDateText: () => {
+    const textEl = document.getElementById('selectedDateText');
+    if (!textEl) return;
+
+    const today = new Date();
+    const isToday = state.currentDate.toDateString() === today.toDateString();
+    
+    textEl.textContent = isToday
+      ? 'Today'
+      : state.currentDate.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric'
+        });
+  },
+
+  changeMonth: (delta) => {
+    state.currentDate.setMonth(state.currentDate.getMonth() + delta);
+    calendar.updateDateText();
+    calendar.render();
+    api.fetchGames();
+  },
+
+  initEvents: () => {
+    const pickerBtn = document.getElementById('datePickerBtn');
+    const dropdown = document.getElementById('calendarDropdown');
+    const prevBtn = document.getElementById('prevMonth');
+    const nextBtn = document.getElementById('nextMonth');
+
+    if (pickerBtn && dropdown) {
+      pickerBtn.addEventListener('click', () => {
+        dropdown.classList.toggle('open');
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!pickerBtn.contains(e.target) && !dropdown.contains(e.target)) {
+          dropdown.classList.remove('open');
+        }
+      });
     }
 
-    function renderTopPerformers() {
-      const list = document.getElementById('topPerformersList');
-      list.innerHTML = topPerformers.map(player => `
-        <div class="player-item">
-          <div class="rating-badge" style="background-color: ${getRatingColor(player.rating)}"></div>
-          <div class="player-info">
-            <div class="player-item-name">${player.name}</div>
-            <div class="player-item-team">${player.team}</div>
+    if (prevBtn) prevBtn.addEventListener('click', () => calendar.changeMonth(-1));
+    if (nextBtn) nextBtn.addEventListener('click', () => calendar.changeMonth(1));
+  }
+};
+
+// ===========================
+// GAMES MODULE
+// ===========================
+const games = {
+  createGameBox: async (game) => {
+    const homeId = game.teams.home.team.id;
+    const awayId = game.teams.away.team.id;
+    const homeScore = game.teams.home.score || 0;
+    const awayScore = game.teams.away.score || 0;
+    
+    let status = game.status.detailedState;
+    const homeAbbr = await api.fetchTeamAbbr(homeId);
+    const awayAbbr = await api.fetchTeamAbbr(awayId);
+
+    let isLive = false;
+    let isFinal = false;
+
+    if (['Final', 'Game Over', 'Completed Early'].includes(status)) {
+      status = 'FINAL';
+      isFinal = true;
+    } else if (['Pre-Game', 'Scheduled'].includes(status)) {
+      status = utils.formatTime(game.gameDate);
+    } else if (status === 'In Progress') {
+      status = await api.fetchGameDetails(game.gamePk);
+      isLive = true;
+    }
+
+    const homeLogo = utils.getLogoUrl(homeId);
+    const awayLogo = utils.getLogoUrl(awayId);
+
+    const element = document.createElement('div');
+    element.className = 'game-box';
+    element.style.cursor = 'pointer';
+
+    const statusClass = (status.includes('TOP') || status.includes('BOT')) ? 'live' : '';
+
+    element.innerHTML = `
+      <div class="game-status ${statusClass}">${status}</div>
+      <div class="game-matchup">
+        <div class="team-row">
+          <div class="team-name">
+            <img src="${awayLogo}" alt="${awayAbbr}" class="team-logo">
+            ${awayAbbr}
           </div>
-          <div class="player-rating">${player.rating}</div>
+          <div class="team-score">${awayScore}</div>
         </div>
-      `).join('');
+        <div class="team-row">
+          <div class="team-name">
+            <img src="${homeLogo}" alt="${homeAbbr}" class="team-logo">
+            ${homeAbbr}
+          </div>
+          <div class="team-score">${homeScore}</div>
+        </div>
+      </div>
+    `;
+
+    element.addEventListener('click', () => {
+      const gameData = {
+        gamePk: game.gamePk,
+        homeTeam: { id: homeId, abbr: homeAbbr, score: homeScore },
+        awayTeam: { id: awayId, abbr: awayAbbr, score: awayScore },
+        status: status,
+        gameDate: game.gameDate
+      };
+
+      sessionStorage.setItem('selectedGame', JSON.stringify(gameData));
+      window.location.href = `game-box.html?gamePk=${game.gamePk}`;
+    });
+
+    return {
+      element,
+      isLive,
+      isFinal,
+      gameDate: new Date(game.gameDate)
+    };
+  },
+
+  updateSlider: () => {
+    const slider = document.getElementById('gamesSlider');
+    if (!slider) return;
+
+    const gameBox = slider.querySelector('.game-box');
+    if (!gameBox) return;
+
+    const boxWidth = gameBox.offsetWidth;
+    const offset = state.currentSlide * (boxWidth + 16);
+    slider.style.transform = `translateX(-${offset}px)`;
+
+    const totalGames = slider.querySelectorAll('.game-box').length;
+    const maxSlide = Math.max(0, totalGames - CONFIG.GAMES_PER_VIEW);
+
+    games.updateNavButtons(totalGames > CONFIG.GAMES_PER_VIEW, maxSlide);
+  },
+
+  updateNavButtons: (showButtons, maxSlide = 0) => {
+    const prevBtn = document.getElementById('prevGames');
+    const nextBtn = document.getElementById('nextGames');
+
+    if (!prevBtn || !nextBtn) return;
+
+    if (!showButtons) {
+      prevBtn.style.display = 'none';
+      nextBtn.style.display = 'none';
+      return;
     }
 
-    async function renderPredictions() {
-      const list = document.getElementById('predictionList');
-      const isDark = document.body.classList.contains('dark');
+    prevBtn.style.display = state.currentSlide > 0 ? 'flex' : 'none';
+    nextBtn.style.display = state.currentSlide < maxSlide ? 'flex' : 'none';
+  },
 
-      const predictionsHtml = wsPredictions.map(pred => {
-        const logoUrl = isDark
-          ? `https://www.mlbstatic.com/team-logos/team-cap-on-dark/${pred.teamId}.svg`
-          : `https://www.mlbstatic.com/team-logos/${pred.teamId}.svg`;
+  initEvents: () => {
+    const prevBtn = document.getElementById('prevGames');
+    const nextBtn = document.getElementById('nextGames');
+
+    if (nextBtn) {
+      nextBtn.addEventListener('click', () => {
+        const slider = document.getElementById('gamesSlider');
+        if (!slider) return;
+
+        const totalGames = slider.querySelectorAll('.game-box').length;
+        const maxSlide = Math.max(0, totalGames - CONFIG.GAMES_PER_VIEW);
+
+        if (state.currentSlide < maxSlide) {
+          state.currentSlide++;
+          games.updateSlider();
+        }
+      });
+    }
+
+    if (prevBtn) {
+      prevBtn.addEventListener('click', () => {
+        if (state.currentSlide > 0) {
+          state.currentSlide--;
+          games.updateSlider();
+        }
+      });
+    }
+  }
+};
+
+// ===========================
+// STANDINGS MODULE
+// ===========================
+const standings = {
+  render: () => {
+    const list = document.getElementById('standingsList');
+    if (!list) return;
+
+    const leagueData = state.standingsData[state.currentLeague];
+    if (!leagueData) {
+      list.innerHTML = '<div class="loading">No standings available</div>';
+      return;
+    }
+
+    const divOrder = ['East', 'Central', 'West'];
+    
+    list.innerHTML = divOrder.map(div => {
+      const teams = leagueData[div] || [];
+      
+      const rows = teams.map(team => {
+        const logoUrl = utils.getLogoUrl(team.teamId);
+        const gamesBack = team.gamesBack === '0.0' ? '-' : team.gamesBack;
         
         return `
-          <div class="prediction-row">
-            <img src="${logoUrl}" alt="Team" class="prediction-logo">
-            <div class="prediction-bar-container">
-              <div class="prediction-bar" style="width: ${pred.percentage}%"></div>
-              <div class="prediction-percentage">${pred.percentage}%</div>
-            </div>
+          <div class="standing-row">
+            <img src="${logoUrl}" alt="Team" class="standing-logo">
+            <div class="standing-record">${team.wins}-${team.losses}</div>
+            <div class="standing-gb">${gamesBack}</div>
           </div>
         `;
       }).join('');
 
-      list.innerHTML = predictionsHtml;
-    }
+      return `
+        <div class="division-column">
+          <div class="division-title">${state.currentLeague} ${div}</div>
+          <div class="division-list">${rows || '<div class="loading">No teams</div>'}</div>
+        </div>
+      `;
+    }).join('');
+  },
 
-    document.getElementById('alTab').addEventListener('click', () => {
-      currentLeague = 'AL';
-      document.getElementById('alTab').classList.add('active');
-      document.getElementById('nlTab').classList.remove('active');
-      renderStandings();
-    });
+  initEvents: () => {
+    const alTab = document.getElementById('alTab');
+    const nlTab = document.getElementById('nlTab');
 
-    document.getElementById('nlTab').addEventListener('click', () => {
-      currentLeague = 'NL';
-      document.getElementById('nlTab').classList.add('active');
-      document.getElementById('alTab').classList.remove('active');
-      renderStandings();
-    });
-
-    let cDate = new Date();
-    let cSlide = 0;
-
-    function fDate(d) {
-      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-    }
-
-    function fTime(gd) {
-      return new Date(gd).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
-    }
-
-    async function fAbbr(tid) {
-      try {
-        const r = await fetch(`https://statsapi.mlb.com/api/v1/teams/${tid}`);
-        const d = await r.json();
-        return d.teams[0].abbreviation || "N/A";
-      } catch { return "N/A"; }
-    }
-
-    async function fDetails(gpk) {
-      try {
-        const r = await fetch(`https://statsapi.mlb.com/api/v1.1/game/${gpk}/feed/live`);
-        const d = await r.json();
-        if (d?.liveData) {
-          const ls = d.liveData.linescore;
-          const ih = ls.inningHalf ? (ls.inningHalf === "Top" ? "TOP" : "BOT") : "";
-          const ci = ls.currentInning || "";
-          return `${ih} ${ci}`;
-        }
-      } catch {}
-      return "In Progress";
-    }
-
-    function rCal() {
-      const g = document.getElementById('calendarGrid');
-      const m = document.getElementById('calendarMonth');
-      const y = cDate.getFullYear();
-      const mo = cDate.getMonth();
-      m.textContent = cDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-      const fd = new Date(y, mo, 1).getDay();
-      const dim = new Date(y, mo + 1, 0).getDate();
-      const dl = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
-      let h = dl.map(d => `<div class="calendar-day-label">${d}</div>`).join('');
-      for (let i = 0; i < fd; i++) h += '<div class="calendar-day empty"></div>';
-      const sd = cDate.getDate();
-      for (let day = 1; day <= dim; day++) {
-        h += `<div class="calendar-day ${day === sd ? 'selected' : ''}" data-day="${day}">${day}</div>`;
-      }
-      g.innerHTML = h;
-      g.querySelectorAll('.calendar-day:not(.empty)').forEach(el => {
-        el.addEventListener('click', (e) => {
-          cDate.setDate(parseInt(e.target.dataset.day));
-          uDateText();
-          rCal();
-          fGames();
-          document.getElementById('calendarDropdown').classList.remove('open');
-        });
+    if (alTab) {
+      alTab.addEventListener('click', () => {
+        state.currentLeague = 'AL';
+        alTab.classList.add('active');
+        nlTab?.classList.remove('active');
+        standings.render();
       });
     }
 
-    function uDateText() {
-      const t = document.getElementById('selectedDateText');
-      const today = new Date();
-      const isTdy = cDate.toDateString() === today.toDateString();
-      if (isTdy) {
-        t.textContent = 'Today';
-      } else {
-        t.textContent = cDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-      }
-    }
-
-    document.getElementById('datePickerBtn').addEventListener('click', () => {
-      document.getElementById('calendarDropdown').classList.toggle('open');
-    });
-
-    document.addEventListener('click', (e) => {
-      const dp = document.getElementById('datePickerBtn');
-      const cd = document.getElementById('calendarDropdown');
-      if (!dp.contains(e.target) && !cd.contains(e.target)) {
-        cd.classList.remove('open');
-      }
-    });
-
-    document.getElementById('prevMonth').addEventListener('click', () => { cDate.setMonth(cDate.getMonth() - 1); uDateText(); rCal(); fGames(); });
-    document.getElementById('nextMonth').addEventListener('click', () => { cDate.setMonth(cDate.getMonth() + 1); uDateText(); rCal(); fGames(); });
-
-    async function fGames() {
-      const s = document.getElementById('gamesSlider');
-      const sd = fDate(cDate);
-      const url = `https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=${sd}`;
-      s.innerHTML = '<div class="loading">Loading games...</div>';
-      cSlide = 0;
-      try {
-        const r = await fetch(url);
-        const d = await r.json();
-        if (!d.dates.length || !d.dates[0].games.length) {
-          s.innerHTML = '<div class="game-box"><div class="no-games">No Games Today</div></div>';
-          document.getElementById('prevGames').style.display = 'none';
-          document.getElementById('nextGames').style.display = 'none';
-          return;
-        }
-        const gbs = await Promise.all(d.dates[0].games.map(async (g) => {
-          const hid = g.teams.home.team.id;
-          const aid = g.teams.away.team.id;
-          const hs = g.teams.home.score || 0;
-          const as = g.teams.away.score || 0;
-          let st = g.status.detailedState;
-          const ha = await fAbbr(hid);
-          const aa = await fAbbr(aid);
-          if (st === "Final" || st === "Game Over" || st === "Completed Early") st = "FINAL";
-          else if (st === "Pre-Game" || st === "Scheduled") st = fTime(g.gameDate);
-          else if (st === "In Progress") st = await fDetails(g.gamePk);
-          const dm = document.body.classList.contains("dark");
-          const hl = dm ? `https://www.mlbstatic.com/team-logos/team-cap-on-dark/${hid}.svg` : `https://www.mlbstatic.com/team-logos/${hid}.svg`;
-          const al = dm ? `https://www.mlbstatic.com/team-logos/team-cap-on-dark/${aid}.svg` : `https://www.mlbstatic.com/team-logos/${aid}.svg`;
-          const gb = document.createElement('div');
-          gb.className = 'game-box';
-          gb.style.cursor = 'pointer';
-          gb.innerHTML = `<div class="game-status ${st.includes('TOP') || st.includes('BOT') ? 'live' : ''}">${st}</div><div class="game-matchup"><div class="team-row"><div class="team-name"><img src="${al}" alt="${aa}" class="team-logo">${aa}</div><div class="team-score">${as}</div></div><div class="team-row"><div class="team-name"><img src="${hl}" alt="${ha}" class="team-logo">${ha}</div><div class="team-score">${hs}</div></div></div>`;
-          
-          // Add click handler to navigate to game-box.html with game data
-         gb.addEventListener('click', () => {
-        const gameData = {
-          gamePk: g.gamePk,
-          homeTeam: { id: hid, abbr: ha, score: hs },
-          awayTeam: { id: aid, abbr: aa, score: as },
-          status: st,
-          gameDate: g.gameDate
-        };
-
-        sessionStorage.setItem('selectedGame', JSON.stringify(gameData));
-
-        window.location.href = `game-box.html?gamePk=${g.gamePk}`;
+    if (nlTab) {
+      nlTab.addEventListener('click', () => {
+        state.currentLeague = 'NL';
+        nlTab.classList.add('active');
+        alTab?.classList.remove('active');
+        standings.render();
       });
+    }
+  }
+};
 
-          
-          return { gameBox: gb, gameStatus: st, gameDate: new Date(g.gameDate) };
-        }));
-        gbs.sort((a, b) => {
-          if (a.gameStatus.includes("TOP") || a.gameStatus.includes("BOT")) return -1;
-          if (b.gameStatus.includes("TOP") || b.gameStatus.includes("BOT")) return 1;
-          if (a.gameStatus === "FINAL" && b.gameStatus !== "FINAL") return 1;
-          if (b.gameStatus === "FINAL" && a.gameStatus !== "FINAL") return -1;
-          return a.gameDate - b.gameDate;
-        });
-        s.innerHTML = '';
-        gbs.forEach(({ gameBox }) => s.appendChild(gameBox));
-        const sa = gbs.length > 4;
-        document.getElementById('prevGames').style.display = 'none';
-        document.getElementById('nextGames').style.display = sa ? 'flex' : 'none';
-      } catch { s.innerHTML = '<div class="game-box"><div class="no-games">Failed to load games</div></div>'; }
+// ===========================
+// UI RENDER FUNCTIONS
+// ===========================
+const ui = {
+  renderTopPerformers: () => {
+    const list = document.getElementById('topPerformersList');
+    if (!list) return;
+
+    list.innerHTML = MOCK_DATA.topPerformers.map(player => `
+      <div class="player-item">
+        <div class="rating-badge" style="background-color: ${utils.getRatingColor(player.rating)}"></div>
+        <div class="player-info">
+          <div class="player-item-name">${player.name}</div>
+          <div class="player-item-team">${player.team}</div>
+        </div>
+        <div class="player-rating">${player.rating}</div>
+      </div>
+    `).join('');
+  },
+
+  renderPredictions: () => {
+    const list = document.getElementById('predictionList');
+    if (!list) return;
+
+    list.innerHTML = MOCK_DATA.wsPredictions.map(pred => {
+      const logoUrl = utils.getLogoUrl(pred.teamId);
+      
+      return `
+        <div class="prediction-row">
+          <img src="${logoUrl}" alt="Team" class="prediction-logo">
+          <div class="prediction-bar-container">
+            <div class="prediction-bar" style="width: ${pred.percentage}%"></div>
+            <div class="prediction-percentage">${pred.percentage}%</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  },
+
+  renderMetrics: () => {
+    const grid = document.getElementById('metricsGrid');
+    if (!grid) return;
+
+    grid.innerHTML = MOCK_DATA.metrics.map(metric => {
+      const changeClass = metric.change.startsWith('+') ? 'positive' : 'negative';
+      
+      return `
+        <div class="metric-item">
+          <div class="metric-label">${metric.label}</div>
+          <div class="metric-value">${metric.value}</div>
+          <div class="metric-change ${changeClass}">${metric.change}</div>
+        </div>
+      `;
+    }).join('');
+  }
+};
+
+// ===========================
+// CHARTS MODULE
+// ===========================
+const charts = {
+  createPerformanceChart: () => {
+    const canvas = document.getElementById('performanceChart');
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    const colors = utils.getChartColors();
+
+    if (state.charts.performance) {
+      state.charts.performance.destroy();
     }
 
-    function uSlide() {
-      const s = document.getElementById('gamesSlider');
-      const sw = s.querySelector('.game-box')?.offsetWidth || 0;
-      const o = cSlide * (sw + 16);
-      s.style.transform = `translateX(-${o}px)`;
-      const tg = s.querySelectorAll('.game-box').length;
-      const mi = Math.max(0, tg - 4);
-      document.getElementById('prevGames').style.display = cSlide > 0 ? 'flex' : 'none';
-      document.getElementById('nextGames').style.display = cSlide < mi ? 'flex' : 'none';
+    state.charts.performance = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'],
+        datasets: [
+          {
+            label: 'OPS',
+            data: [0.845, 0.892, 0.901, 0.878, 0.915, 0.889],
+            borderColor: '#bf0d3d',
+            backgroundColor: '#bf0d3d',
+            tension: 0.3,
+            pointRadius: 3
+          },
+          {
+            label: 'wOBA',
+            data: [0.362, 0.381, 0.388, 0.375, 0.392, 0.379],
+            borderColor: colors.primary,
+            backgroundColor: colors.primary,
+            tension: 0.3,
+            pointRadius: 3
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: {
+            labels: {
+              font: { size: 11, family: 'Inter' },
+              color: colors.text
+            }
+          }
+        },
+        scales: {
+          x: {
+            ticks: { font: { size: 11 }, color: colors.text },
+            grid: { color: colors.grid }
+          },
+          y: {
+            ticks: { font: { size: 11 }, color: colors.text },
+            grid: { color: colors.grid }
+          }
+        }
+      }
+    });
+  },
+
+  createProjectionChart: () => {
+    const canvas = document.getElementById('projectionChart');
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    const colors = utils.getChartColors();
+
+    if (state.charts.projection) {
+      state.charts.projection.destroy();
     }
 
-    document.getElementById('nextGames').addEventListener('click', () => { const s = document.getElementById('gamesSlider'); const tg = s.querySelectorAll('.game-box').length; const mi = Math.max(0, tg - 4); if (cSlide < mi) { cSlide++; uSlide(); } });
-    document.getElementById('prevGames').addEventListener('click', () => { if (cSlide > 0) { cSlide--; uSlide(); } });
+    state.charts.projection = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['2023', '2024', '2025', '2026'],
+        datasets: [
+          {
+            label: 'Actual',
+            data: [8.2, 7.9, null, null],
+            backgroundColor: colors.primary
+          },
+          {
+            label: 'Projected',
+            data: [null, 7.8, 8.1, 7.6],
+            backgroundColor: '#bf0d3d'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: {
+            labels: {
+              font: { size: 11, family: 'Inter' },
+              color: colors.text
+            }
+          }
+        },
+        scales: {
+          x: {
+            ticks: { font: { size: 11 }, color: colors.text },
+            grid: { color: colors.grid }
+          },
+          y: {
+            ticks: { font: { size: 11 }, color: colors.text },
+            grid: { color: colors.grid }
+          }
+        }
+      }
+    });
+  },
 
-    document.getElementById('themeToggle').addEventListener('click', () => {
-    const b = document.body;
+  updateAll: () => {
+    charts.createPerformanceChart();
+    charts.createProjectionChart();
+  }
+};
+
+// ===========================
+// THEME MODULE
+// ===========================
+const theme = {
+  init: () => {
+    // Set dark mode as default
+    document.body.classList.add('dark');
+    document.body.classList.remove('light');
+    
+    const toggleBtn = document.getElementById('themeToggle');
     const logo = document.getElementById('logoImg');
+    
+    if (toggleBtn) toggleBtn.textContent = 'Light';
+    if (logo) logo.src = 'assets/site-logos/logo-light.svg';
+  },
 
-    if (b.classList.contains('dark')) {
+  toggle: () => {
+    const body = document.body;
+    const logo = document.getElementById('logoImg');
+    const toggleBtn = document.getElementById('themeToggle');
+
+    if (body.classList.contains('dark')) {
       // Switch to LIGHT mode
-      b.classList.remove('dark');
-      b.classList.add('light');
-      document.getElementById('themeToggle').textContent = 'Dark';
-      logo.src = 'assets/site-logos/logo-dark.svg';
+      body.classList.remove('dark');
+      body.classList.add('light');
+      if (toggleBtn) toggleBtn.textContent = 'Dark';
+      if (logo) logo.src = 'assets/site-logos/logo-dark.svg';
     } else {
       // Switch to DARK mode
-      b.classList.remove('light');
-      b.classList.add('dark');
-      document.getElementById('themeToggle').textContent = 'Light';
-      logo.src = 'assets/site-logos/logo-light.svg';
+      body.classList.remove('light');
+      body.classList.add('dark');
+      if (toggleBtn) toggleBtn.textContent = 'Light';
+      if (logo) logo.src = 'assets/site-logos/logo-light.svg';
     }
 
     // Re-render dependent UI
-    uCharts();
-    fGames();
-    renderStandings();
-    renderPredictions();
-  });
+    charts.updateAll();
+    api.fetchGames();
+    standings.render();
+    ui.renderPredictions();
+  },
 
-
-    function rMetrics() {
-      const mData = [
-        { label: 'wRC+', value: '168', change: '+12' },
-        { label: 'ISO', value: '.312', change: '+.045' },
-        { label: 'BABIP', value: '.298', change: '-.015' },
-        { label: 'K%', value: '23.1%', change: '-2.3%' },
-        { label: 'BB%', value: '14.8%', change: '+1.9%' },
-        { label: 'Hard%', value: '48.2%', change: '+5.1%' },
-      ];
-      const g = document.getElementById('metricsGrid');
-      g.innerHTML = mData.map(m => `<div class="metric-item"><div class="metric-label">${m.label}</div><div class="metric-value">${m.value}</div><div class="metric-change ${m.change.startsWith('+') ? 'positive' : 'negative'}">${m.change}</div></div>`).join('');
+  initEvents: () => {
+    const toggleBtn = document.getElementById('themeToggle');
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', theme.toggle);
     }
+  }
+};
 
-    function gCC() {
-      const d = document.body.classList.contains('dark');
-      return { text: d ? '#94a3b8' : '#64748b', grid: d ? '#1e293b' : '#e2e8f0' };
-    }
-
-    let pChart, prChart;
-
-    function cPChart() {
-      const ctx = document.getElementById('performanceChart').getContext('2d');
-      const c = gCC();
-      const isDark = document.body.classList.contains('dark');
-
-      if (pChart) pChart.destroy();
-
-      pChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'],
-          datasets: [
-            {
-              label: 'OPS',
-              data: [0.845, 0.892, 0.901, 0.878, 0.915, 0.889],
-              borderColor: '#bf0d3d',
-              backgroundColor: '#bf0d3d',
-              tension: 0.3,
-              pointRadius: 3
-            },
-            {
-              label: 'wOBA',
-              data: [0.362, 0.381, 0.388, 0.375, 0.392, 0.379],
-              borderColor: isDark ? '#ffffff' : '#041e41',
-              backgroundColor: isDark ? '#ffffff' : '#041e41',
-              tension: 0.3,
-              pointRadius: 3
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: true,
-          plugins: {
-            legend: {
-              labels: { font: { size: 11, family: 'Inter' }, color: c.text }
-            }
-          },
-          scales: {
-            x: { ticks: { font: { size: 11 }, color: c.text }, grid: { color: c.grid } },
-            y: { ticks: { font: { size: 11 }, color: c.text }, grid: { color: c.grid } }
-          }
-        }
-      });
-    }
-
-    function cPrChart() {
-      const ctx = document.getElementById('projectionChart').getContext('2d');
-      const c = gCC();
-      const isDark = document.body.classList.contains('dark');
-
-      if (prChart) prChart.destroy();
-
-      prChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: ['2023', '2024', '2025', '2026'],
-          datasets: [
-            {
-              label: 'Actual',
-              data: [8.2, 7.9, null, null],
-              backgroundColor: isDark ? '#ffffff' : '#041e41'
-            },
-            {
-              label: 'Projected',
-              data: [null, 7.8, 8.1, 7.6],
-              backgroundColor: '#bf0d3d'
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: true,
-          plugins: {
-            legend: {
-              labels: { font: { size: 11, family: 'Inter' }, color: c.text }
-            }
-          },
-          scales: {
-            x: { ticks: { font: { size: 11 }, color: c.text }, grid: { color: c.grid } },
-            y: { ticks: { font: { size: 11 }, color: c.text }, grid: { color: c.grid } }
-          }
-        }
-      });
-    }
-
-    function uCharts() { cPChart(); cPrChart(); }
-
-    rCal();
-    uDateText();
-    fGames();
-    fetchStandings();
-    renderTopPerformers();
-    renderPredictions();
-    rMetrics();
-    cPChart();
-    cPrChart();
-
+// ===========================
+// AUTO-REFRESH MODULE
+// ===========================
+const autoRefresh = {
+  start: () => {
     setInterval(() => {
-      const cd = fDate(cDate);
-      const td = fDate(new Date());
-      if (cd === td) fGames();
-    }, 30000);
+      const currentDate = utils.formatDate(state.currentDate);
+      const today = utils.formatDate(new Date());
+      
+      // Only refresh if viewing today's games
+      if (currentDate === today) {
+        api.fetchGames();
+      }
+    }, CONFIG.REFRESH_INTERVAL);
+  }
+};
+
+// ===========================
+// INITIALIZATION
+// ===========================
+const init = () => {
+  // Initialize theme first
+  theme.init();
+  theme.initEvents();
+
+  // Initialize calendar
+  calendar.render();
+  calendar.updateDateText();
+  calendar.initEvents();
+
+  // Initialize games
+  api.fetchGames();
+  games.initEvents();
+
+  // Initialize standings
+  api.fetchStandings();
+  standings.initEvents();
+
+  // Render UI components
+  ui.renderTopPerformers();
+  ui.renderPredictions();
+  ui.renderMetrics();
+
+  // Initialize charts
+  charts.updateAll();
+
+  // Start auto-refresh
+  autoRefresh.start();
+};
+
+// Start the application
+init();
   </script>
 </body>
 </html>

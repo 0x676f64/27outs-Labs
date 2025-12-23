@@ -172,8 +172,14 @@
     
     if (!themeBtn || !logoImg) return;
 
+    // Set dark mode as default on initialization
+    const body = document.body;
+    body.classList.add('dark');
+    body.classList.remove('light');
+    themeBtn.textContent = 'Light';
+    logoImg.src = 'assets/site-logos/logo-light.svg';
+
     themeBtn.addEventListener('click', () => {
-      const body = document.body;
       const isLight = body.classList.contains('light');
 
       body.classList.toggle('light', !isLight);
@@ -359,7 +365,7 @@
     tbody.innerHTML = `
       <tr>
         <td class="team-name">
-          <img src="${awayLogoUrl}" alt="${away.abbreviation}" class="team-logo away-logo">
+          <img src="${awayLogoUrl}" alt="${away.abbreviation}" class="box-team-logo away-logo">
         </td>
         ${awayInnings}
         <td>${linescore.teams.away.runs}</td>
@@ -368,7 +374,7 @@
       </tr>
       <tr>
         <td class="team-name">
-          <img src="${homeLogoUrl}" alt="${home.abbreviation}" class="team-logo home-logo">
+          <img src="${homeLogoUrl}" alt="${home.abbreviation}" class="box-team-logo home-logo">
         </td>
         ${homeInnings}
         <td>${linescore.teams.home.runs}</td>
