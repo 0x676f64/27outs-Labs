@@ -316,7 +316,7 @@ class MLBVideoMatcher {
             right: 1vw;
             background: linear-gradient(135deg, rgba(248,249,250,0.95), rgba(217,230,243,0.95));
             border: 1px solid rgba(255,255,255,0.3);
-            padding: 8px 14px;
+            padding: 4px 10px;
             border-radius: 12px;
             font-size: 12px;
             font-weight: bold;
@@ -411,7 +411,6 @@ class MLBVideoMatcher {
         if (this.activeVideoPlayers.size === 0) {
             this.contentWrapperState = {
                 element: contentWrapper,
-                originalDisplay: contentWrapper.style.display || 'block',
                 originalVisibility: contentWrapper.style.visibility || 'visible',
                 originalOpacity: contentWrapper.style.opacity || '1',
                 originalTransition: contentWrapper.style.transition || ''
@@ -425,7 +424,8 @@ class MLBVideoMatcher {
                 
                 setTimeout(() => {
                     if (contentWrapper.style.opacity === '0') {
-                        contentWrapper.style.display = 'none';
+                        contentWrapper.style.visibility = 'hidden';
+                        contentWrapper.style.pointerEvents = 'none';
                     }
                 }, 400);
             });
@@ -508,8 +508,10 @@ class MLBVideoMatcher {
         const videoElement = document.createElement('video');
         videoElement.style.cssText = `
             width: 100%;
-            height: 500px;
+            height: 100%;
             display: block;
+            padding: 10px 20px;
+            margin: 0;
             background: linear-gradient(152deg, rgb(4, 30, 65) 44%, rgb(255, 255, 255) 60%, rgb(191, 13, 61) 55%);
             border-radius: 12px;
             position: relative;
@@ -656,40 +658,49 @@ class MLBVideoMatcher {
         return videoElement;
     }
 
-    // Video player close logic
+   // Video player close logic - SIMPLE FIX
     closeVideoPlayer(playerContainer, playDiv, videoButton, playerId) {
-        this.activeVideoPlayers.delete(playerId);
+    this.activeVideoPlayers.delete(playerId);
 
-        const backdrop = document.querySelector('div[style*="backdrop-filter: blur(3px)"]');
-        
-        if (playerContainer.cleanup) {
-            playerContainer.cleanup();
+    const backdrop = document.querySelector('div[style*="backdrop-filter: blur(3px)"]');
+    
+    if (playerContainer.cleanup) {
+        playerContainer.cleanup();
+    }
+    
+    playerContainer.style.height = '0';
+    playerContainer.style.opacity = '0';
+    playerContainer.style.transform = 'translate(-50%, -50%) scale(0.8)';
+    
+    if (backdrop) {
+        backdrop.style.opacity = '0';
+    }
+    
+    setTimeout(() => {
+        this.showContentWrapper();
+    }, 200); 
+    
+    setTimeout(() => {
+        this.resetVideoButton(videoButton);
+    }, 300); 
+    
+    setTimeout(() => {
+        if (playerContainer?.parentNode) {
+        playerContainer.remove();
+        }
+        if (backdrop?.parentNode) {
+        backdrop.remove();
         }
         
-        playerContainer.style.height = '0';
-        playerContainer.style.opacity = '0';
-        playerContainer.style.transform = 'translate(-50%, -50%) scale(0.8)';
-        
-        if (backdrop) {
-            backdrop.style.opacity = '0';
+        // SIMPLE FIX: Force refresh the scoring plays section to reset layout
+        const scoringContainer = document.getElementById('scoring-plays-container');
+        if (scoringContainer && scoringContainer.style.display !== 'none') {
+        // Trigger a reflow to reset any layout issues
+        scoringContainer.style.display = 'none';
+        scoringContainer.offsetHeight; // Force reflow
+        scoringContainer.style.display = '';
         }
-        
-        setTimeout(() => {
-            this.showContentWrapper();
-        }, 200); 
-        
-        setTimeout(() => {
-            this.resetVideoButton(videoButton);
-        }, 300); 
-        
-        setTimeout(() => {
-            if (playerContainer?.parentNode) {
-                playerContainer.remove();
-            }
-            if (backdrop?.parentNode) {
-                backdrop.remove();
-            }
-        }, 500);
+    }, 500);
     }
 
     // Reset button state

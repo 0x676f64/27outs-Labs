@@ -698,41 +698,50 @@ class MLBVideoMatcher {
         return videoElement;
     }
 
-    // Video player close logic
-    closeVideoPlayer(playerContainer, playDiv, videoButton, playerId) {
-        this.activeVideoPlayers.delete(playerId);
+    // Video player close logic - SIMPLE FIX
+closeVideoPlayer(playerContainer, playDiv, videoButton, playerId) {
+  this.activeVideoPlayers.delete(playerId);
 
-        const backdrop = document.querySelector('div[style*="backdrop-filter: blur(3px)"]');
-        
-        if (playerContainer.cleanup) {
-            playerContainer.cleanup();
-        }
-        
-        playerContainer.style.height = '0';
-        playerContainer.style.opacity = '0';
-        playerContainer.style.transform = 'translate(-50%, -50%) scale(0.8)';
-        
-        if (backdrop) {
-            backdrop.style.opacity = '0';
-        }
-        
-        setTimeout(() => {
-            this.showContentWrapper();
-        }, 200); 
-        
-        setTimeout(() => {
-            this.resetVideoButton(videoButton);
-        }, 300); 
-        
-        setTimeout(() => {
-            if (playerContainer?.parentNode) {
-                playerContainer.remove();
-            }
-            if (backdrop?.parentNode) {
-                backdrop.remove();
-            }
-        }, 500);
+  const backdrop = document.querySelector('div[style*="backdrop-filter: blur(3px)"]');
+  
+  if (playerContainer.cleanup) {
+    playerContainer.cleanup();
+  }
+  
+  playerContainer.style.height = '0';
+  playerContainer.style.opacity = '0';
+  playerContainer.style.transform = 'translate(-50%, -50%) scale(0.8)';
+  
+  if (backdrop) {
+    backdrop.style.opacity = '0';
+  }
+  
+  setTimeout(() => {
+    this.showContentWrapper();
+  }, 200); 
+  
+  setTimeout(() => {
+    this.resetVideoButton(videoButton);
+  }, 300); 
+  
+  setTimeout(() => {
+    if (playerContainer?.parentNode) {
+      playerContainer.remove();
     }
+    if (backdrop?.parentNode) {
+      backdrop.remove();
+    }
+    
+    // SIMPLE FIX: Force refresh the scoring plays section to reset layout
+    const scoringContainer = document.getElementById('scoring-plays-container');
+    if (scoringContainer && scoringContainer.style.display !== 'none') {
+      // Trigger a reflow to reset any layout issues
+      scoringContainer.style.display = 'none';
+      scoringContainer.offsetHeight; // Force reflow
+      scoringContainer.style.display = '';
+    }
+  }, 500);
+}
 
     // Reset button state
     resetVideoButton(videoButton) {

@@ -736,21 +736,49 @@
             border-color: #1e293b;
         }
 
-        .video-buttons button {
-            padding: 8px 16px;
-            background: #bf0d3d;
-            color: white;
-            border: none;
-            border-radius: 5px;
+        body.dark .video-buttons button {
+            background: #0a0e1a79;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 8px 14px;
+            border-radius: 12px;
+            font-size: 0.75rem;
             font-weight: 600;
             cursor: pointer;
-            transition: transform 0.2s;
-            font-size: 11px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 10;
+            opacity: 70%;
+            pointer-events: auto;
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #bf0d3d;
+        }
+
+        body.light .video-buttons button {
+            background: linear-gradient(135deg, rgba(248, 249, 250, 0.95), rgba(217, 230, 243, 0.95));
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 14px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 10;
+            pointer-events: auto;
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #bf0d3d;
         }
 
         .video-buttons button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(191, 13, 62, 0.3);
+            transform: scale(1.08) translateY(-1px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+            background: transparent;
         }
 
         .score-update {
@@ -777,69 +805,95 @@
             flex-shrink: 0;
         }
 
-        .top-performers-case {
-        display: flex;
-        flex-direction: row;
-        justify-content: center;
-        gap: 30px;
-        padding: 20px;
-        background: #151b2e;
-        border-radius: 8px;
-        margin: 20px 0;
-    }
+        body.dark .top-performers-case {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            gap: 30px;
+            padding: 20px;
+            background: #151b2e;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        body.light .top-performers-case {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            gap: 30px;
+            padding: 20px;
+            background: #ffffff;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid #e2e8f0;
+        }
     
-    .top-performer-player {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        flex: 1;
-        max-width: 200px;
-        padding: 15px;
-        background: #0a0e1a79;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        border: 1px solid #e2e8f023;
-    }
-    
-    .performer-image {
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
-        overflow: hidden;
-        margin-bottom: 15px;
-        background: #f0f0f0;
-        border: 3px solid #bf0d3d;
-    }
-    
-    .performer-image img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-    
-    .performer-name {
-        font-size: 0.85rem;
-        font-weight: 500;
-        color: #e2e8f0ab;
-        margin-bottom: 10px;
-    }
-    
-    .performer-stats {
-        font-size: 0.75rem;
-        color: #e2e8f0;
-        font-weight: 300;
-    }
-    
-    .loading, .no-data, .error {
-        text-align: center;
-        padding: 20px;
-        color: #666;
-    }
-    
-    .error {
-        color: #d32f2f;
-    }
+        body.dark .top-performer-player {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            flex: 1;
+            max-width: 200px;
+            padding: 15px;
+            background: #0a0e1a79;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border: 1px solid #e2e8f023;
+        }
+
+         body.light .top-performer-player {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            flex: 1;
+            max-width: 200px;
+            padding: 15px;
+            background: #041e41;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border: 1px solid #e2e8f023;
+        }
+        
+        .performer-image {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin-bottom: 15px;
+            background: #f0f0f0;
+            border: 3px solid #bf0d3d;
+        }
+        
+        .performer-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .performer-name {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #e2e8f0ab;
+            margin-bottom: 10px;
+        }
+        
+        .performer-stats {
+            font-size: 0.75rem;
+            color: #e2e8f0;
+            font-weight: 300;
+        }
+        
+        .loading, .no-data, .error {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        
+        .error {
+            color: #d32f2f;
+        }
     </style>
 </head>
 <body class="light">
@@ -939,8 +993,8 @@
 
         <!-- Video Buttons -->
         <div class="video-buttons">
-            <button data-video-type="condensed">Condensed Game</button>
-            <button data-video-type="recap">Game Recap</button>
+            <button data-video-type="condensed">Game Recap</button>
+            <button data-video-type="recap">Highlights</button>
         </div>
 
         <div class="top-performers-case">
