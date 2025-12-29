@@ -13,6 +13,7 @@
   // STATE
   // ===========================
   let awayTeamId, homeTeamId;
+  let videoMatcher = null;
   
   // ===========================
   // UTILITY FUNCTIONS
@@ -237,7 +238,7 @@
   // ===========================
   // PLAY ITEM CREATION
   // ===========================
-  const createPlayItem = (play, showVideo = false, showStatcast = false) => {
+  const createPlayItem = (play, showStatcast = false, showScoringInfo = false) => {
     const batter = play.matchup?.batter;
     const playerId = batter?.id ?? 'default';
     const eventIcon = getEventIcon(play.result.eventType);
@@ -246,12 +247,8 @@
 
     const el = document.createElement('div');
     el.className = 'play-item';
-
-    const videoButton = showVideo ? `
-      <button class="video-button" data-playid="${play.playId}">
-        VIDEO
-      </button>
-    ` : '';
+    // CRITICAL: Add position relative for video button positioning
+    el.style.position = 'relative';
 
     const statcastStats = showStatcast ? `
       <div class="statcast-stats">
@@ -270,7 +267,7 @@
       </div>
     ` : '';
 
-    const scoringInfo = showVideo ? `
+    const scoringInfo = showScoringInfo ? `
       <div class="score-update">
         Score: ${play.result.homeScore} - ${play.result.awayScore}
       </div>
@@ -308,8 +305,6 @@
           </div>
         </div>
       </div>
-
-      ${videoButton}
     `;
 
     return el;
@@ -426,7 +421,7 @@
     `;
   };
 
-  const renderScoringPlays = (plays) => {
+  const renderScoringPlays = (plays, gamePk, videoMatcher) => {
     const container = document.getElementById('scoring-plays-container');
     if (!container) return;
 
@@ -436,8 +431,14 @@
 
     plays.scoringPlays.forEach(idx => {
       const play = plays.allPlays[idx];
-      const el = createPlayItem(play, true, true); // showVideo and showStatcast
+      // Create play item with statcast stats and scoring info
+      const el = createPlayItem(play, true, true);
       container.appendChild(el);
+      
+      // Let the video matcher add its functional video button
+      if (videoMatcher) {
+        videoMatcher.addVideoButtonToPlay(el, gamePk, play);
+      }
     });
   };
 
@@ -450,10 +451,262 @@
     if (!plays?.allPlays?.length) return;
 
     plays.allPlays.forEach(play => {
-      const el = createPlayItem(play, false, true); // Pass true for showStatcast
+      const el = createPlayItem(play, true, false); // showStatcast but not scoring info
       container.appendChild(el);
     });
   };
+
+// ===========================
+// VIDEO HIGHLIGHT BUTTONS - CORRECTED VERSION
+// ===========================
+const initVideoButtons = async (gamePk) => {
+  if (!videoMatcher) {
+    console.warn('⚠️ Video matcher not available');
+    return;
+  }
+
+  const condensedBtn = document.querySelector('[data-video-type="condensed"]');
+  const recapBtn = document.querySelector('[data-video-type="recap"]');
+
+  if (!condensedBtn && !recapBtn) {
+    console.warn('⚠️ Video buttons not found in DOM');
+    return;
+  }
+
+  try {
+    // Fetch game content directly - don't use extractHighlightVideos as it filters out recap/condensed
+    const gameContent = await videoMatcher.fetchGameContent(gamePk);
+    if (!gameContent) {
+      console.warn('⚠️ No game content available');
+      return;
+    }
+
+    // Access highlights directly from the raw API response
+    const highlights = gameContent?.highlights?.highlights?.items || [];
+    
+    if (highlights.length === 0) {
+      console.warn('⚠️ No highlight videos found for this game');
+      if (condensedBtn) condensedBtn.style.display = 'none';
+      if (recapBtn) recapBtn.style.display = 'none';
+      return;
+    }
+
+    console.log(`✅ Found ${highlights.length} raw highlight items for game ${gamePk}`);
+
+    // Helper function to get best MP4 playback URL
+    const getBestPlaybackUrl = (playbacks) => {
+      if (!playbacks || playbacks.length === 0) {
+        console.warn('⚠️ No playbacks available');
+        return null;
+      }
+      
+      console.log(`  Checking ${playbacks.length} playbacks`);
+      
+      // Filter for MP4 playbacks only
+      const mp4Playbacks = playbacks.filter(p => {
+        const name = (p.name || '').toLowerCase();
+        const url = (p.url || '').toLowerCase();
+        const isMP4 = name.includes('mp4avc') || url.includes('.mp4');
+        const isNotM3U8 = !name.includes('m3u8') && !url.includes('.m3u8');
+        return isMP4 && isNotM3U8;
+      });
+
+      if (mp4Playbacks.length === 0) {
+        console.warn('⚠️ No MP4 playbacks found');
+        return null;
+      }
+
+      // Prefer higher quality
+      const preferredQualities = ['2500K', '1800K', '1200K', '800K', '600K', '450K'];
+      for (const quality of preferredQualities) {
+        const qualityPlayback = mp4Playbacks.find(p => p.name && p.name.includes(quality));
+        if (qualityPlayback) {
+          console.log(`  ✅ Selected ${quality} playback`);
+          return qualityPlayback.url;
+        }
+      }
+
+      // Fallback to first MP4
+      console.log(`  ✅ Selected first available MP4 playback`);
+      return mp4Playbacks[0].url;
+    };
+
+    // Setup Condensed Game button (second highlight - index 1)
+    if (condensedBtn && highlights[1]) {
+      const condensedHighlight = highlights[1];
+      const condensedUrl = getBestPlaybackUrl(condensedHighlight.playbacks);
+      
+      console.log('Condensed Game (index 1):', {
+        title: condensedHighlight.title,
+        guid: condensedHighlight.guid,
+        hasUrl: !!condensedUrl
+      });
+      
+      if (condensedUrl) {
+        condensedBtn.addEventListener('click', async () => {
+          const originalText = condensedBtn.textContent;
+          condensedBtn.disabled = true;
+          condensedBtn.textContent = 'Loading...';
+
+          try {
+            const video = {
+              id: condensedHighlight.id || condensedHighlight.guid || 'condensed_0',
+              guid: condensedHighlight.guid,
+              title: condensedHighlight.title || 'Condensed Game',
+              description: condensedHighlight.description || '',
+              url: condensedUrl,
+              duration: condensedHighlight.duration || 0
+            };
+
+            console.log('▶️ Playing condensed game:', video.title);
+            
+            // Create video player and reset button after video loads
+            videoMatcher.createVideoPlayer(video, document.body, condensedBtn);
+            
+            // Reset button text after a short delay (video player creation is synchronous)
+            setTimeout(() => {
+              condensedBtn.textContent = originalText;
+              condensedBtn.disabled = false;
+            }, 500);
+            
+          } catch (error) {
+            console.error('❌ Error playing condensed game:', error);
+            alert('Error loading condensed game');
+            condensedBtn.textContent = originalText;
+            condensedBtn.disabled = false;
+          }
+        });
+      } else {
+        console.warn('⚠️ No playback URL found for condensed game');
+        condensedBtn.disabled = true;
+        condensedBtn.style.opacity = '0.5';
+        condensedBtn.title = 'Not available';
+      }
+    } else {
+      if (condensedBtn) {
+        condensedBtn.disabled = true;
+        condensedBtn.style.opacity = '0.5';
+        condensedBtn.title = 'Not available';
+      }
+    }
+
+    // Setup Game Recap button (first highlight - index 0)
+    if (recapBtn && highlights[0]) {
+      const recapHighlight = highlights[0];
+      const recapUrl = getBestPlaybackUrl(recapHighlight.playbacks);
+      
+      console.log('Game Recap (index 0):', {
+        title: recapHighlight.title,
+        guid: recapHighlight.guid,
+        hasUrl: !!recapUrl
+      });
+      
+      if (recapUrl) {
+        recapBtn.addEventListener('click', async () => {
+          const originalText = recapBtn.textContent;
+          recapBtn.disabled = true;
+          recapBtn.textContent = 'Loading...';
+
+          try {
+            const video = {
+              id: recapHighlight.id || recapHighlight.guid || 'recap_1',
+              guid: recapHighlight.guid,
+              title: recapHighlight.title || 'Game Recap',
+              description: recapHighlight.description || '',
+              url: recapUrl,
+              duration: recapHighlight.duration || 0
+            };
+
+            console.log('▶️ Playing game recap:', video.title);
+            
+            // Create video player and reset button after video loads
+            videoMatcher.createVideoPlayer(video, document.body, recapBtn);
+            
+            // Reset button text after a short delay
+            setTimeout(() => {
+              recapBtn.textContent = originalText;
+              recapBtn.disabled = false;
+            }, 500);
+            
+          } catch (error) {
+            console.error('❌ Error playing game recap:', error);
+            alert('Error loading game recap');
+            recapBtn.textContent = originalText;
+            recapBtn.disabled = false;
+          }
+        });
+      } else {
+        console.warn('⚠️ No playback URL found for game recap');
+        recapBtn.disabled = true;
+        recapBtn.style.opacity = '0.5';
+        recapBtn.title = 'Not available';
+      }
+    } else {
+      if (recapBtn) {
+        // Only one highlight - use it for recap button too
+        if (highlights.length === 1 && highlights[0]) {
+          const singleHighlight = highlights[0];
+          const singleUrl = getBestPlaybackUrl(singleHighlight.playbacks);
+          
+          if (singleUrl) {
+            console.log('⚠️ Only one highlight, using for both buttons');
+            recapBtn.addEventListener('click', async () => {
+              const originalText = recapBtn.textContent;
+              recapBtn.disabled = true;
+              recapBtn.textContent = 'Loading...';
+
+              try {
+                const video = {
+                  id: singleHighlight.id || singleHighlight.guid || 'single_0',
+                  guid: singleHighlight.guid,
+                  title: singleHighlight.title || 'Game Highlight',
+                  description: singleHighlight.description || '',
+                  url: singleUrl,
+                  duration: singleHighlight.duration || 0
+                };
+
+                videoMatcher.createVideoPlayer(video, document.body, recapBtn);
+                
+                // Reset button text after a short delay
+                setTimeout(() => {
+                  recapBtn.textContent = originalText;
+                  recapBtn.disabled = false;
+                }, 500);
+                
+              } catch (error) {
+                console.error('Error playing highlight:', error);
+                alert('Error loading highlight');
+                recapBtn.textContent = originalText;
+                recapBtn.disabled = false;
+              }
+            });
+          } else {
+            recapBtn.disabled = true;
+            recapBtn.style.opacity = '0.5';
+            recapBtn.title = 'Not available';
+          }
+        } else {
+          recapBtn.disabled = true;
+          recapBtn.style.opacity = '0.5';
+          recapBtn.title = 'Not available';
+        }
+      }
+    }
+
+  } catch (error) {
+    console.error('❌ Error initializing video buttons:', error);
+    if (condensedBtn) {
+      condensedBtn.disabled = true;
+      condensedBtn.style.opacity = '0.5';
+      condensedBtn.title = 'Error loading';
+    }
+    if (recapBtn) {
+      recapBtn.disabled = true;
+      recapBtn.style.opacity = '0.5';
+      recapBtn.title = 'Error loading';
+    }
+  }
+};
 
   // ===========================
   // API
@@ -473,6 +726,14 @@
     if (!gamePk) {
       console.error('Missing gamePk in URL');
       return;
+    }
+
+    // Initialize video matcher
+    if (window.MLBVideoMatcher) {
+      videoMatcher = new window.MLBVideoMatcher();
+      console.log('✅ Video matcher initialized');
+    } else {
+      console.warn('⚠️ MLBVideoMatcher not found - video buttons will not work');
     }
 
     initThemeToggle();
@@ -497,8 +758,14 @@
         videoButtons.style.display = phase === 'FINAL' ? 'flex' : 'none';
       }
 
-      renderScoringPlays(liveData.plays);
+      // Render plays with video integration
+      renderScoringPlays(liveData.plays, gamePk, videoMatcher);
       renderAllPlays(liveData.plays);
+
+      // Initialize condensed game and recap buttons
+      if (phase === 'FINAL' && videoMatcher) {
+        await initVideoButtons(gamePk);
+      }
 
     } catch (error) {
       console.error('Error loading game data:', error);

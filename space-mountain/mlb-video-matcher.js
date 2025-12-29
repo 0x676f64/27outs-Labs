@@ -333,7 +333,6 @@ class MLBVideoMatcher {
         `;
         
         videoButton.innerHTML = `
-            <img src="assets/icons/video-camera.png" alt="video" style="width: 16px; height: 16px; filter: contrast(1.2);" />
             <span style="font-size: 11px;">VIDEO</span>
         `;
 
