@@ -762,6 +762,11 @@ const initVideoButtons = async (gamePk) => {
       renderScoringPlays(liveData.plays, gamePk, videoMatcher);
       renderAllPlays(liveData.plays);
 
+      // Load the detailed boxscore (player stats)
+      if (typeof loadBoxScore === 'function') {
+        await loadBoxScore(data);
+      }
+
       // Initialize condensed game and recap buttons
       if (phase === 'FINAL' && videoMatcher) {
         await initVideoButtons(gamePk);
