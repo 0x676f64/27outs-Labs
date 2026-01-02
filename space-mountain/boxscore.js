@@ -39,56 +39,44 @@ async function loadBoxScore(data) {
         };
         
         const fullHTML = `
-        <div class="linescore-wrapper">
-            <table class="boxscore-table">
-                <thead>
-                    <tr>
-                        <th>Team</th>
-                        ${innings.map((_, i) => `<th>${i + 1}</th>`).join('')}
-                        <th>R</th>
-                        <th>H</th>
-                        <th>E</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td class="team-name">
-                            <img src="${getLogoUrl(awayTeamId)}" alt="${awayAbbr}" class="team-logo-boxscore">
-                        </td>
-                        ${innings.map(inn => `<td class="inning-score">${inn.away?.runs ?? '-'}</td>`).join('')}
-                        <td class="total-stats">${linescore.teams.away.runs}</td>
-                        <td class="total-stats">${linescore.teams.away.hits}</td>
-                        <td class="total-stats">${linescore.teams.away.errors}</td>
-                    </tr>
-                    <tr>
-                        <td class="team-name">
-                            <img src="${getLogoUrl(homeTeamId)}" alt="${homeAbbr}" class="team-logo-boxscore">
-                        </td>
-                        ${innings.map(inn => `<td class="inning-score">${inn.home?.runs ?? '-'}</td>`).join('')}
-                        <td class="total-stats">${linescore.teams.home.runs}</td>
-                        <td class="total-stats">${linescore.teams.home.hits}</td>
-                        <td class="total-stats">${linescore.teams.home.errors}</td>
-                    </tr>
-                </tbody>
-            </table>
+        <!-- Mobile/Tablet View (≤820px) -->
+        <div class="mobile-boxscore">
+            <div class="tab-navigation">
+                <button class="tab-button-boxscore active" data-tab="away">
+                    <img src="${getLogoUrl(awayTeamId)}" alt="${away.name}">
+                    <span>${away.name}</span>
+                </button>
+                <button class="tab-button-boxscore" data-tab="home">
+                    <img src="${getLogoUrl(homeTeamId)}" alt="${home.name}">
+                    <span>${home.name}</span>
+                </button>
+            </div>
+            
+            <div class="tab-content active" id="away-content">
+                ${createTeamContent(boxscore.teams.away, awayTeamId)}
+            </div>
+            <div class="tab-content" id="home-content">
+                ${createTeamContent(boxscore.teams.home, homeTeamId)}
+            </div>
         </div>
         
-        <div class="tab-navigation">
-            <button class="tab-button-boxscore active" data-tab="away">
-                <img src="${getLogoUrl(awayTeamId)}" alt="${away.name}">
-                <span>${away.name}</span>
-            </button>
-            <button class="tab-button-boxscore" data-tab="home">
-                <img src="${getLogoUrl(homeTeamId)}" alt="${home.name}">
-                <span>${home.name}</span>
-            </button>
-        </div>
-        
-        <div class="tab-content active" id="away-content">
-            ${createTeamContent(boxscore.teams.away, awayTeamId)}
-        </div>
-        <div class="tab-content" id="home-content">
-            ${createTeamContent(boxscore.teams.home, homeTeamId)}
+        <!-- Desktop View (>820px) -->
+        <div class="desktop-boxscore">
+            <div class="team-column">
+                <div class="team-header">
+                    <img src="${getLogoUrl(awayTeamId)}" alt="${away.name}">
+                    <span>${away.name}</span>
+                </div>
+                ${createTeamContent(boxscore.teams.away, awayTeamId)}
+            </div>
+            
+            <div class="team-column">
+                <div class="team-header">
+                    <img src="${getLogoUrl(homeTeamId)}" alt="${home.name}">
+                    <span>${home.name}</span>
+                </div>
+                ${createTeamContent(boxscore.teams.home, homeTeamId)}
+            </div>
         </div>
         `;
         

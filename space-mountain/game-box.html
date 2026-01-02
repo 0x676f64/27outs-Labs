@@ -285,8 +285,8 @@
         }
 
         .box-team-logo {
-            width: 4rem;
-            height: 4rem;
+            width: 2rem;
+            height: 2rem;
             object-fit: contain;
         }
 
@@ -894,6 +894,70 @@
         
         .error {
             color: #d32f2f;
+        }
+
+        .tab-button-boxscore img {
+            width: 1rem;
+            height: 1rem;
+            margin-right: 6px;
+        }
+
+        .tab-button-boxscore:active {
+            background: linear-gradient(135deg, rgba(248, 249, 250, 0.95), rgba(217, 230, 243, 0.95)); 
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .player-col img{
+            border-radius: 50%;
+            border: 2px solid #bf0d3d;
+            height: 48px;
+            width: 48px;
+        }
+
+        .player-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .player-position {
+            font-weight: 600;
+        }
+
+        /* Hide desktop view on mobile, show tabs */
+        @media (max-width: 820px) {
+            .desktop-boxscore {
+                display: none;
+            }
+            .mobile-boxscore {
+                display: block;
+            }
+        }
+
+        /* Hide tabs on desktop, show side-by-side */
+        @media (min-width: 821px) {
+            .mobile-boxscore {
+                display: none;
+            }
+            .desktop-boxscore {
+                display: flex;
+                gap: 20px;
+            }
+            .team-column {
+                flex: 1;
+            }
+            .team-header {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                margin-bottom: 20px;
+                font-size: 1.2em;
+                font-weight: bold;
+            }
+            .team-header img {
+                width: 40px;
+                height: 40px;
+            }
         }
     </style>
 </head>
