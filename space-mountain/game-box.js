@@ -377,9 +377,6 @@
     if (winner) {
       decisionsHTML += `
         <div class="decision-item">
-          <img class="decision-player-image" 
-               src="${PLAYER_IMAGE_BASE}/${winner.id}/spots/60" 
-               alt="${winner.fullName}">
           <div class="decision-info">
             <span class="decision-label">W:</span>
             <span class="decision-name">${winner.fullName}</span>
@@ -391,9 +388,6 @@
     if (loser) {
       decisionsHTML += `
         <div class="decision-item">
-          <img class="decision-player-image" 
-               src="${PLAYER_IMAGE_BASE}/${loser.id}/spots/60" 
-               alt="${loser.fullName}">
           <div class="decision-info">
             <span class="decision-label">L:</span>
             <span class="decision-name">${loser.fullName}</span>
@@ -405,9 +399,6 @@
     if (save) {
       decisionsHTML += `
         <div class="decision-item">
-          <img class="decision-player-image" 
-               src="${PLAYER_IMAGE_BASE}/${save.id}/spots/60" 
-               alt="${save.fullName}">
           <div class="decision-info">
             <span class="decision-label">SV:</span>
             <span class="decision-name">${save.fullName}</span>
