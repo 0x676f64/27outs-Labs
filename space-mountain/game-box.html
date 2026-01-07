@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -959,6 +959,138 @@
                 height: 40px;
             }
         }
+
+        /* Pitching Decisions Container */
+        .pitching-decisions {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-evenly;
+        align-items: center;
+        gap: 20px;
+        padding: 20px;
+        margin-top: 20px;
+        background: var(--bg-secondary, #f8f9fa);
+        border-radius: 8px;
+        border: 1px solid var(--border-color, #e0e0e0);
+        }
+
+        /* When only 2 decisions (no save), space them evenly */
+        .pitching-decisions:has(.decision-item:nth-child(2):last-child) {
+        justify-content: space-evenly;
+        }
+
+        /* When 3 decisions (with save), spread equally in thirds */
+        .pitching-decisions:has(.decision-item:nth-child(3)) {
+        justify-content: space-between;
+        }
+
+        /* Individual Decision Item */
+        .decision-item {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        background: var(--bg-primary, #ffffff);
+        border-radius: 6px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        flex: 1;
+        max-width: 280px;
+        }
+
+        .decision-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Player Image */
+        .decision-player-image {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid var(--accent-color, #041e42);
+        flex-shrink: 0;
+        }
+
+        /* Decision Info Container */
+        .decision-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        flex: 1;
+        min-width: 0; /* Allow text truncation if needed */
+        }
+
+        /* Decision Label (W:, L:, SV:) */
+        .decision-label {
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--text-secondary, #666);
+        }
+
+        /* Player Name */
+        .decision-name {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text-primary, #1a1a1a);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        }
+
+        /* Dark Mode Support */
+        body.dark .pitching-decisions {
+        background: var(--bg-secondary-dark, #1e2530);
+        border-color: var(--border-color-dark, #2d3748);
+        }
+
+        body.dark .decision-item {
+        background: var(--bg-primary-dark, #2d3748);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        body.dark .decision-item:hover {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+        }
+
+        body.dark .decision-label {
+        color: var(--text-secondary-dark, #a0aec0);
+        }
+
+        body.dark .decision-name {
+        color: var(--text-primary-dark, #f7fafc);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+        .pitching-decisions {
+            flex-direction: column;
+            gap: 12px;
+            padding: 16px;
+        }
+        
+        .decision-item {
+            max-width: 100%;
+            width: 100%;
+        }
+        }
+
+        /* No Data Message */
+        .pitching-decisions .no-data {
+        text-align: center;
+        padding: 20px;
+        color: var(--text-secondary, #666);
+        font-style: italic;
+        width: 100%;
+        }
+
+        body.dark .pitching-decisions .no-data {
+        color: var(--text-secondary-dark, #a0aec0);
+        }
     </style>
 </head>
 <body class="light">
@@ -1054,6 +1186,16 @@
                     </tr>
                 </tbody>
             </table>
+            <div class="pitching-decisions">
+                <div class="decision-item">
+                    <img class="decision-player-image" src="...">
+                    <div class="decision-info">
+                    <span class="decision-label">W:</span>
+                    <span class="decision-name">Player Name</span>
+                    </div>
+                </div>
+                <!-- Repeat for L: and SV: if they exist -->
+            </div>
         </div>
 
         <!-- Video Buttons -->
@@ -1173,3 +1315,60 @@
     </div>
 </body>
 </html>
+
+
+
+Skip navigation
+Search
+
+
+
+Create
+
+1
+
+Avatar image
+Home
+Shorts
+Subscriptions
+
+David Lightbringer
+
+KnicksFanTV
+
+Gracev
+
+History of Westeros
+
+Daniel Hirsch
+
+Jessa Lynn ASMR
+
+Emily Hopkins
+Show more
+You
+History
+Playlists
+Watch later
+Liked videos
+Your videos
+Downloads
+Explore
+Shopping
+Music
+Movies & TV
+Show more
+More from YouTube
+YouTube Premium
+YouTube Studio
+YouTube TV
+YouTube Music
+YouTube Kids
+Settings
+Report history
+Help
+Send feedback
+AboutPressCopyrightContact usCreatorsAdvertiseDevelopers
+TermsPrivacyPolicy & SafetyHow YouTube worksTest new featuresNFL Sunday Ticket
+© 2026 Google LLC
+

@@ -102,45 +102,59 @@ function createTeamContent(teamData, teamId) {
     const pitchers = teamData.pitchers || [];
     const players = teamData.players || {};
     
-    // Build batting table
-    const battingRows = batters.map(playerId => {
-        const playerData = players[`ID${playerId}`];
-        if (!playerData) return '';
-        
-        const person = playerData.person;
-        const stats = playerData.stats?.batting || {};
-        const position = playerData.position?.abbreviation || '';
-        
-        return `
-            <tr>
-                <td class="player-col">
-                    <img src="https://midfield.mlbstatic.com/v1/people/${person.id}/spots/60" 
-                         alt="${person.fullName}" 
-                         class="player-headshot"
-                         onerror="this.src='https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_60,q_auto:best/v1/people/generic/headshot/67/current.png'">
-                    <div class="player-info">
-                        <div class="player-name">${person.fullName}</div>
-                        <div class="player-position">${position}</div>
-                    </div>
-                </td>
-                <td>${stats.atBats || 0}</td>
-                <td>${stats.runs || 0}</td>
-                <td>${stats.hits || 0}</td>
-                <td>${stats.rbi || 0}</td>
-                <td>${stats.baseOnBalls || 0}</td>
-                <td>${stats.strikeOuts || 0}</td>
-                <td>${stats.avg || '.000'}</td>
-            </tr>
-        `;
-    }).join('');
+    // Build batting table - filter out pitchers with 0 at bats
+    const battingRows = batters
+        .map(playerId => {
+            const playerData = players[`ID${playerId}`];
+            if (!playerData) return null;
+            
+            const person = playerData.person;
+            const stats = playerData.stats?.batting || {};
+            const seasonStats = playerData.seasonStats?.batting || {};
+            const position = playerData.position?.abbreviation || '';
+            const atBats = stats.atBats || 0;
+            
+            // Filter out pitchers with 0 at bats
+            if (position === 'P' && atBats === 0) {
+                return null;
+            }
+            
+            return {
+                html: `
+                    <tr>
+                        <td class="player-col">
+                            <img src="https://midfield.mlbstatic.com/v1/people/${person.id}/spots/60" 
+                                 alt="${person.fullName}" 
+                                 class="player-headshot"
+                                 onerror="this.src='https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_60,q_auto:best/v1/people/generic/headshot/67/current.png'">
+                            <div class="player-info">
+                                <div class="player-name">${person.fullName}</div>
+                                <div class="player-position">${position}</div>
+                            </div>
+                        </td>
+                        <td>${atBats}</td>
+                        <td>${stats.runs || 0}</td>
+                        <td>${stats.hits || 0}</td>
+                        <td>${stats.rbi || 0}</td>
+                        <td>${stats.baseOnBalls || 0}</td>
+                        <td>${stats.strikeOuts || 0}</td>
+                        <td>${seasonStats.avg || '.000'}</td>
+                    </tr>
+                `
+            };
+        })
+        .filter(row => row !== null)
+        .map(row => row.html)
+        .join('');
 
-    // Build pitching table
+    // Build pitching table - use season ERA
     const pitchingRows = pitchers.map(playerId => {
         const playerData = players[`ID${playerId}`];
         if (!playerData) return '';
         
         const person = playerData.person;
         const stats = playerData.stats?.pitching || {};
+        const seasonStats = playerData.seasonStats?.pitching || {};
         
         return `
             <tr>
@@ -160,7 +174,7 @@ function createTeamContent(teamData, teamId) {
                 <td>${stats.earnedRuns || 0}</td>
                 <td>${stats.baseOnBalls || 0}</td>
                 <td>${stats.strikeOuts || 0}</td>
-                <td>${stats.era || '0.00'}</td>
+                <td>${seasonStats.era || '0.00'}</td>
             </tr>
         `;
     }).join('');
@@ -234,5 +248,46 @@ function setupTabHandlers() {
             this.classList.add('active');
             document.getElementById(`${targetTab}-content`).classList.add('active');
         });
+    });
+}
+
+/**
+ * Update team logos based on theme changes
+ */
+function updateBoxscoreLogos() {
+    const darkMode = document.body.classList.contains('dark');
+    const logoImages = document.querySelectorAll('.tab-button-boxscore img, .team-header img');
+    
+    logoImages.forEach(img => {
+        const currentSrc = img.src;
+        const teamIdMatch = currentSrc.match(/team-logos\/(?:team-cap-on-dark\/)?(\d+)\.svg/);
+        
+        if (teamIdMatch) {
+            const teamId = teamIdMatch[1];
+            const newSrc = darkMode 
+                ? `https://www.mlbstatic.com/team-logos/team-cap-on-dark/${teamId}.svg`
+                : `https://www.mlbstatic.com/team-logos/${teamId}.svg`;
+            
+            if (img.src !== newSrc) {
+                img.src = newSrc;
+            }
+        }
+    });
+}
+
+// Listen for theme changes
+if (typeof MutationObserver !== 'undefined') {
+    const themeObserver = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                updateBoxscoreLogos();
+            }
+        });
+    });
+    
+    // Start observing the body element for class changes
+    themeObserver.observe(document.body, {
+        attributes: true,
+        attributeFilter: ['class']
     });
 }
