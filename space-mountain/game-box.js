@@ -313,6 +313,18 @@
     const container = document.querySelector('.top-performers-case');
     if (!container) return;
 
+    // Check game status
+    const detailedState = data.gameData?.status?.detailedState;
+    const isGameOver = detailedState === 'Game Over' || detailedState === 'Final';
+
+    // Hide container if game is not over
+    if (!isGameOver) {
+      container.style.display = 'none';
+      return;
+    }
+
+    // Show container if game is over
+    container.style.display = 'flex';
     container.innerHTML = '';
 
     const topPerformers = data.liveData?.boxscore?.topPerformers;
@@ -416,7 +428,8 @@
   // ===========================
   const renderHeader = (gameData, liveData) => {
     const { away, home } = gameData.teams;
-    const status = gameData.status.detailedState;
+    const status = gameData.datetime.time;
+    const ampm = gameData.datetime.time.ampm;
     const linescore = liveData.linescore;
 
     awayTeamId = away.id;

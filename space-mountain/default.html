@@ -724,17 +724,21 @@ const games = {
     games.updateNavButtons(totalGames > CONFIG.GAMES_PER_VIEW, maxSlide);
   },
 
-  updateNavButtons: (showButtons, maxSlide = 0) => {
+  updateNavButtons: (showButtons) => {
     const prevBtn = document.getElementById('prevGames');
     const nextBtn = document.getElementById('nextGames');
+    const slider = document.getElementById('gamesSlider');
 
-    if (!prevBtn || !nextBtn) return;
+    if (!prevBtn || !nextBtn || !slider) return;
 
     if (!showButtons) {
       prevBtn.style.display = 'none';
       nextBtn.style.display = 'none';
       return;
     }
+
+    const totalGames = slider.querySelectorAll('.game-box').length;
+    const maxSlide = Math.max(0, totalGames - CONFIG.GAMES_PER_VIEW);
 
     prevBtn.style.display = state.currentSlide > 0 ? 'flex' : 'none';
     nextBtn.style.display = state.currentSlide < maxSlide ? 'flex' : 'none';
