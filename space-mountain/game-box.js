@@ -8,8 +8,8 @@
   const LOGO_BASE = 'https://www.mlbstatic.com/team-logos';
   const PLAYER_IMAGE_BASE = 'https://midfield.mlbstatic.com/v1/people';
   
-  const FINAL_STATUSES = ['Final', 'Game Over', 'Final: Tied', 'Completed Early'];
-  const PREGAME_STATUSES = ['Pre-Game', 'Scheduled'];
+  const FINAL_STATUSES = ['Final', 'Game Over', 'Final: Tied', 'Completed Early', 'Suspended: Rain'];
+  const PREGAME_STATUSES = ['Pre-Game', 'Scheduled', 'Warmup', 'Delayed', 'Postponed'];
 
   // ===========================
   // STATE
@@ -360,10 +360,10 @@
     });
   };
 
-  // ===========================
-  // PITCHING DECISIONS
-  // ===========================
-  const renderPitchingDecisions = (data) => {
+    // ===========================
+    // PITCHING DECISIONS
+    // ===========================
+    const renderPitchingDecisions = (data) => {
     const wrapper = document.querySelector('.linescore-wrapper');
     if (!wrapper) return;
 
@@ -428,9 +428,9 @@
   // ===========================
   const renderHeader = (gameData, liveData) => {
     const { away, home } = gameData.teams;
-    const status = gameData.datetime.time;
-    const ampm = gameData.datetime.time.ampm;
+    const datetime = gameData.datetime;
     const linescore = liveData.linescore;
+    const status = gameData.status.detailedState;
 
     awayTeamId = away.id;
     homeTeamId = home.id;
@@ -442,33 +442,79 @@
 
     document.querySelector('.away-record').textContent = awayRecord;
     document.querySelector('.home-record').textContent = homeRecord;
-    document.querySelector('.away-score').textContent = linescore?.teams?.away?.runs ?? '';
-    document.querySelector('.home-score').textContent = linescore?.teams?.home?.runs ?? '';
-    document.querySelector('.game-status').textContent = status;
+    document.querySelector('.away-score').textContent = linescore?.teams?.away?.runs ?? '0';
+    document.querySelector('.home-score').textContent = linescore?.teams?.home?.runs ?? '0';
+    
+    // Fix game status with AM/PM
+    let statusText = '';
+    if (PREGAME_STATUSES.includes(status)) {
+      // For pregame games, show time with AM/PM
+      statusText = `${datetime.time} ${datetime.ampm}`;
+    } else {
+      // For live/final games, show the status
+      statusText = status;
+    }
+    
+    document.querySelector('.game-status').textContent = statusText;
   };
 
   const renderBoxscore = (gameData, liveData) => {
     const linescore = liveData.linescore;
     const { away, home } = gameData.teams;
-    
-    if (!linescore?.innings?.length) return;
-
     const tbody = document.querySelector('.boxscore-table tbody');
+    
     if (!tbody) return;
     
     tbody.innerHTML = '';
 
-    const awayInnings = linescore.innings
-      .map(i => `<td class="inning-score">${i.away?.runs ?? ''}</td>`)
-      .join('');
-
-    const homeInnings = linescore.innings
-      .map(i => `<td class="inning-score">${i.home?.runs ?? ''}</td>`)
-      .join('');
-
     const darkMode = isDarkMode();
     const awayLogoUrl = getLogoUrl(awayTeamId, darkMode);
     const homeLogoUrl = getLogoUrl(homeTeamId, darkMode);
+
+    // Check if game has started (has innings data)
+    if (!linescore?.innings?.length) {
+      // Pregame - show team info with dashes for 9 innings plus R/H/E
+      const emptyInnings = Array(9).fill('<td class="inning-score">-</td>').join('');
+      
+      tbody.innerHTML = `
+        <tr>
+          <td class="team-name">
+            <img src="${awayLogoUrl}" alt="${away.abbreviation}" class="box-team-logo away-logo">
+          </td>
+          ${emptyInnings}
+          <td>-</td>
+          <td>-</td>
+          <td>-</td>
+        </tr>
+        <tr>
+          <td class="team-name">
+            <img src="${homeLogoUrl}" alt="${home.abbreviation}" class="box-team-logo home-logo">
+          </td>
+          ${emptyInnings}
+          <td>-</td>
+          <td>-</td>
+          <td>-</td>
+        </tr>
+      `;
+      return;
+    }
+
+    // Game has started - show actual innings and fill remaining with dashes
+    const maxInnings = Math.max(9, linescore.innings.length);
+    
+    let awayInnings = '';
+    let homeInnings = '';
+    
+    for (let i = 0; i < maxInnings; i++) {
+      const inning = linescore.innings[i];
+      if (inning) {
+        awayInnings += `<td class="inning-score">${inning.away?.runs ?? '-'}</td>`;
+        homeInnings += `<td class="inning-score">${inning.home?.runs ?? '-'}</td>`;
+      } else {
+        awayInnings += `<td class="inning-score">-</td>`;
+        homeInnings += `<td class="inning-score">-</td>`;
+      }
+    }
 
     tbody.innerHTML = `
       <tr>
@@ -476,54 +522,68 @@
           <img src="${awayLogoUrl}" alt="${away.abbreviation}" class="box-team-logo away-logo">
         </td>
         ${awayInnings}
-        <td>${linescore.teams.away.runs}</td>
-        <td>${linescore.teams.away.hits}</td>
-        <td>${linescore.teams.away.errors}</td>
+        <td>${linescore.teams.away.runs ?? 0}</td>
+        <td>${linescore.teams.away.hits ?? 0}</td>
+        <td>${linescore.teams.away.errors ?? 0}</td>
       </tr>
       <tr>
         <td class="team-name">
           <img src="${homeLogoUrl}" alt="${home.abbreviation}" class="box-team-logo home-logo">
         </td>
         ${homeInnings}
-        <td>${linescore.teams.home.runs}</td>
-        <td>${linescore.teams.home.hits}</td>
-        <td>${linescore.teams.home.errors}</td>
+        <td>${linescore.teams.home.runs ?? 0}</td>
+        <td>${linescore.teams.home.hits ?? 0}</td>
+        <td>${linescore.teams.home.errors ?? 0}</td>
       </tr>
     `;
   };
 
   const renderScoringPlays = (plays, gamePk, videoMatcher) => {
-    const container = document.getElementById('scoring-plays-container');
-    if (!container) return;
+  const container = document.getElementById('scoring-plays-container');
+  if (!container) return;
 
-    container.querySelectorAll('.play-item').forEach(p => p.remove());
+  container.querySelectorAll('.play-item').forEach(p => p.remove());
 
-    if (!plays?.scoringPlays?.length) return;
+  // Hide container if no scoring plays exist
+  if (!plays?.scoringPlays?.length) {
+    container.style.display = 'none';
+    return;
+  }
+  
+  // Show container if plays exist
+  container.style.display = '';
 
-    plays.scoringPlays.forEach(idx => {
-      const play = plays.allPlays[idx];
-      const el = createPlayItem(play, true, true);
-      container.appendChild(el);
-      
-      if (videoMatcher) {
-        videoMatcher.addVideoButtonToPlay(el, gamePk, play);
-      }
-    });
-  };
+  plays.scoringPlays.forEach(idx => {
+    const play = plays.allPlays[idx];
+    const el = createPlayItem(play, true, true);
+    container.appendChild(el);
+    
+    if (videoMatcher) {
+      videoMatcher.addVideoButtonToPlay(el, gamePk, play);
+    }
+  });
+};
 
-  const renderAllPlays = (plays) => {
-    const container = document.getElementById('all-plays-container');
-    if (!container) return;
+const renderAllPlays = (plays) => {
+  const container = document.getElementById('all-plays-container');
+  if (!container) return;
 
-    container.querySelectorAll('.play-item').forEach(p => p.remove());
+  container.querySelectorAll('.play-item').forEach(p => p.remove());
 
-    if (!plays?.allPlays?.length) return;
+  // Hide container if no plays exist
+  if (!plays?.allPlays?.length) {
+    container.style.display = 'none';
+    return;
+  }
+  
+  // Show container if plays exist
+  container.style.display = '';
 
-    plays.allPlays.forEach(play => {
-      const el = createPlayItem(play, true, false);
-      container.appendChild(el);
-    });
-  };
+  plays.allPlays.forEach(play => {
+    const el = createPlayItem(play, true, false);
+    container.appendChild(el);
+  });
+};
 
   // ===========================
   // VIDEO BUTTONS

@@ -186,7 +186,6 @@ function createTeamContent(teamData, teamId) {
                 <table class="stats-table">
                     <thead>
                         <tr>
-                            <th class="player-col">Player</th>
                             <th>AB</th>
                             <th>R</th>
                             <th>H</th>
