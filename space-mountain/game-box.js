@@ -639,7 +639,7 @@ const renderAllPlays = (plays) => {
             condensedBtn.disabled = true;
             condensedBtn.textContent = 'Loading...';
 
-            try {
+            try { 
               const video = {
                 id: highlights[1].guid || 'condensed_0',
                 guid: highlights[1].guid,
