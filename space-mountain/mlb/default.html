@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diamond Analytics - MLB Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+  <style>
+   * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      font-family: 'Inter', -apple-system, sans-serif; 
+      transition: background-color 0.3s ease;
+      min-height: 100vh;
+      background-size: 200% 200%;
+      animation: glowShift 30s ease-in-out infinite;
+    }
+    @keyframes glowShift {
+      0% { background-position: center top; }
+      50% { background-position: center 15%; }
+      100% { background-position: center top; }
+    }
+    body.light { 
+      background:
+        radial-gradient(
+          ellipse at center,
+          rgba(0, 0, 0, 0) 40%,
+          rgba(0, 0, 0, 0.02) 100%
+        ),
+        radial-gradient(
+          circle at top center,
+          rgba(191, 13, 61, 0.03) 0%,
+          rgba(191, 13, 61, 0.01) 35%,
+          rgba(247, 250, 252, 0.95) 70%
+        ),
+        #f0f4f8;
+      color: #1e293b; 
+    }
+    body.dark { 
+      background:
+        radial-gradient(
+          ellipse at center,
+          rgba(0, 0, 0, 0) 40%,
+          rgba(0, 0, 0, 0.65) 100%
+        ),
+        radial-gradient(
+          circle at top center,
+          rgba(4, 30, 65, 0.45) 0%,
+          rgba(4, 30, 65, 0.15) 35%,
+          rgba(10, 14, 26, 0.9) 70%
+        ),
+        #0a0e1a;
+      color: #e2e8f0; 
+    }
+    nav { border-bottom: 1px solid; transition: all 0.3s ease; }
+    body.light nav { background-color: #ffffff; border-color: #e2e8f0; }
+    body.dark nav { background-color: #151b2e; border-color: #1e293b; }
+    .nav-container { max-width: 1400px; margin: 0 auto; padding: 0 80px; display: flex; justify-content: space-between; align-items: center; height: 60px; }
+    .logo { font-size: 15px; font-weight: 700; letter-spacing: -0.02em; height: 40px; display: flex; align-items: center; }
+    .logo img { height: 100%; width: auto; }
+    #logoImg { height: 3rem; }
+    .nav-links { display: flex; gap: 32px; align-items: center; }
+    .nav-links a { font-size: 13px; font-weight: 500; text-decoration: none; transition: opacity 0.2s; }
+    body.light .nav-links a { color: #1e293b; }
+    body.dark .nav-links a { color: #e2e8f0; }
+    .nav-links a:hover { opacity: 0.7; }
+    .theme-toggle { background: transparent; border: 1px solid; padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+    body.light .theme-toggle { border-color: #e2e8f0; color: #1e293b; }
+    body.dark .theme-toggle { border-color: #1e293b; color: #e2e8f0; }
+    .main-content { max-width: 1400px; margin: 0 auto; padding: 40px 80px; }
+    .header { margin-bottom: 32px; }
+    .header h1 { font-size: 28px; font-weight: 700; margin: 0 0 8px 0; letter-spacing: -0.03em; }
+    .header p { font-size: 13px; margin: 0; font-weight: 400; }
+    body.light .header p { color: #64748b; }
+    body.dark .header p { color: #94a3b8; }
+    .games-section { display: flex; gap: 16px; margin-bottom: 24px; }
+    .date-picker-button { border-radius: 6px; padding: 12px 16px; border: 1px solid; width: 180px; flex-shrink: 0; cursor: pointer; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: space-between; transition: all 0.2s; position: relative; }
+    body.light .date-picker-button { background-color: #ffffff; border-color: #e2e8f0; color: #1e293b; }
+    body.dark .date-picker-button { background-color: #151b2e; border-color: #1e293b; color: #e2e8f0; }
+    .date-picker-button:hover { border-color: #bf0d3d; }
+    .date-picker-button::after { content: '▼'; font-size: 10px; opacity: 0.6; }
+    .calendar-dropdown { position: absolute; top: 60px; left: 0; z-index: 100; border-radius: 6px; padding: 16px; border: 1px solid; width: 280px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15); display: none; }
+    .calendar-dropdown.open { display: block; }
+    body.light .calendar-dropdown { background-color: #ffffff; border-color: #e2e8f0; }
+    body.dark .calendar-dropdown { background-color: #151b2e; border-color: #1e293b; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4); }
+    .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .calendar-month { font-size: 13px; font-weight: 600; }
+    .calendar-nav { background: transparent; border: none; font-size: 16px; cursor: pointer; padding: 4px 8px; }
+    body.light .calendar-nav { color: #1e293b; }
+    body.dark .calendar-nav { color: #e2e8f0; }
+    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+    .calendar-day-label { font-size: 10px; font-weight: 600; text-align: center; padding: 6px 0; }
+    body.light .calendar-day-label { color: #64748b; }
+    body.dark .calendar-day-label { color: #94a3b8; }
+    .calendar-day { font-size: 11px; text-align: center; padding: 8px 0; border-radius: 4px; cursor: pointer; transition: all 0.2s; }
+    body.light .calendar-day { color: #1e293b; }
+    body.dark .calendar-day { color: #e2e8f0; }
+    .calendar-day:hover { background-color: rgba(191, 13, 61, 0.1); }
+    .calendar-day.selected { background-color: #bf0d3d; color: white; font-weight: 600; }
+    .calendar-day.empty { cursor: default; }
+    .calendar-day.empty:hover { background-color: transparent; }
+    .games-slider-container { flex: 1; position: relative; overflow: hidden; }
+    .games-slider { display: flex; gap: 16px; transition: transform 0.3s ease; }
+    .game-box { min-width: calc(25% - 12px); border-radius: 6px; padding: 16px; border: 1px solid; flex-shrink: 0; cursor: pointer; transition: all 0.2s ease; }
+    body.light .game-box { background-color: #ffffff; border-color: #e2e8f0; }
+    body.dark .game-box { background-color: #151b2e; border-color: #1e293b; }
+    .game-box:hover { transform: scale(1.03); box-shadow: 0 6px 20px rgba(191, 13, 61, 0.2); border-color: rgba(191, 13, 61, 0.4); }
+    .game-status { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; }
+    body.light .game-status { color: #64748b; }
+    body.dark .game-status { color: #94a3b8; }
+    .game-status.live { color: #bf0d3d; }
+    .game-matchup { display: flex; flex-direction: column; gap: 8px; }
+    .team-row { display: flex; justify-content: space-between; align-items: center; }
+    .team-logo { width: 28px; height: 28px; margin-right: 8px; }
+    .team-name { font-size: 13px; font-weight: 600; display: flex; align-items: center; flex: 1; }
+    .team-score { font-size: 18px; font-weight: 700; }
+    body.light .team-name, body.light .team-score { color: #041e41; }
+    body.dark .team-name, body.dark .team-score { color: #b9b9bb; }
+    .slider-arrow { position: absolute; right: 0; top: 50%; transform: translateY(-50%); background: transparent; border: 1px solid; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; transition: all 0.2s; z-index: 10; }
+    body.light .slider-arrow { border-color: #e2e8f0; color: #1e293b; background-color: #ffffff; }
+    body.dark .slider-arrow { border-color: #1e293b; color: #e2e8f0; background-color: #151b2e; }
+    .slider-arrow:hover { background-color: #bf0d3d; border-color: #bf0d3d; color: white; }
+    .slider-arrow.left { left: 0; right: auto; }
+    .no-games { text-align: center; padding: 40px 20px; font-size: 14px; font-weight: 500; }
+    body.light .no-games { color: #64748b; }
+    body.dark .no-games { color: #94a3b8; }
+    .info-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+    .info-card { border-radius: 6px; padding: 20px; border: 1px solid; }
+    body.light .info-card { background-color: #ffffff; border-color: #e2e8f0; }
+    body.dark .info-card { background-color: #151b2e; border-color: #1e293b; }
+    .info-header { margin-bottom: 16px; }
+    .info-title { font-size: 14px; font-weight: 600; margin-bottom: 20px; margin: 0 auto; text-align: center; }
+    .league-tabs { display: flex; gap: 8px; margin-bottom: 12px; justify-content: center; }
+    .league-tab { background: transparent; border: 1px solid; padding: 6px 16px; border-radius: 4px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    body.light .league-tab { border-color: #e2e8f0; color: #64748b; }
+    body.dark .league-tab { border-color: #1e293b; color: #94a3b8; }
+    .league-tab.active { background-color: #bf0d3d; border-color: #bf0d3d; color: white; }
+    .standings-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; max-height: 400px; overflow-y: auto; }
+    .division-column { border-radius: 6px; padding: 8px; border: 1px solid; }
+    body.light .division-column { background-color: #ffffff; border-color: #e2e8f0; }
+    body.dark .division-column { background-color: #151b2e; border-color: #1e293b; }
+    .division-title { font-size: 12px; font-weight: 700; margin-bottom: 8px; text-align: center; }
+    .division-list { display: flex; flex-direction: column; gap: 6px; }
+    .standing-row { display: flex; align-items: center; gap: 8px; font-size: 11px; padding: 4px 0; }
+    .standing-logo { width: 20px; height: 20px; flex-shrink: 0; }
+    .standing-record { font-weight: 600; min-width: 50px; }
+    .standing-gb { font-weight: 500; min-width: 30px; }
+    body.light .standing-gb { color: #64748b; }
+    body.dark .standing-gb { color: #94a3b8; }
+    .player-list { display: flex; flex-direction: column; gap: 10px; max-height: 400px; overflow-y: auto; }
+    .player-item { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 4px; transition: all 0.2s; }
+    body.light .player-item { background-color: #f7fafc; }
+    body.dark .player-item { background-color: #0a0e1a; }
+    .rating-badge { border-radius: 0.1875rem; flex: 0 0 auto; margin: 0 0.3rem 0 0; width: 0.75rem; height: 0.75rem; z-index: 1; }
+    .player-info { flex: 1; }
+    .player-item-name { font-size: 12px; font-weight: 600; margin-bottom: 2px; }
+    .player-item-team { font-size: 10px; font-weight: 500; }
+    body.light .player-item-team { color: #64748b; }
+    body.dark .player-item-team { color: #94a3b8; }
+    .player-rating { font-size: 14px; font-weight: 700; }
+    .prediction-list { display: flex; flex-direction: column; gap: 12px; }
+    .prediction-row { display: flex; align-items: center; gap: 10px; }
+    .prediction-logo { width: 24px; height: 24px; flex-shrink: 0; }
+    .prediction-bar-container { flex: 1; height: 20px; border-radius: 4px; overflow: hidden; position: relative; }
+    body.light .prediction-bar-container { background-color: #f1f5f9; }
+    body.dark .prediction-bar-container { background-color: #0a0e1a; }
+    .prediction-bar { height: 100%; background-color: #bf0d3d; transition: width 0.5s ease; }
+    .prediction-percentage { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-size: 11px; font-weight: 600; }
+    body.light .prediction-percentage { color: #1e293b; }
+    body.dark .prediction-percentage { color: #e2e8f0; }
+    .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+    .chart-card { border-radius: 6px; padding: 20px; border: 1px solid; }
+    body.light .chart-card { background-color: #ffffff; border-color: #e2e8f0; }
+    body.dark .chart-card { background-color: #151b2e; border-color: #1e293b; }
+    .chart-header { margin-bottom: 16px; }
+    .chart-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+    .chart-subtitle { font-size: 11px; font-weight: 500; }
+    body.light .chart-subtitle { color: #64748b; }
+    body.dark .chart-subtitle { color: #94a3b8; }
+    .metrics-card { border-radius: 6px; padding: 20px; border: 1px solid; }
+    body.light .metrics-card { background-color: #ffffff; border-color: #e2e8f0; }
+    body.dark .metrics-card { background-color: #151b2e; border-color: #1e293b; }
+    .metrics-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 16px; }
+    .metric-item { font-size: 11px; }
+    .metric-label { margin-bottom: 6px; font-weight: 500; }
+    body.light .metric-label { color: #64748b; }
+    body.dark .metric-label { color: #94a3b8; }
+    .metric-value { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+    .metric-change { font-size: 11px; font-weight: 600; }
+    .metric-change.positive { color: #10b981; }
+    .metric-change.negative { color: #ef4444; }
+    canvas { max-height: 200px; }
+    .loading { text-align: center; padding: 20px; font-size: 13px; color: #64748b; }
+  </style>
+</head>
+<body class="light">
+  <nav>
+    <div class="nav-container">
+      <div class="logo">
+      <a href="default.html">
+        <img id="logoImg" src="assets/site-logos/logo-dark.svg" alt="Diamond Analytics">
+      </a>
+      </div>
+      <div class="nav-links">
+        <a href="/hub.html">Dashboard</a>
+        <a href="#">Players</a>
+        <a href="#">Teams</a>
+        <a href="#">Gamefeed</a>
+        <a href="#">Predictions</a>
+        <a href="#">Metrics</a>
+        <a href="#">Research</a>
+        <button class="theme-toggle" id="themeToggle">Dark</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="main-content">
+    <div class="header">
+      <h1>Performance Dashboard</h1>
+      <p>Advanced metrics and predictive analytics for the 2026 season</p>
+    </div>
+
+    <div class="games-section">
+      <div style="position: relative;">
+        <div class="date-picker-button" id="datePickerBtn">
+          <span id="selectedDateText">Today</span>
+        </div>
+        <div class="calendar-dropdown" id="calendarDropdown">
+          <div class="calendar-header">
+            <button class="calendar-nav" id="prevMonth">‹</button>
+            <div class="calendar-month" id="calendarMonth"></div>
+            <button class="calendar-nav" id="nextMonth">›</button>
+          </div>
+          <div class="calendar-grid" id="calendarGrid"></div>
+        </div>
+      </div>
+
+      <div class="games-slider-container">
+        <button class="slider-arrow left" id="prevGames" style="display: none;">‹</button>
+        <div class="games-slider" id="gamesSlider">
+          <div class="loading">Loading games...</div>
+        </div>
+        <button class="slider-arrow" id="nextGames" style="display: none;">›</button>
+      </div>
+    </div>
+
+    <div class="info-grid">
+      <div class="info-card">
+        <div class="info-header">
+          <div class="info-title">Standings</div>
+          <div class="league-tabs">
+            <button class="league-tab active" id="alTab">AL</button>
+            <button class="league-tab" id="nlTab">NL</button>
+          </div>
+        </div>
+        <div class="standings-list" id="standingsList">
+          <div class="loading">Loading standings...</div>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-header">
+          <div class="info-title">Top Performers</div>
+        </div>
+        <div class="player-list" id="topPerformersList"></div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-header">
+          <div class="info-title">2026 World Series Prediction</div>
+        </div>
+        <div class="prediction-list" id="predictionList"></div>
+      </div>
+    </div>
+
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">Performance Trends</div>
+          <div class="chart-subtitle">Monthly OPS and wOBA progression</div>
+        </div>
+        <canvas id="performanceChart"></canvas>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">wAR Projection Model</div>
+          <div class="chart-subtitle">Historical vs. projected performance</div>
+        </div>
+        <canvas id="projectionChart"></canvas>
+      </div>
+    </div>
+
+    <div class="metrics-card">
+      <div class="chart-header">
+        <div class="chart-title">Advanced Metrics Breakdown</div>
+        <div class="chart-subtitle">Comprehensive statistical analysis</div>
+      </div>
+      <div class="metrics-grid" id="metricsGrid"></div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+  <script>
+// ===========================
+// CONSTANTS & CONFIGURATION
+// ===========================
+const CONFIG = {
+  API: {
+    BASE: 'https://statsapi.mlb.com/api/v1',
+    GAME_FEED: 'https://statsapi.mlb.com/api/v1.1/game',
+    LOGO_BASE: 'https://www.mlbstatic.com/team-logos',
+    LOGO_DARK: 'https://www.mlbstatic.com/team-logos/team-cap-on-dark'
+  },
+  REFRESH_INTERVAL: 30000, // 30 seconds
+  GAMES_PER_VIEW: 4
+};
+
+const MOCK_DATA = {
+  topPerformers: [
+    { name: 'Shohei Ohtani', team: 'LAD', rating: 98 },
+    { name: 'Aaron Judge', team: 'NYY', rating: 95 },
+    { name: 'Mookie Betts', team: 'LAD', rating: 93 },
+    { name: 'Bobby Witt Jr.', team: 'KC', rating: 87 },
+    { name: 'Bryce Harper', team: 'PHI', rating: 85 }
+  ],
+  wsPredictions: [
+    { teamId: 119, percentage: 28 },
+    { teamId: 147, percentage: 22 },
+    { teamId: 144, percentage: 18 },
+    { teamId: 117, percentage: 15 }
+  ],
+  metrics: [
+    { label: 'wRC+', value: '168', change: '+12' },
+    { label: 'ISO', value: '.312', change: '+.045' },
+    { label: 'BABIP', value: '.298', change: '-.015' },
+    { label: 'K%', value: '23.1%', change: '-2.3%' },
+    { label: 'BB%', value: '14.8%', change: '+1.9%' },
+    { label: 'Hard%', value: '48.2%', change: '+5.1%' }
+  ]
+};
+
+// ===========================
+// STATE MANAGEMENT
+// ===========================
+const state = {
+  currentLeague: 'AL',
+  currentDate: new Date(),
+  currentSlide: 0,
+  standingsData: {
+    AL: { East: [], Central: [], West: [] },
+    NL: { East: [], Central: [], West: [] }
+  },
+  charts: {
+    performance: null,
+    projection: null
+  }
+};
+
+// ===========================
+// UTILITY FUNCTIONS
+// ===========================
+const utils = {
+  formatDate: (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  },
+
+  formatTime: (dateString) => {
+    return new Date(dateString).toLocaleTimeString([], {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+  },
+
+  isDarkMode: () => document.body.classList.contains('dark'),
+
+  getLogoUrl: (teamId) => {
+    const isDark = utils.isDarkMode();
+    return isDark
+      ? `${CONFIG.API.LOGO_DARK}/${teamId}.svg`
+      : `${CONFIG.API.LOGO_BASE}/${teamId}.svg`;
+  },
+
+  getRatingColor: (rating) => {
+    if (rating >= 88) return '#3b82f6';
+    if (rating >= 76) return '#14b8a6';
+    if (rating >= 66) return '#22c55e';
+    if (rating >= 56) return '#eab308';
+    if (rating >= 46) return '#fb923c';
+    if (rating >= 31) return '#f97316';
+    return '#ef4444';
+  },
+
+  getDivisionInfo: (divisionId) => {
+    const divisions = {
+      201: { league: 'AL', division: 'East' },
+      202: { league: 'AL', division: 'Central' },
+      200: { league: 'AL', division: 'West' },
+      204: { league: 'NL', division: 'East' },
+      205: { league: 'NL', division: 'Central' },
+      203: { league: 'NL', division: 'West' }
+    };
+    return divisions[divisionId] || { league: 'AL', division: 'East' };
+  },
+
+  getChartColors: () => {
+    const isDark = utils.isDarkMode();
+    return {
+      text: isDark ? '#94a3b8' : '#64748b',
+      grid: isDark ? '#1e293b' : '#e2e8f0',
+      primary: isDark ? '#ffffff' : '#041e41'
+    };
+  }
+};
+
+// ===========================
+// API FUNCTIONS
+// ===========================
+const api = {
+  fetchTeamAbbr: async (teamId) => {
+    try {
+      const response = await fetch(`${CONFIG.API.BASE}/teams/${teamId}`);
+      const data = await response.json();
+      return data.teams[0].abbreviation || 'N/A';
+    } catch (error) {
+      console.error('Error fetching team abbreviation:', error);
+      return 'N/A';
+    }
+  },
+
+  fetchGameDetails: async (gamePk) => {
+    try {
+      const response = await fetch(`${CONFIG.API.GAME_FEED}/${gamePk}/feed/live`);
+      const data = await response.json();
+      
+      if (data?.liveData) {
+        const linescore = data.liveData.linescore;
+        const inningHalf = linescore.inningHalf === 'Top' ? 'TOP' : 'BOT';
+        const currentInning = linescore.currentInning || '';
+        return `${inningHalf} ${currentInning}`;
+      }
+    } catch (error) {
+      console.error('Error fetching game details:', error);
+    }
+    return 'In Progress';
+  },
+
+  fetchStandings: async () => {
+    try {
+      const url = `${CONFIG.API.BASE}/standings?leagueId=103,104&season=2025&standingsTypes=regularSeason`;
+      const response = await fetch(url);
+      const data = await response.json();
+
+      // Reset standings data
+      state.standingsData.AL = { East: [], Central: [], West: [] };
+      state.standingsData.NL = { East: [], Central: [], West: [] };
+
+      data.records.forEach(division => {
+        const divisionId = division.division?.id;
+        if (!divisionId) return;
+
+        const { league, division: divKey } = utils.getDivisionInfo(divisionId);
+
+        (division.teamRecords || []).forEach(team => {
+          state.standingsData[league][divKey].push({
+            teamId: team.team.id,
+            wins: team.wins,
+            losses: team.losses,
+            gamesBack: team.gamesBack,
+            divisionRank: team.divisionRank
+          });
+        });
+      });
+
+      // Sort each division by rank
+      ['East', 'Central', 'West'].forEach(div => {
+        state.standingsData.AL[div].sort((a, b) => a.divisionRank - b.divisionRank);
+        state.standingsData.NL[div].sort((a, b) => a.divisionRank - b.divisionRank);
+      });
+
+      standings.render();
+    } catch (error) {
+      console.error('Error fetching standings:', error);
+      const list = document.getElementById('standingsList');
+      if (list) list.innerHTML = '<div class="loading">Failed to load standings</div>';
+    }
+  },
+
+  fetchGames: async () => {
+    const slider = document.getElementById('gamesSlider');
+    if (!slider) return;
+
+    const dateStr = utils.formatDate(state.currentDate);
+    const url = `${CONFIG.API.BASE}/schedule?sportId=1&date=${dateStr}`;
+    
+    slider.innerHTML = '<div class="loading">Loading games...</div>';
+    state.currentSlide = 0;
+
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (!data.dates.length || !data.dates[0].games.length) {
+        slider.innerHTML = '<div class="game-box"><div class="no-games">No Games Today</div></div>';
+        games.updateNavButtons(false);
+        return;
+      }
+
+      const gameBoxes = await Promise.all(
+        data.dates[0].games.map(game => games.createGameBox(game))
+      );
+
+      // Sort games: Live first, then scheduled, then final
+      gameBoxes.sort((a, b) => {
+        if (a.isLive && !b.isLive) return -1;
+        if (!a.isLive && b.isLive) return 1;
+        if (a.isFinal && !b.isFinal) return 1;
+        if (!a.isFinal && b.isFinal) return -1;
+        return a.gameDate - b.gameDate;
+      });
+
+      slider.innerHTML = '';
+      gameBoxes.forEach(({ element }) => slider.appendChild(element));
+
+      games.updateNavButtons(gameBoxes.length > CONFIG.GAMES_PER_VIEW);
+    } catch (error) {
+      console.error('Error fetching games:', error);
+      slider.innerHTML = '<div class="game-box"><div class="no-games">Failed to load games</div></div>';
+    }
+  }
+};
+
+// ===========================
+// CALENDAR MODULE
+// ===========================
+const calendar = {
+  render: () => {
+    const grid = document.getElementById('calendarGrid');
+    const monthEl = document.getElementById('calendarMonth');
+    if (!grid || !monthEl) return;
+
+    const year = state.currentDate.getFullYear();
+    const month = state.currentDate.getMonth();
+    
+    monthEl.textContent = state.currentDate.toLocaleDateString('en-US', {
+      month: 'long',
+      year: 'numeric'
+    });
+
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const dayLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+    
+    let html = dayLabels.map(d => `<div class="calendar-day-label">${d}</div>`).join('');
+    
+    // Empty cells before first day
+    for (let i = 0; i < firstDay; i++) {
+      html += '<div class="calendar-day empty"></div>';
+    }
+    
+    const selectedDay = state.currentDate.getDate();
+    
+    for (let day = 1; day <= daysInMonth; day++) {
+      const isSelected = day === selectedDay ? 'selected' : '';
+      html += `<div class="calendar-day ${isSelected}" data-day="${day}">${day}</div>`;
+    }
+    
+    grid.innerHTML = html;
+    
+    // Add click handlers
+    grid.querySelectorAll('.calendar-day:not(.empty)').forEach(el => {
+      el.addEventListener('click', (e) => {
+        state.currentDate.setDate(parseInt(e.target.dataset.day));
+        calendar.updateDateText();
+        calendar.render();
+        api.fetchGames();
+        document.getElementById('calendarDropdown')?.classList.remove('open');
+      });
+    });
+  },
+
+  updateDateText: () => {
+    const textEl = document.getElementById('selectedDateText');
+    if (!textEl) return;
+
+    const today = new Date();
+    const isToday = state.currentDate.toDateString() === today.toDateString();
+    
+    textEl.textContent = isToday
+      ? 'Today'
+      : state.currentDate.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric'
+        });
+  },
+
+  changeMonth: (delta) => {
+    state.currentDate.setMonth(state.currentDate.getMonth() + delta);
+    calendar.updateDateText();
+    calendar.render();
+    api.fetchGames();
+  },
+
+  initEvents: () => {
+    const pickerBtn = document.getElementById('datePickerBtn');
+    const dropdown = document.getElementById('calendarDropdown');
+    const prevBtn = document.getElementById('prevMonth');
+    const nextBtn = document.getElementById('nextMonth');
+
+    if (pickerBtn && dropdown) {
+      pickerBtn.addEventListener('click', () => {
+        dropdown.classList.toggle('open');
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!pickerBtn.contains(e.target) && !dropdown.contains(e.target)) {
+          dropdown.classList.remove('open');
+        }
+      });
+    }
+
+    if (prevBtn) prevBtn.addEventListener('click', () => calendar.changeMonth(-1));
+    if (nextBtn) nextBtn.addEventListener('click', () => calendar.changeMonth(1));
+  }
+};
+
+// ===========================
+// GAMES MODULE
+// ===========================
+const games = {
+  createGameBox: async (game) => {
+    const homeId = game.teams.home.team.id;
+    const awayId = game.teams.away.team.id;
+    const homeScore = game.teams.home.score || 0;
+    const awayScore = game.teams.away.score || 0;
+    
+    let status = game.status.detailedState;
+    const homeAbbr = await api.fetchTeamAbbr(homeId);
+    const awayAbbr = await api.fetchTeamAbbr(awayId);
+
+    let isLive = false;
+    let isFinal = false;
+
+    if (['Final', 'Game Over', 'Completed Early'].includes(status)) {
+      status = 'FINAL';
+      isFinal = true;
+    } else if (['Pre-Game', 'Scheduled'].includes(status)) {
+      status = utils.formatTime(game.gameDate);
+    } else if (status === 'In Progress') {
+      status = await api.fetchGameDetails(game.gamePk);
+      isLive = true;
+    }
+
+    const homeLogo = utils.getLogoUrl(homeId);
+    const awayLogo = utils.getLogoUrl(awayId);
+
+    const element = document.createElement('div');
+    element.className = 'game-box';
+    element.style.cursor = 'pointer';
+
+    const statusClass = (status.includes('TOP') || status.includes('BOT')) ? 'live' : '';
+
+    element.innerHTML = `
+      <div class="game-status ${statusClass}">${status}</div>
+      <div class="game-matchup">
+        <div class="team-row">
+          <div class="team-name">
+            <img src="${awayLogo}" alt="${awayAbbr}" class="team-logo">
+            ${awayAbbr}
+          </div>
+          <div class="team-score">${awayScore}</div>
+        </div>
+        <div class="team-row">
+          <div class="team-name">
+            <img src="${homeLogo}" alt="${homeAbbr}" class="team-logo">
+            ${homeAbbr}
+          </div>
+          <div class="team-score">${homeScore}</div>
+        </div>
+      </div>
+    `;
+
+    element.addEventListener('click', () => {
+      const gameData = {
+        gamePk: game.gamePk,
+        homeTeam: { id: homeId, abbr: homeAbbr, score: homeScore },
+        awayTeam: { id: awayId, abbr: awayAbbr, score: awayScore },
+        status: status,
+        gameDate: game.gameDate
+      };
+
+      sessionStorage.setItem('selectedGame', JSON.stringify(gameData));
+      window.location.href = `game-box.html?gamePk=${game.gamePk}`;
+    });
+
+    return {
+      element,
+      isLive,
+      isFinal,
+      gameDate: new Date(game.gameDate)
+    };
+  },
+
+  updateSlider: () => {
+    const slider = document.getElementById('gamesSlider');
+    if (!slider) return;
+
+    const gameBox = slider.querySelector('.game-box');
+    if (!gameBox) return;
+
+    const boxWidth = gameBox.offsetWidth;
+    const offset = state.currentSlide * (boxWidth + 16);
+    slider.style.transform = `translateX(-${offset}px)`;
+
+    const totalGames = slider.querySelectorAll('.game-box').length;
+    const maxSlide = Math.max(0, totalGames - CONFIG.GAMES_PER_VIEW);
+
+    games.updateNavButtons(totalGames > CONFIG.GAMES_PER_VIEW, maxSlide);
+  },
+
+  updateNavButtons: (showButtons) => {
+    const prevBtn = document.getElementById('prevGames');
+    const nextBtn = document.getElementById('nextGames');
+    const slider = document.getElementById('gamesSlider');
+
+    if (!prevBtn || !nextBtn || !slider) return;
+
+    if (!showButtons) {
+      prevBtn.style.display = 'none';
+      nextBtn.style.display = 'none';
+      return;
+    }
+
+    const totalGames = slider.querySelectorAll('.game-box').length;
+    const maxSlide = Math.max(0, totalGames - CONFIG.GAMES_PER_VIEW);
+
+    prevBtn.style.display = state.currentSlide > 0 ? 'flex' : 'none';
+    nextBtn.style.display = state.currentSlide < maxSlide ? 'flex' : 'none';
+  },
+
+  initEvents: () => {
+    const prevBtn = document.getElementById('prevGames');
+    const nextBtn = document.getElementById('nextGames');
+
+    if (nextBtn) {
+      nextBtn.addEventListener('click', () => {
+        const slider = document.getElementById('gamesSlider');
+        if (!slider) return;
+
+        const totalGames = slider.querySelectorAll('.game-box').length;
+        const maxSlide = Math.max(0, totalGames - CONFIG.GAMES_PER_VIEW);
+
+        if (state.currentSlide < maxSlide) {
+          state.currentSlide++;
+          games.updateSlider();
+        }
+      });
+    }
+
+    if (prevBtn) {
+      prevBtn.addEventListener('click', () => {
+        if (state.currentSlide > 0) {
+          state.currentSlide--;
+          games.updateSlider();
+        }
+      });
+    }
+  }
+};
+
+// ===========================
+// STANDINGS MODULE
+// ===========================
+const standings = {
+  render: () => {
+    const list = document.getElementById('standingsList');
+    if (!list) return;
+
+    const leagueData = state.standingsData[state.currentLeague];
+    if (!leagueData) {
+      list.innerHTML = '<div class="loading">No standings available</div>';
+      return;
+    }
+
+    const divOrder = ['East', 'Central', 'West'];
+    
+    list.innerHTML = divOrder.map(div => {
+      const teams = leagueData[div] || [];
+      
+      const rows = teams.map(team => {
+        const logoUrl = utils.getLogoUrl(team.teamId);
+        const gamesBack = team.gamesBack === '0.0' ? '-' : team.gamesBack;
+        
+        return `
+          <div class="standing-row">
+            <img src="${logoUrl}" alt="Team" class="standing-logo">
+            <div class="standing-record">${team.wins}-${team.losses}</div>
+            <div class="standing-gb">${gamesBack}</div>
+          </div>
+        `;
+      }).join('');
+
+      return `
+        <div class="division-column">
+          <div class="division-title">${state.currentLeague} ${div}</div>
+          <div class="division-list">${rows || '<div class="loading">No teams</div>'}</div>
+        </div>
+      `;
+    }).join('');
+  },
+
+  initEvents: () => {
+    const alTab = document.getElementById('alTab');
+    const nlTab = document.getElementById('nlTab');
+
+    if (alTab) {
+      alTab.addEventListener('click', () => {
+        state.currentLeague = 'AL';
+        alTab.classList.add('active');
+        nlTab?.classList.remove('active');
+        standings.render();
+      });
+    }
+
+    if (nlTab) {
+      nlTab.addEventListener('click', () => {
+        state.currentLeague = 'NL';
+        nlTab.classList.add('active');
+        alTab?.classList.remove('active');
+        standings.render();
+      });
+    }
+  }
+};
+
+// ===========================
+// UI RENDER FUNCTIONS
+// ===========================
+const ui = {
+  renderTopPerformers: () => {
+    const list = document.getElementById('topPerformersList');
+    if (!list) return;
+
+    list.innerHTML = MOCK_DATA.topPerformers.map(player => `
+      <div class="player-item">
+        <div class="rating-badge" style="background-color: ${utils.getRatingColor(player.rating)}"></div>
+        <div class="player-info">
+          <div class="player-item-name">${player.name}</div>
+          <div class="player-item-team">${player.team}</div>
+        </div>
+        <div class="player-rating">${player.rating}</div>
+      </div>
+    `).join('');
+  },
+
+  renderPredictions: () => {
+    const list = document.getElementById('predictionList');
+    if (!list) return;
+
+    list.innerHTML = MOCK_DATA.wsPredictions.map(pred => {
+      const logoUrl = utils.getLogoUrl(pred.teamId);
+      
+      return `
+        <div class="prediction-row">
+          <img src="${logoUrl}" alt="Team" class="prediction-logo">
+          <div class="prediction-bar-container">
+            <div class="prediction-bar" style="width: ${pred.percentage}%"></div>
+            <div class="prediction-percentage">${pred.percentage}%</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  },
+
+  renderMetrics: () => {
+    const grid = document.getElementById('metricsGrid');
+    if (!grid) return;
+
+    grid.innerHTML = MOCK_DATA.metrics.map(metric => {
+      const changeClass = metric.change.startsWith('+') ? 'positive' : 'negative';
+      
+      return `
+        <div class="metric-item">
+          <div class="metric-label">${metric.label}</div>
+          <div class="metric-value">${metric.value}</div>
+          <div class="metric-change ${changeClass}">${metric.change}</div>
+        </div>
+      `;
+    }).join('');
+  }
+};
+
+// ===========================
+// CHARTS MODULE
+// ===========================
+const charts = {
+  createPerformanceChart: () => {
+    const canvas = document.getElementById('performanceChart');
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    const colors = utils.getChartColors();
+
+    if (state.charts.performance) {
+      state.charts.performance.destroy();
+    }
+
+    state.charts.performance = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'],
+        datasets: [
+          {
+            label: 'OPS',
+            data: [0.845, 0.892, 0.901, 0.878, 0.915, 0.889],
+            borderColor: '#bf0d3d',
+            backgroundColor: '#bf0d3d',
+            tension: 0.3,
+            pointRadius: 3
+          },
+          {
+            label: 'wOBA',
+            data: [0.362, 0.381, 0.388, 0.375, 0.392, 0.379],
+            borderColor: colors.primary,
+            backgroundColor: colors.primary,
+            tension: 0.3,
+            pointRadius: 3
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: {
+            labels: {
+              font: { size: 11, family: 'Inter' },
+              color: colors.text
+            }
+          }
+        },
+        scales: {
+          x: {
+            ticks: { font: { size: 11 }, color: colors.text },
+            grid: { color: colors.grid }
+          },
+          y: {
+            ticks: { font: { size: 11 }, color: colors.text },
+            grid: { color: colors.grid }
+          }
+        }
+      }
+    });
+  },
+
+  createProjectionChart: () => {
+    const canvas = document.getElementById('projectionChart');
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    const colors = utils.getChartColors();
+
+    if (state.charts.projection) {
+      state.charts.projection.destroy();
+    }
+
+    state.charts.projection = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['2023', '2024', '2025', '2026'],
+        datasets: [
+          {
+            label: 'Actual',
+            data: [8.2, 7.9, null, null],
+            backgroundColor: colors.primary
+          },
+          {
+            label: 'Projected',
+            data: [null, 7.8, 8.1, 7.6],
+            backgroundColor: '#bf0d3d'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: {
+            labels: {
+              font: { size: 11, family: 'Inter' },
+              color: colors.text
+            }
+          }
+        },
+        scales: {
+          x: {
+            ticks: { font: { size: 11 }, color: colors.text },
+            grid: { color: colors.grid }
+          },
+          y: {
+            ticks: { font: { size: 11 }, color: colors.text },
+            grid: { color: colors.grid }
+          }
+        }
+      }
+    });
+  },
+
+  updateAll: () => {
+    charts.createPerformanceChart();
+    charts.createProjectionChart();
+  }
+};
+
+// ===========================
+// THEME MODULE
+// ===========================
+const theme = {
+  init: () => {
+    // Set dark mode as default
+    document.body.classList.add('dark');
+    document.body.classList.remove('light');
+    
+    const toggleBtn = document.getElementById('themeToggle');
+    const logo = document.getElementById('logoImg');
+    
+    if (toggleBtn) toggleBtn.textContent = 'Light';
+    if (logo) logo.src = 'assets/site-logos/logo-light.svg';
+  },
+
+  toggle: () => {
+    const body = document.body;
+    const logo = document.getElementById('logoImg');
+    const toggleBtn = document.getElementById('themeToggle');
+
+    if (body.classList.contains('dark')) {
+      // Switch to LIGHT mode
+      body.classList.remove('dark');
+      body.classList.add('light');
+      if (toggleBtn) toggleBtn.textContent = 'Dark';
+      if (logo) logo.src = 'assets/site-logos/logo-dark.svg';
+    } else {
+      // Switch to DARK mode
+      body.classList.remove('light');
+      body.classList.add('dark');
+      if (toggleBtn) toggleBtn.textContent = 'Light';
+      if (logo) logo.src = 'assets/site-logos/logo-light.svg';
+    }
+
+    // Re-render dependent UI
+    charts.updateAll();
+    api.fetchGames();
+    standings.render();
+    ui.renderPredictions();
+  },
+
+  initEvents: () => {
+    const toggleBtn = document.getElementById('themeToggle');
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', theme.toggle);
+    }
+  }
+};
+
+// =========================== 
+// AUTO-REFRESH MODULE
+// ===========================
+const autoRefresh = {
+  start: () => {
+    setInterval(() => {
+      const currentDate = utils.formatDate(state.currentDate);
+      const today = utils.formatDate(new Date());
+      
+      // Only refresh if viewing today's games
+      if (currentDate === today) {
+        api.fetchGames();
+      }
+    }, CONFIG.REFRESH_INTERVAL);
+  }
+};
+
+// ===========================
+// INITIALIZATION
+// ===========================
+const init = () => {
+  // Initialize theme first
+  theme.init();
+  theme.initEvents();
+
+  // Initialize calendar
+  calendar.render();
+  calendar.updateDateText();
+  calendar.initEvents();
+
+  // Initialize games
+  api.fetchGames();
+  games.initEvents();
+
+  // Initialize standings
+  api.fetchStandings();
+  standings.initEvents();
+
+  // Render UI components
+  ui.renderTopPerformers();
+  ui.renderPredictions();
+  ui.renderMetrics();
+
+  // Initialize charts
+  charts.updateAll();
+
+  // Start auto-refresh
+  autoRefresh.start();
+};
+
+// Start the application
+init();
+  </script>
+</body>
+</html>
