@@ -1,0 +1,958 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Rubik:ital,wght@0,300..900;1,300..900&display=swap'); 
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', Tahoma, Geneva, Verdana, sans-serif;
+    background: #0c1532;
+    min-height: 100vh;
+    color: #e9d8df;
+    overflow-x: hidden;
+}
+
+/* Navigation Styles */
+.header {
+    background: transparent;
+    padding: 4rem 5rem;
+    position: relative;
+    z-index: 1000;
+}
+
+.nav-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-direction: column;
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: #e9d8df;
+    text-transform: uppercase;
+}
+
+.nav-menu {
+  display: flex;
+  gap: 1.5rem;
+  list-style: none;
+  margin-top: 2rem;
+  background-color: #161e38;
+  padding: 1.25rem 2rem;
+  border-radius: 50px;
+}
+
+.nav-link {
+  text-decoration: none;
+  color: #ccd6f6;
+  font-weight: 500;
+  transition: color 0.2s ease, border-bottom 0.2s ease;
+  padding-bottom: 4px;
+}
+
+.nav-link:hover {
+  color: #ffffff;
+  border-bottom: 2px solid #8892b0;
+}
+
+.nav-link.active {
+  color: #ffffff;
+  border-bottom: 2px solid #be1423; /* highlight color */
+  font-weight: 600;
+}
+
+.nav-menu {
+  display: flex;
+  gap: 1.5rem;
+  position: relative;
+}
+
+.nav-link {
+  position: relative;
+  text-decoration: none;
+  color: #ccd6f6;
+  font-weight: 500;
+  transition: color 0.3s ease;
+  padding-bottom: 4px;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 0%;
+  height: 2px;
+  background: #007bff;
+  transition: width 0.3s ease;
+}
+
+.nav-link:hover::after,
+.nav-link.active::after {
+  width: 100%;
+}
+
+
+.hamburger {
+    display: none;
+    flex-direction: column;
+    cursor: pointer;
+    z-index: 1001;
+}
+
+.hamburger span {
+    width: 25px;
+    height: 3px;
+    background: #ffffff;
+    margin: 3px 0;
+    transition: 0.3s;
+}
+
+.hamburger.active span:nth-child(1) {
+    transform: rotate(-45deg) translate(-5px, 6px);
+}
+
+.hamburger.active span:nth-child(2) {
+    opacity: 0;
+}
+
+.hamburger.active span:nth-child(3) {
+    transform: rotate(45deg) translate(-5px, -6px);
+}
+
+/* Main Content */
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 1rem;
+    position: relative;
+}
+
+/* Map Toggle Switch */
+.map-toggle-container {
+    display: flex;
+    justify-content: center;
+    position: relative;
+    z-index: 100;
+}
+
+.map-toggle {
+    position: relative;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50px;
+    padding: 4px;
+    display: flex;
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-btn {
+    position: relative;
+    z-index: 2;
+    padding: 0.45rem 1rem;
+    border: none;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 50px;
+    transition: color 0.3s ease;
+    min-width: 80px;
+}
+
+.toggle-btn.active {
+    color: #ffffff;
+}
+
+.toggle-slider {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: calc(50% - 4px);
+    height: calc(100% - 8px);
+    background: linear-gradient(135deg, #bf0d3e, #8a0a2e);
+    border-radius: 50px;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 10px rgba(191, 13, 62, 0.4);
+    z-index: 1;
+}
+
+.toggle-btn:last-of-type.active ~ .toggle-slider {
+    transform: translateX(calc(100% + 4px));
+}
+
+/* Map View Containers */
+.map-view {
+    display: none;
+    animation: fadeIn 0.4s ease-out;
+}
+
+.map-view.active {
+    display: block;
+}
+
+.dashboard {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 2rem;
+    position: relative;
+    min-height: 600px;
+    margin-top: 1rem;
+}
+
+/* Map Container */
+.map-wrapper {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.map-wrapper.hidden {
+    opacity: 0;
+    transform: scale(0.8);
+    pointer-events: none;
+}
+
+.map-title {
+    position: absolute;
+    top: -40px;
+    left: 40%;
+    transform: translateX(-50%);
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #000;
+}
+
+#us-map {
+    width: 100%;
+    max-width: 800px;
+    height: auto;
+}
+
+.state-path {
+    fill: #bbbbbb52;
+    stroke: #e9d8df;
+    stroke-width: 0.35;
+    cursor: pointer;
+    transition: all 0.3s ease;   
+}
+
+.state-path:hover {
+    stroke: #e9d8df;
+    stroke-width: 0.45;
+    transition: all 0.5s ease;
+}
+
+.state-path:active, .state-path:focus {
+    stroke: #dddb23;
+    filter: drop-shadow(0 4px 8px rgba(191, 13, 62, 0.5));
+}
+
+#outlines {
+    fill: #bbbbbb52;
+    stroke: #e9d8df;
+    stroke-width: 0.75;
+    cursor: pointer;
+    transition: all 0.3s ease;   
+}
+
+#outlines path:hover {
+    stroke: #e9d8df;
+    stroke-width: 1;
+    transition: all 0.5s ease;
+}
+
+#outlines path:active, #outlines path:focus {
+    stroke: #dddb23;
+    filter: drop-shadow(0 4px 8px rgba(191, 13, 62, 0.5));
+}
+
+/* Tooltip */
+#tooltip {
+    position: fixed;
+    background: rgba(2, 12, 26, 0.95);
+    color: #e9d8df;
+    padding: 2rem;
+    border-radius: 8px;
+    pointer-events: none;
+    display: none;
+    z-index: 1000;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tooltip-header {
+    display: flex;
+    font-size: 1rem;
+    font-weight: 400;
+    margin-bottom: 0.5rem;
+    color: #ffffff;
+    align-items: center;
+    justify-content: center;
+}
+
+.tooltip-content {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+    font-size: 0.65rem;
+}
+
+.tooltip-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0.25rem 0;
+}
+
+.tooltip-label {
+    color: #9db4d4;
+    min-width: 70px;
+}
+
+.tooltip-value {
+    font-weight: 500;
+    text-align: right;
+}
+
+/* Align senators list properly in tooltip */
+.senators-row {
+  align-items: flex-start;
+}
+
+.senators-row .tooltip-value {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  text-align: right;
+}
+
+.senators-row .data-value {
+    display: flex;
+    flex-direction: column;
+    text-align: right;
+}
+
+.senator-name {
+  color: #f3f3f3;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+
+/* State Detail View */
+.state-detail {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%) scale(0);
+    opacity: 0;
+    display: flex;
+    gap: 3rem;
+    align-items: center;
+    width: 90%;
+    max-width: 1200px;
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+}
+
+.state-detail.active {
+    transform: translateX(-50%) scale(1);
+    opacity: 1;
+    pointer-events: all;
+}
+
+.state-svg-container {
+    flex: 0 0 400px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.state-svg-container svg {
+    width: 100%;
+    height: auto;
+    filter: drop-shadow(0 8px 20px rgba(191, 13, 62, 0.4));
+}
+
+.state-svg-container .state-path {
+    fill: #ff1658;
+    stroke: #041e42;
+    stroke-width: 2;
+}
+
+.close-btn {
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    width: 40px;
+    height: 40px;
+    background: #ff1557; 
+    border: none;
+    border-radius: 50%;
+    color: rgb(139, 1, 1);
+    font-size: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.close-btn:hover {
+    background: #8a0a2e;
+    transform: rotate(90deg);
+}
+
+/* State Info */
+.state-info {
+    padding: 1.5rem;
+    margin-top: 4rem;
+}
+
+.state-name {
+    font-size: 1.8rem;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+    color: #e9d8df;
+    border-bottom: 2px solid #e9d8df;
+    padding-bottom: 0.75rem;
+}
+
+.data-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.senator-name {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  text-align: right;
+  justify-content: center; /* keeps both senators centered with the label */
+}
+
+
+.data-section h3 {
+    font-size: 0.80rem;
+    color: #e9d8df;
+    margin-bottom: 0.55rem;
+}
+
+.data-section {
+    margin-bottom: 0.55rem;
+    min-width: 120px;
+}
+
+.data-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.70rem;
+    font-size: 0.75rem;
+    color: #e9d8df;
+}
+
+.data-label {
+    font-weight: 800;
+    color: #e9d8df8f;
+    min-width: 80px;
+}
+
+.data-value {
+    text-align: right;
+}
+
+#svgdata {
+    width: 100%;
+    height: auto;
+    padding-right: 10rem;
+    margin-top: 2rem;
+}
+
+.district-info {
+    padding: 5rem;
+    margin-top: 3rem;
+}
+
+.district-name {
+    font-size: 1.8rem;
+    font-weight: 800;
+    min-width: 15rem;
+    margin-bottom: 1.5rem;
+    color: #e9d8df;
+    border-bottom: 2px solid #e9d8df;
+    padding-bottom: 0.75rem;
+}
+
+.info-grid {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.info-item {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 1.5rem;
+    border-radius: 10px;
+    border-left: 4px solid #bf0d3e;
+    backdrop-filter: blur(10px);
+    animation: fadeInUp 0.6s ease-out;
+    animation-fill-mode: both;
+}
+
+/* Tooltip enhancements for party colors */
+.tooltip-row .tooltip-value.party-dem,
+.tooltip-row .tooltip-value.party-rep,
+.tooltip-row .tooltip-value.party-ind,
+.tooltip-row .tooltip-value.party-vacant {
+    font-weight: 600;
+}
+
+.info-item:nth-child(1) { animation-delay: 0.1s; }
+.info-item:nth-child(2) { animation-delay: 0.2s; }
+.info-item:nth-child(3) { animation-delay: 0.3s; }
+.info-item:nth-child(4) { animation-delay: 0.4s; }
+.info-item:nth-child(5) { animation-delay: 0.5s; }
+
+.info-label {
+    font-size: 0.75rem;
+    color: #396ea3;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.info-value {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.party-dem { color: #4a9eff; }
+.party-rep { color: #ff4a4a; }
+.party-ind { color: #c76eff}
+.party-vacant { color: #e9d8df}
+
+.electoral-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #bf0d3e, #8a0a2e);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.county-info {
+    margin-top: 2rem;
+    margin-left: 4rem;
+}
+
+.county-name {
+    font-size: 1.8rem;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+    color: #e9d8df;
+    border-bottom: 2px solid #e9d8df;
+    padding-bottom: 0.75rem;
+}
+
+/* District map wrapper */
+.county-map-wrapper {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+/* District map header */
+.county-map-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.55rem 0.5rem;
+    border-radius: 8px 8px 0 0;
+    margin-bottom: 1rem;
+}
+
+.county-map-header h2 {
+    margin: 0;
+    color: white;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+#county-map {
+    width: 100%;
+    height: 500px;
+    fill: #bbbbbb52;
+    stroke: rgb(24, 25, 34);
+    cursor: pointer;
+    transition: all 0.3s ease; 
+    stroke-width: 0.35px;
+}
+
+/* Back button */
+.back-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.back-button:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateX(-3px);
+}
+
+.back-button svg {
+    transition: transform 0.3s ease;
+}
+
+.back-button:hover svg {
+    transform: translateX(-3px);
+}
+
+#back-to-states {
+    display: flex;
+    align-items: center;;
+    margin-bottom: 1rem;
+    justify-content: center;
+    
+}
+
+.county-tooltip {
+    position: fixed;
+    background: rgba(2, 12, 26, 0.95);
+    color: #e9d8df;
+    padding: 1rem;
+    border-radius: 8px;
+    pointer-events: none;
+    display: none;
+    z-index: 1000;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#tooltip, .county-tooltip {
+  position: fixed;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+
+/* County Election Results in Tooltip */
+.county-election-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid rgba(233, 216, 223, 0.3);
+}
+
+.candidate-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+}
+
+.party-icon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.candidate-column .candidate-name {
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.candidate-column.party-dem .candidate-name {
+  color: #4a9eff;
+}
+
+.candidate-column.party-rep .candidate-name {
+  color: #ff4a4a;
+}
+
+.candidate-votes {
+  font-size: 0.75rem;
+  color: #e9d8df;
+  opacity: 0.8;
+}
+
+.candidate-percent {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #e9d8df;
+}
+
+.county-winner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.75rem 0 0.25rem 0;
+}
+
+.winner-name {
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.winner-margin {
+  font-size: 0.75rem;
+  color: #e9d8df;
+  opacity: 0.9;
+}
+
+/* County Details Panel Styles */
+.election-results-panel {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin: 1.5rem 0;
+}
+
+.candidate-result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  border: 1px solid rgba(233, 216, 223, 0.2);
+}
+
+.party-icon-large {
+  font-size: 2.5rem;
+  line-height: 1;
+}
+
+.candidate-name-large {
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.candidate-result.party-dem .candidate-name-large {
+  color: #4a9eff;
+}
+
+.candidate-result.party-rep .candidate-name-large {
+  color: #ff4a4a;
+}
+
+.candidate-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.25rem 0;
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  color: #e9d8df;
+  opacity: 0.7;
+}
+
+.stat-value {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #e9d8df;
+}
+
+.winner-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1.5rem 0;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border: 2px solid rgba(233, 216, 223, 0.3);
+}
+
+.winner-label {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #e9d8df;
+  opacity: 0.6;
+}
+
+.winner-name-large {
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.winner-margin-large {
+  font-size: 1rem;
+  color: #e9d8df;
+  opacity: 0.9;
+}
+
+/* Ensure party colors are applied */
+.party-dem {
+  color: #4a9eff;
+}
+
+.party-rep {
+  color: #ff4a4a;
+}
+
+.party-ind {
+  color: #c76eff;
+}
+
+.party-vacant {
+  color: #e9d8df;
+}
+
+#district-map-container, #state-map-container {
+  width: 100%;
+  height: 100%;
+  transition: opacity 0.3s ease;
+}
+#district-map-container:not(.active),
+#state-map-container:not(.active) {
+  opacity: 0;
+  pointer-events: none;
+}
+#district-map-container.active,
+#state-map-container.active {
+  opacity: 1;
+  pointer-events: all;
+} 
+
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Laptop Responsive */
+@media (max-width: 1700px) {
+    #states-map-container {
+        width: 70%;
+    }
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .nav-menu {
+        position: fixed;
+        left: -100%;
+        top: 70px;
+        flex-direction: column;
+        background: rgba(4, 30, 66, 0.98);
+        width: 100%;
+        padding: 2rem;
+        gap: 1rem;
+        box-shadow: 0 10px 27px rgba(0, 0, 0, 0.5);
+    }
+    
+    .map-toggle-container {
+        margin-bottom: 1.5rem;
+    }
+    
+    .toggle-btn {
+        padding: 0.6rem 1.5rem;
+        font-size: 0.9rem;
+        min-width: 100px;
+    }
+    
+    .container {
+        padding: 2rem 1rem;
+    }
+    
+    .county-map-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+
+    .county-map-header h2 {
+        font-size: 1.25rem;
+    }
+
+    .back-button {
+        width: 100%;
+        justify-content: center;
+    }
+}
