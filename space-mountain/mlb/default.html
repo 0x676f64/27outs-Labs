@@ -1,1126 +1,1151 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Diamond Analytics - MLB Platform</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
-  <style>
-   * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { 
-      font-family: 'Inter', -apple-system, sans-serif; 
-      transition: background-color 0.3s ease;
-      min-height: 100vh;
-      background-size: 200% 200%;
-      animation: glowShift 30s ease-in-out infinite;
-    }
-    @keyframes glowShift {
-      0% { background-position: center top; }
-      50% { background-position: center 15%; }
-      100% { background-position: center top; }
-    }
-    body.light { 
-      background:
-        radial-gradient(
-          ellipse at center,
-          rgba(0, 0, 0, 0) 40%,
-          rgba(0, 0, 0, 0.02) 100%
-        ),
-        radial-gradient(
-          circle at top center,
-          rgba(191, 13, 61, 0.03) 0%,
-          rgba(191, 13, 61, 0.01) 35%,
-          rgba(247, 250, 252, 0.95) 70%
-        ),
-        #f0f4f8;
-      color: #1e293b; 
-    }
-    body.dark { 
-      background:
-        radial-gradient(
-          ellipse at center,
-          rgba(0, 0, 0, 0) 40%,
-          rgba(0, 0, 0, 0.65) 100%
-        ),
-        radial-gradient(
-          circle at top center,
-          rgba(4, 30, 65, 0.45) 0%,
-          rgba(4, 30, 65, 0.15) 35%,
-          rgba(10, 14, 26, 0.9) 70%
-        ),
-        #0a0e1a;
-      color: #e2e8f0; 
-    }
-    nav { border-bottom: 1px solid; transition: all 0.3s ease; }
-    body.light nav { background-color: #ffffff; border-color: #e2e8f0; }
-    body.dark nav { background-color: #151b2e; border-color: #1e293b; }
-    .nav-container { max-width: 1400px; margin: 0 auto; padding: 0 80px; display: flex; justify-content: space-between; align-items: center; height: 60px; }
-    .logo { font-size: 15px; font-weight: 700; letter-spacing: -0.02em; height: 40px; display: flex; align-items: center; }
-    .logo img { height: 100%; width: auto; }
-    #logoImg { height: 3rem; }
-    .nav-links { display: flex; gap: 32px; align-items: center; }
-    .nav-links a { font-size: 13px; font-weight: 500; text-decoration: none; transition: opacity 0.2s; }
-    body.light .nav-links a { color: #1e293b; }
-    body.dark .nav-links a { color: #e2e8f0; }
-    .nav-links a:hover { opacity: 0.7; }
-    .theme-toggle { background: transparent; border: 1px solid; padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
-    body.light .theme-toggle { border-color: #e2e8f0; color: #1e293b; }
-    body.dark .theme-toggle { border-color: #1e293b; color: #e2e8f0; }
-    .main-content { max-width: 1400px; margin: 0 auto; padding: 40px 80px; }
-    .header { margin-bottom: 32px; }
-    .header h1 { font-size: 28px; font-weight: 700; margin: 0 0 8px 0; letter-spacing: -0.03em; }
-    .header p { font-size: 13px; margin: 0; font-weight: 400; }
-    body.light .header p { color: #64748b; }
-    body.dark .header p { color: #94a3b8; }
-    .games-section { display: flex; gap: 16px; margin-bottom: 24px; }
-    .date-picker-button { border-radius: 6px; padding: 12px 16px; border: 1px solid; width: 180px; flex-shrink: 0; cursor: pointer; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: space-between; transition: all 0.2s; position: relative; }
-    body.light .date-picker-button { background-color: #ffffff; border-color: #e2e8f0; color: #1e293b; }
-    body.dark .date-picker-button { background-color: #151b2e; border-color: #1e293b; color: #e2e8f0; }
-    .date-picker-button:hover { border-color: #bf0d3d; }
-    .date-picker-button::after { content: '▼'; font-size: 10px; opacity: 0.6; }
-    .calendar-dropdown { position: absolute; top: 60px; left: 0; z-index: 100; border-radius: 6px; padding: 16px; border: 1px solid; width: 280px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15); display: none; }
-    .calendar-dropdown.open { display: block; }
-    body.light .calendar-dropdown { background-color: #ffffff; border-color: #e2e8f0; }
-    body.dark .calendar-dropdown { background-color: #151b2e; border-color: #1e293b; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4); }
-    .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-    .calendar-month { font-size: 13px; font-weight: 600; }
-    .calendar-nav { background: transparent; border: none; font-size: 16px; cursor: pointer; padding: 4px 8px; }
-    body.light .calendar-nav { color: #1e293b; }
-    body.dark .calendar-nav { color: #e2e8f0; }
-    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
-    .calendar-day-label { font-size: 10px; font-weight: 600; text-align: center; padding: 6px 0; }
-    body.light .calendar-day-label { color: #64748b; }
-    body.dark .calendar-day-label { color: #94a3b8; }
-    .calendar-day { font-size: 11px; text-align: center; padding: 8px 0; border-radius: 4px; cursor: pointer; transition: all 0.2s; }
-    body.light .calendar-day { color: #1e293b; }
-    body.dark .calendar-day { color: #e2e8f0; }
-    .calendar-day:hover { background-color: rgba(191, 13, 61, 0.1); }
-    .calendar-day.selected { background-color: #bf0d3d; color: white; font-weight: 600; }
-    .calendar-day.empty { cursor: default; }
-    .calendar-day.empty:hover { background-color: transparent; }
-    .games-slider-container { flex: 1; position: relative; overflow: hidden; }
-    .games-slider { display: flex; gap: 16px; transition: transform 0.3s ease; }
-    .game-box { min-width: calc(25% - 12px); border-radius: 6px; padding: 16px; border: 1px solid; flex-shrink: 0; cursor: pointer; transition: all 0.2s ease; }
-    body.light .game-box { background-color: #ffffff; border-color: #e2e8f0; }
-    body.dark .game-box { background-color: #151b2e; border-color: #1e293b; }
-    .game-box:hover { transform: scale(1.03); box-shadow: 0 6px 20px rgba(191, 13, 61, 0.2); border-color: rgba(191, 13, 61, 0.4); }
-    .game-status { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; }
-    body.light .game-status { color: #64748b; }
-    body.dark .game-status { color: #94a3b8; }
-    .game-status.live { color: #bf0d3d; }
-    .game-matchup { display: flex; flex-direction: column; gap: 8px; }
-    .team-row { display: flex; justify-content: space-between; align-items: center; }
-    .team-logo { width: 28px; height: 28px; margin-right: 8px; }
-    .team-name { font-size: 13px; font-weight: 600; display: flex; align-items: center; flex: 1; }
-    .team-score { font-size: 18px; font-weight: 700; }
-    body.light .team-name, body.light .team-score { color: #041e41; }
-    body.dark .team-name, body.dark .team-score { color: #b9b9bb; }
-    .slider-arrow { position: absolute; right: 0; top: 50%; transform: translateY(-50%); background: transparent; border: 1px solid; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; transition: all 0.2s; z-index: 10; }
-    body.light .slider-arrow { border-color: #e2e8f0; color: #1e293b; background-color: #ffffff; }
-    body.dark .slider-arrow { border-color: #1e293b; color: #e2e8f0; background-color: #151b2e; }
-    .slider-arrow:hover { background-color: #bf0d3d; border-color: #bf0d3d; color: white; }
-    .slider-arrow.left { left: 0; right: auto; }
-    .no-games { text-align: center; padding: 40px 20px; font-size: 14px; font-weight: 500; }
-    body.light .no-games { color: #64748b; }
-    body.dark .no-games { color: #94a3b8; }
-    .info-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
-    .info-card { border-radius: 6px; padding: 20px; border: 1px solid; }
-    body.light .info-card { background-color: #ffffff; border-color: #e2e8f0; }
-    body.dark .info-card { background-color: #151b2e; border-color: #1e293b; }
-    .info-header { margin-bottom: 16px; }
-    .info-title { font-size: 14px; font-weight: 600; margin-bottom: 20px; margin: 0 auto; text-align: center; }
-    .league-tabs { display: flex; gap: 8px; margin-bottom: 12px; justify-content: center; }
-    .league-tab { background: transparent; border: 1px solid; padding: 6px 16px; border-radius: 4px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-    body.light .league-tab { border-color: #e2e8f0; color: #64748b; }
-    body.dark .league-tab { border-color: #1e293b; color: #94a3b8; }
-    .league-tab.active { background-color: #bf0d3d; border-color: #bf0d3d; color: white; }
-    .standings-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; max-height: 400px; overflow-y: auto; }
-    .division-column { border-radius: 6px; padding: 8px; border: 1px solid; }
-    body.light .division-column { background-color: #ffffff; border-color: #e2e8f0; }
-    body.dark .division-column { background-color: #151b2e; border-color: #1e293b; }
-    .division-title { font-size: 12px; font-weight: 700; margin-bottom: 8px; text-align: center; }
-    .division-list { display: flex; flex-direction: column; gap: 6px; }
-    .standing-row { display: flex; align-items: center; gap: 8px; font-size: 11px; padding: 4px 0; }
-    .standing-logo { width: 20px; height: 20px; flex-shrink: 0; }
-    .standing-record { font-weight: 600; min-width: 50px; }
-    .standing-gb { font-weight: 500; min-width: 30px; }
-    body.light .standing-gb { color: #64748b; }
-    body.dark .standing-gb { color: #94a3b8; }
-    .player-list { display: flex; flex-direction: column; gap: 10px; max-height: 400px; overflow-y: auto; }
-    .player-item { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 4px; transition: all 0.2s; }
-    body.light .player-item { background-color: #f7fafc; }
-    body.dark .player-item { background-color: #0a0e1a; }
-    .rating-badge { border-radius: 0.1875rem; flex: 0 0 auto; margin: 0 0.3rem 0 0; width: 0.75rem; height: 0.75rem; z-index: 1; }
-    .player-info { flex: 1; }
-    .player-item-name { font-size: 12px; font-weight: 600; margin-bottom: 2px; }
-    .player-item-team { font-size: 10px; font-weight: 500; }
-    body.light .player-item-team { color: #64748b; }
-    body.dark .player-item-team { color: #94a3b8; }
-    .player-rating { font-size: 14px; font-weight: 700; }
-    .prediction-list { display: flex; flex-direction: column; gap: 12px; }
-    .prediction-row { display: flex; align-items: center; gap: 10px; }
-    .prediction-logo { width: 24px; height: 24px; flex-shrink: 0; }
-    .prediction-bar-container { flex: 1; height: 20px; border-radius: 4px; overflow: hidden; position: relative; }
-    body.light .prediction-bar-container { background-color: #f1f5f9; }
-    body.dark .prediction-bar-container { background-color: #0a0e1a; }
-    .prediction-bar { height: 100%; background-color: #bf0d3d; transition: width 0.5s ease; }
-    .prediction-percentage { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-size: 11px; font-weight: 600; }
-    body.light .prediction-percentage { color: #1e293b; }
-    body.dark .prediction-percentage { color: #e2e8f0; }
-    .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
-    .chart-card { border-radius: 6px; padding: 20px; border: 1px solid; }
-    body.light .chart-card { background-color: #ffffff; border-color: #e2e8f0; }
-    body.dark .chart-card { background-color: #151b2e; border-color: #1e293b; }
-    .chart-header { margin-bottom: 16px; }
-    .chart-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
-    .chart-subtitle { font-size: 11px; font-weight: 500; }
-    body.light .chart-subtitle { color: #64748b; }
-    body.dark .chart-subtitle { color: #94a3b8; }
-    .metrics-card { border-radius: 6px; padding: 20px; border: 1px solid; }
-    body.light .metrics-card { background-color: #ffffff; border-color: #e2e8f0; }
-    body.dark .metrics-card { background-color: #151b2e; border-color: #1e293b; }
-    .metrics-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 16px; }
-    .metric-item { font-size: 11px; }
-    .metric-label { margin-bottom: 6px; font-weight: 500; }
-    body.light .metric-label { color: #64748b; }
-    body.dark .metric-label { color: #94a3b8; }
-    .metric-value { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
-    .metric-change { font-size: 11px; font-weight: 600; }
-    .metric-change.positive { color: #10b981; }
-    .metric-change.negative { color: #ef4444; }
-    canvas { max-height: 200px; }
-    .loading { text-align: center; padding: 20px; font-size: 13px; color: #64748b; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>MLB Analytics — XLabs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --red:#bf0d3d;--navy:#041e42;
+  --font:'Rubik',sans-serif;--mono:'DM Mono',monospace;
+  --r:10px;--ease:cubic-bezier(.25,.46,.45,.94);
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);min-height:100vh;-webkit-font-smoothing:antialiased;transition:background .3s,color .3s}
+body.dark{
+  background-color:#0a0e1a;
+  background-image:radial-gradient(circle at top center,rgba(4,30,65,.45) 0%,rgba(4,30,65,.15) 35%,rgba(10,14,26,.9) 70%),radial-gradient(ellipse at center,rgba(0,0,0,0) 40%,rgba(0,0,0,.65) 100%);
+  color:#e2e8f0;--sf:#151b2e;--sf2:#0d1223;--bd:#1e293b;--tx:#e2e8f0;--mu:#94a3b8;--nav:#151b2e;
+  --sh:0 2px 14px rgba(0,0,0,.45);
+}
+body.light{
+  background-color:#f0f4f8;
+  background-image:radial-gradient(circle at top center,rgba(191,13,61,.03) 0%,rgba(191,13,61,.01) 35%,rgba(247,250,252,.95) 70%),radial-gradient(ellipse at center,rgba(0,0,0,0) 40%,rgba(0,0,0,.02) 100%);
+  color:#1e293b;--sf:#ffffff;--sf2:#f7fafc;--bd:#e2e8f0;--tx:#1e293b;--mu:#64748b;--nav:#ffffff;
+  --sh:0 2px 14px rgba(0,0,0,.07);
+}
+
+/* ── NAV ── */
+nav{position:sticky;top:0;z-index:200;height:56px;background:var(--nav);border-bottom:1px solid var(--bd);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);transition:background .3s,border-color .3s}
+.nav-in{max-width:1400px;margin:0 auto;padding:0 28px;height:100%;display:flex;align-items:center;gap:0}
+.brand{display:flex;align-items:center;gap:8px;text-decoration:none;flex-shrink:0;margin-right:24px;transition:opacity .2s}
+.brand:hover{opacity:.8}
+.brand-name{font-size:.85rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:var(--tx);line-height:1}
+.nav-links{display:flex;align-items:center;gap:2px;flex:1;overflow-x:auto;scrollbar-width:none}
+.nav-links::-webkit-scrollbar{display:none}
+.nav-a{font-size:12px;font-weight:500;color:var(--mu);text-decoration:none;padding:6px 10px;border-radius:6px;white-space:nowrap;transition:color .2s}
+.nav-a:hover{color:var(--tx)}
+.nav-a.active{color:var(--red);font-weight:700}
+.nav-end{display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:auto}
+.tb{display:flex;align-items:center;gap:5px;background:transparent;border:1px solid var(--bd);color:var(--mu);font-family:var(--font);font-size:11px;font-weight:600;letter-spacing:.5px;padding:5px 12px;border-radius:99px;cursor:pointer;transition:color .2s,border-color .2s;white-space:nowrap}
+.tb svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.tb:hover{color:var(--red);border-color:rgba(191,13,61,.45)}
+
+/* ── MAIN ── */
+.main{max-width:1400px;margin:0 auto;padding:24px 28px 64px}
+
+/* ── PAGE HEADER ── */
+.page-hdr{margin-bottom:24px}
+.page-hdr h1{font-size:clamp(1.35rem,3vw,1.75rem);font-weight:800;letter-spacing:-.04em;color:var(--tx);margin-bottom:4px}
+.page-hdr p{font-size:13px;color:var(--mu)}
+.page-hdr em{color:var(--red);font-style:normal}
+
+/* ── SECTION HEADER ── */
+.sec-hdr{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px}
+.sec-title{font-family:var(--mono);font-size:9px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--mu)}
+.sec-title span{color:var(--red)}
+
+/* ── GAMES STRIP ── */
+.strip-section{margin-bottom:28px}
+.date-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.date-btn{position:relative;display:flex;align-items:center;gap:6px;background:var(--sf);border:1px solid var(--bd);color:var(--tx);font-family:var(--font);font-size:12px;font-weight:600;padding:7px 13px;border-radius:var(--r);cursor:pointer;transition:border-color .2s;white-space:nowrap;flex-shrink:0}
+.date-btn:hover{border-color:rgba(191,13,61,.5)}
+.date-btn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;opacity:.55}
+.cal-drop{display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:300;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:14px;width:272px;box-shadow:0 16px 50px rgba(0,0,0,.28)}
+.cal-drop.open{display:block}
+.cal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.cal-month{font-size:12px;font-weight:700;color:var(--tx)}
+.cal-nav-btn{background:none;border:none;color:var(--tx);font-size:16px;cursor:pointer;padding:2px 7px;line-height:1;border-radius:4px;transition:background .15s}
+.cal-nav-btn:hover{background:rgba(191,13,61,.12);color:var(--red)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.cal-lbl{font-family:var(--mono);font-size:9px;font-weight:600;text-align:center;padding:5px 0;color:var(--mu);letter-spacing:.5px}
+.cal-day{font-size:11px;text-align:center;padding:7px 0;border-radius:5px;cursor:pointer;transition:background .15s,color .15s;color:var(--tx)}
+.cal-day:hover{background:rgba(191,13,61,.1);color:var(--red)}
+.cal-day.sel{background:var(--red);color:#fff;font-weight:700}
+.cal-day.empty{cursor:default;color:transparent}
+.cal-day.empty:hover{background:transparent}
+
+.strip-outer{position:relative;overflow:hidden}
+.strip-fade-l,.strip-fade-r{position:absolute;top:0;bottom:0;width:44px;z-index:10;pointer-events:none;transition:opacity .2s}
+.strip-fade-l{left:0;opacity:0}
+.strip-fade-r{right:0}
+body.dark .strip-fade-l{background:linear-gradient(to right,#0a0e1a,transparent)}
+body.dark .strip-fade-r{background:linear-gradient(to left,#0a0e1a,transparent)}
+body.light .strip-fade-l{background:linear-gradient(to right,#f0f4f8,transparent)}
+body.light .strip-fade-r{background:linear-gradient(to left,#f0f4f8,transparent)}
+.strip{display:flex;gap:10px;transition:transform .3s var(--ease)}
+.gc{min-width:164px;max-width:164px;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:12px 13px;cursor:pointer;transition:border-color .2s,box-shadow .2s,transform .15s;flex-shrink:0}
+.gc:hover{border-color:rgba(191,13,61,.4);box-shadow:0 4px 20px rgba(191,13,61,.15);transform:translateY(-2px)}
+.gc-st{font-family:var(--mono);font-size:9px;font-weight:500;letter-spacing:1.2px;text-transform:uppercase;color:var(--mu);margin-bottom:10px;display:flex;align-items:center;gap:5px}
+.gc-st.live{color:var(--red)}
+.live-dot{width:5px;height:5px;background:var(--red);border-radius:50%;animation:blink 1.3s ease-in-out infinite;flex-shrink:0}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
+.gc-matchup{display:flex;flex-direction:column;gap:7px}
+.gc-team{display:flex;align-items:center;justify-content:space-between}
+.gc-logo{width:22px;height:22px;object-fit:contain;flex-shrink:0;margin-right:7px}
+.gc-abbr{font-size:12px;font-weight:700;color:var(--tx);flex:1}
+.gc-score{font-family:var(--mono);font-size:16px;font-weight:700;color:var(--tx)}
+.gc-score.hi{color:var(--red)}
+.strip-arrow{position:absolute;top:50%;transform:translateY(-50%);width:30px;height:30px;border-radius:50%;background:var(--sf);border:1px solid var(--bd);color:var(--tx);font-size:14px;cursor:pointer;display:none;align-items:center;justify-content:center;z-index:20;transition:background .2s,border-color .2s;box-shadow:var(--sh)}
+.strip-arrow:hover{background:var(--red);border-color:var(--red);color:#fff}
+.strip-arrow.prev{left:-15px}
+.strip-arrow.next{right:-15px}
+
+/* ── MAIN GRID ── */
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+@media(max-width:1024px){.grid3{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}}
+@media(max-width:640px){.grid3,.grid2{grid-template-columns:1fr}}
+
+/* ── CARD ── */
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:18px;box-shadow:var(--sh)}
+.card-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:8px;width: 51%;}
+.card-title{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:1.8px;text-transform:uppercase;color:var(--mu)}
+.card-badge{font-family:var(--mono);font-size:8px;font-weight:500;letter-spacing:.8px;text-transform:uppercase;color:var(--red);background:rgba(191,13,61,.1);border:1px solid rgba(191,13,61,.2);padding:3px 8px;border-radius:99px}
+
+/* ── INNER TABS ── */
+.itabs{display:flex;gap:3px;background:var(--sf2);border-radius:6px;padding:3px;align-items: center; justify-content: center}
+.itab{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;border:none;background:transparent;color:var(--mu);padding:5px 10px;border-radius:4px;cursor:pointer;transition:background .2s,color .2s;white-space:nowrap}
+.itab.on{background:var(--red);color:#fff}
+
+/* ── STANDINGS ── */
+.std-divs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0}
+.std-div-col{padding:0 14px;border-right:1px solid var(--bd)}
+.std-div-col:first-child{padding-left:0}
+.std-div-col:last-child{border-right:none;padding-right:0}
+.std-div-lbl{font-family:var(--mono);font-size:8px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--mu);padding-bottom:5px;border-bottom:1px solid var(--bd);margin-bottom:4px}
+/* header row: team col auto, W-L fixed, GB fixed — no stretching */
+.std-col-hdr{display:flex;justify-content:space-between;padding:0 0 2px;margin-bottom:1px}
+.std-col-hdr span{font-family:var(--mono);font-size:7px;font-weight:500;letter-spacing:.8px;text-transform:uppercase;color:var(--mu)}
+.std-col-hdr .ch-wl{width:38px;text-align:right}
+.std-col-hdr .ch-gb{width:24px;text-align:right}
+/* each team row: logo+name flex-grow, W-L fixed, GB fixed */
+.std-row{display:flex;align-items:center;gap:0;padding:3px 0;border-bottom:1px solid rgba(30,41,59,.25)}
+.std-row:last-child{border-bottom:none}
+.std-row:hover .std-name{color:var(--red)}
+.std-team{display:flex;align-items:center;gap:5px;flex:1;min-width:0}
+.std-logo{width:18px;height:18px;object-fit:contain;flex-shrink:0}
+.std-name{font-size:11px;font-weight:700;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:color .15s}
+.std-rec{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--tx);width:38px;text-align:right;flex-shrink:0}
+.std-gb{font-family:var(--mono);font-size:10px;color:var(--mu);width:24px;text-align:right;flex-shrink:0}
+/* Mobile: stack divisions vertically */
+@media(max-width:600px){
+  .std-divs{grid-template-columns:1fr}
+  .std-div-col{padding:0;border-right:none;border-bottom:1px solid var(--bd);padding-bottom:10px;margin-bottom:4px}
+  .std-div-col:last-child{border-bottom:none;padding-bottom:0;margin-bottom:0}
+}
+.streak-w{color:#10b981}
+.streak-l{color:#ef4444}
+.l10-dots{display:flex;gap:2px;align-items:center}
+.l10d{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+
+/* ── PERFORMERS ── */
+.perf-panel{display:none}
+.perf-panel.on{display:flex;flex-direction:column;gap:5px;max-height:380px;overflow-y:auto;scrollbar-width:thin}
+.perf-panel::-webkit-scrollbar{width:3px}
+.perf-panel::-webkit-scrollbar-thumb{background:var(--bd);border-radius:99px}
+.perf-row{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:7px;transition:background .15s;cursor:default}
+.perf-row:hover{background:var(--sf2)}
+.perf-rank{font-family:var(--mono);font-size:9px;color:var(--mu);width:14px;text-align:center;flex-shrink:0}
+.perf-photo{width:34px;height:34px;border-radius:50%;object-fit:cover;flex-shrink:0;background:var(--sf2);border:1px solid var(--bd)}
+.perf-info{flex:1;min-width:0}
+.perf-name{font-size:12px;font-weight:700;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.perf-meta{font-family:var(--mono);font-size:9px;color:var(--mu);margin-top:1px}
+.perf-stat-col{text-align:right;flex-shrink:0}
+.perf-stat-val{font-family:var(--mono);font-size:10px;color:var(--mu)}
+.grade{width:38px;height:38px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:13px;font-weight:700;color:#fff;flex-shrink:0;letter-spacing:-.02em}
+.perf-loading{text-align:center;padding:28px;font-family:var(--mono);font-size:11px;color:var(--mu)}
+
+/* ── WS PREDICTIONS ── */
+.ws-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.ws-logo{width:26px;height:26px;object-fit:contain;flex-shrink:0}
+.ws-bar-wrap{flex:1;height:20px;border-radius:5px;overflow:hidden;position:relative;background:var(--sf2)}
+.ws-bar{height:100%;background:linear-gradient(90deg,#bf0d3d,rgba(191,13,61,.55));border-radius:5px;transition:width .7s var(--ease)}
+.ws-pct{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:10px;font-weight:700;color:var(--tx)}
+.ws-abbr{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--mu);width:28px;text-align:right;flex-shrink:0}
+.ws-note{font-family:var(--mono);font-size:8px;color:var(--mu);opacity:.55;margin-top:10px;line-height:1.4}
+
+/* ── METRICS ROW ── */
+.metrics-wrap{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:18px;margin-bottom:16px;box-shadow:var(--sh)}
+.met-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:0;align-items:stretch}
+@media(max-width:800px){.met-grid{grid-template-columns:repeat(3,1fr)}}
+.met-item{padding:4px 16px;border-right:1px solid var(--bd)}
+.met-item:first-child{padding-left:0}
+.met-item:last-child{border-right:none;padding-right:0}
+.met-lbl{font-family:var(--mono);font-size:8px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:var(--mu);margin-bottom:4px}
+.met-val{font-size:20px;font-weight:800;color:var(--tx);letter-spacing:-.03em;line-height:1;margin-bottom:3px}
+.met-chg{font-family:var(--mono);font-size:10px;font-weight:600}
+.chg-pos{color:#10b981}
+.chg-neg{color:#ef4444}
+
+/* ── CHARTS ── */
+.chart-wrap{position:relative;height:190px}
+.chart-sub{font-family:var(--mono);font-size:9px;color:var(--mu);margin-bottom:12px;letter-spacing:.3px}
+
+/* ── RUN DIFF ── */
+.rdiff-list{display:flex;flex-direction:column;gap:5px;max-height:190px;overflow-y:auto;scrollbar-width:thin}
+.rdiff-list::-webkit-scrollbar{width:3px}
+.rdiff-list::-webkit-scrollbar-thumb{background:var(--bd);border-radius:99px}
+.rd-row{display:flex;align-items:center;gap:7px}
+.rd-logo{width:16px;height:16px;object-fit:contain;flex-shrink:0}
+.rd-bar-wrap{flex:1;height:13px;border-radius:3px;overflow:hidden;background:var(--sf2)}
+.rd-bar{height:100%;border-radius:3px;transition:width .5s var(--ease)}
+.rd-val{font-family:var(--mono);font-size:9px;color:var(--mu);width:32px;text-align:right;flex-shrink:0}
+
+/* ── MOBILE ── */
+@media(max-width:700px){
+  .main{padding:16px 14px 48px}
+  .nav-a.hide-sm{display:none}
+  .gc{min-width:148px;max-width:148px}
+  .met-grid{grid-template-columns:repeat(2,1fr)}
+  .met-item{border-right:none;border-bottom:1px solid var(--bd);padding:8px 0}
+  .met-item:last-child{border-bottom:none}
+}
+
+/* ── UTIL ── */
+.ld{text-align:center;padding:24px;font-family:var(--mono);font-size:11px;color:var(--mu)}
+.err{text-align:center;padding:20px;font-family:var(--mono);font-size:10px;color:#ef4444}
+</style>
 </head>
-<body class="light">
-  <nav>
-    <div class="nav-container">
-      <div class="logo">
-      <a href="default.html">
-        <img id="logoImg" src="assets/site-logos/logo-dark.svg" alt="Diamond Analytics">
-      </a>
-      </div>
-      <div class="nav-links">
-        <a href="/hub.html">Dashboard</a>
-        <a href="#">Players</a>
-        <a href="#">Teams</a>
-        <a href="#">Gamefeed</a>
-        <a href="#">Predictions</a>
-        <a href="#">Metrics</a>
-        <a href="#">Research</a>
-        <button class="theme-toggle" id="themeToggle">Dark</button>
-      </div>
+<body class="dark">
+<nav>
+  <div class="nav-in">
+    <a href="/hub.html" class="brand">
+      <svg width="42" height="26" viewBox="0 0 68 42" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <ellipse cx="40" cy="39.5" rx="18" ry="2.5" fill="#041e42" opacity=".4"/>
+        <path d="M12 30 C4 30 1 24 1 19.5 C1 13.5 6.5 10 12 10 C12.5 10 13 10 13.5 10.1 C14.5 6.5 18 4 23 4 C26 4 28.5 5.2 30.2 7 C32 5.4 34.5 4.4 37 4.4 C43 4.4 48 8.8 48 14.5 C48 14.9 47.9 15.3 47.8 15.7 C48.8 15.3 50 15.1 51.5 15.1 C57 15.1 61 18.5 61 23 C61 27.5 57 30.9 51.5 30.9 Q51 31 12 30Z" fill="#FFFFFF"/>
+        <path d="M30.2 7 C32 5.4 34.5 4.4 37 4.4 C43 4.4 48 8.8 48 14.5 C46 13.5 43.5 13 41 13 C37 13 33.5 14.8 31.5 17.5 C30 13.5 27 9.8 22.5 8 C24.5 6.8 27.5 6.4 30.2 7Z" fill="#F0D060" opacity=".48"/>
+        <line x1="1" y1="18.5" x2="9" y2="18.5" stroke="#bf0d3d" stroke-width="1.4" stroke-linecap="round" opacity=".75"/>
+        <line x1="2" y1="22.5" x2="8" y2="22.5" stroke="#bf0d3d" stroke-width="1" stroke-linecap="round" opacity=".55"/>
+        <line x1="0" y1="14.5" x2="6" y2="14.5" stroke="#bf0d3d" stroke-width=".8" stroke-linecap="round" opacity=".4"/>
+        <path d="M14 28 Q32 31 51 29" stroke="rgba(255,255,255,.18)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      </svg>
+      <span class="brand-name">XLABS</span>
+    </a>
+    <div class="nav-links">
+      <a href="/hub.html" class="nav-a">Dashboard</a>
+      <a href="#" class="nav-a active">MLB</a>
+      <a href="#" class="nav-a hide-sm">Players</a>
+      <a href="#" class="nav-a hide-sm">Teams</a>
+      <a href="#" class="nav-a hide-sm">Predictions</a>
+      <a href="#" class="nav-a hide-sm">Research</a>
     </div>
-  </nav>
-
-  <div class="main-content">
-    <div class="header">
-      <h1>Performance Dashboard</h1>
-      <p>Advanced metrics and predictive analytics for the 2026 season</p>
+    <div class="nav-end">
+      <button class="tb" id="tb">
+        <svg id="ic-d" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg id="ic-l" viewBox="0 0 24 24" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        <span id="tl">Light</span>
+      </button>
     </div>
+  </div>
+</nav>
+<div class="main">
 
-    <div class="games-section">
-      <div style="position: relative;">
-        <div class="date-picker-button" id="datePickerBtn">
-          <span id="selectedDateText">Today</span>
-        </div>
-        <div class="calendar-dropdown" id="calendarDropdown">
-          <div class="calendar-header">
-            <button class="calendar-nav" id="prevMonth">‹</button>
-            <div class="calendar-month" id="calendarMonth"></div>
-            <button class="calendar-nav" id="nextMonth">›</button>
+  <!-- Page header -->
+  <div class="page-hdr">
+    <h1>MLB <em>Performance</em> Dashboard</h1>
+    <p>Advanced metrics &amp; predictive analytics &mdash; 2025 season</p>
+  </div>
+
+  <!-- Games strip -->
+  <div class="strip-section">
+    <div class="date-row">
+      <div style="position:relative">
+        <button class="date-btn" id="datebtn">
+          <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span id="date-lbl">Today</span>
+          <svg viewBox="0 0 24 24" style="width:10px;opacity:.45"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="cal-drop" id="cal-drop">
+          <div class="cal-hdr">
+            <button class="cal-nav-btn" id="cal-prev">&#8249;</button>
+            <div class="cal-month" id="cal-month"></div>
+            <button class="cal-nav-btn" id="cal-next">&#8250;</button>
           </div>
-          <div class="calendar-grid" id="calendarGrid"></div>
+          <div class="cal-grid" id="cal-grid"></div>
         </div>
       </div>
-
-      <div class="games-slider-container">
-        <button class="slider-arrow left" id="prevGames" style="display: none;">‹</button>
-        <div class="games-slider" id="gamesSlider">
-          <div class="loading">Loading games...</div>
-        </div>
-        <button class="slider-arrow" id="nextGames" style="display: none;">›</button>
-      </div>
+      <div class="sec-title" id="game-count-lbl"></div>
     </div>
-
-    <div class="info-grid">
-      <div class="info-card">
-        <div class="info-header">
-          <div class="info-title">Standings</div>
-          <div class="league-tabs">
-            <button class="league-tab active" id="alTab">AL</button>
-            <button class="league-tab" id="nlTab">NL</button>
-          </div>
-        </div>
-        <div class="standings-list" id="standingsList">
-          <div class="loading">Loading standings...</div>
-        </div>
-      </div>
-
-      <div class="info-card">
-        <div class="info-header">
-          <div class="info-title">Top Performers</div>
-        </div>
-        <div class="player-list" id="topPerformersList"></div>
-      </div>
-
-      <div class="info-card">
-        <div class="info-header">
-          <div class="info-title">2026 World Series Prediction</div>
-        </div>
-        <div class="prediction-list" id="predictionList"></div>
-      </div>
-    </div>
-
-    <div class="charts-grid">
-      <div class="chart-card">
-        <div class="chart-header">
-          <div class="chart-title">Performance Trends</div>
-          <div class="chart-subtitle">Monthly OPS and wOBA progression</div>
-        </div>
-        <canvas id="performanceChart"></canvas>
-      </div>
-
-      <div class="chart-card">
-        <div class="chart-header">
-          <div class="chart-title">wAR Projection Model</div>
-          <div class="chart-subtitle">Historical vs. projected performance</div>
-        </div>
-        <canvas id="projectionChart"></canvas>
-      </div>
-    </div>
-
-    <div class="metrics-card">
-      <div class="chart-header">
-        <div class="chart-title">Advanced Metrics Breakdown</div>
-        <div class="chart-subtitle">Comprehensive statistical analysis</div>
-      </div>
-      <div class="metrics-grid" id="metricsGrid"></div>
+    <div class="strip-outer" id="strip-outer">
+      <div class="strip-fade-l" id="fade-l"></div>
+      <div class="strip-fade-r" id="fade-r"></div>
+      <div class="strip" id="strip"><div class="ld">Loading games…</div></div>
+      <button class="strip-arrow prev" id="sprev">&#8249;</button>
+      <button class="strip-arrow next" id="snext">&#8250;</button>
     </div>
   </div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
-  <script>
-// ===========================
-// CONSTANTS & CONFIGURATION
-// ===========================
-const CONFIG = {
-  API: {
-    BASE: 'https://statsapi.mlb.com/api/v1',
-    GAME_FEED: 'https://statsapi.mlb.com/api/v1.1/game',
-    LOGO_BASE: 'https://www.mlbstatic.com/team-logos',
-    LOGO_DARK: 'https://www.mlbstatic.com/team-logos/team-cap-on-dark'
-  },
-  REFRESH_INTERVAL: 30000, // 30 seconds
-  GAMES_PER_VIEW: 4
-};
+ <!-- Standings -->
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-hdr" style="margin-bottom:12px">
+      <div class="card-title">Standings</div>
+      <div class="itabs">
+        <button class="itab on" id="al-tab">AL</button>
+        <button class="itab" id="nl-tab">NL</button>
+      </div>
+    </div>
+    <div id="std-list"><div class="ld">Loading…</div></div>
+  </div>
 
-const MOCK_DATA = {
-  topPerformers: [
-    { name: 'Shohei Ohtani', team: 'LAD', rating: 98 },
-    { name: 'Aaron Judge', team: 'NYY', rating: 95 },
-    { name: 'Mookie Betts', team: 'LAD', rating: 93 },
-    { name: 'Bobby Witt Jr.', team: 'KC', rating: 87 },
-    { name: 'Bryce Harper', team: 'PHI', rating: 85 }
-  ],
-  wsPredictions: [
-    { teamId: 119, percentage: 28 },
-    { teamId: 147, percentage: 22 },
-    { teamId: 144, percentage: 18 },
-    { teamId: 117, percentage: 15 }
-  ],
-  metrics: [
-    { label: 'wRC+', value: '168', change: '+12' },
-    { label: 'ISO', value: '.312', change: '+.045' },
-    { label: 'BABIP', value: '.298', change: '-.015' },
-    { label: 'K%', value: '23.1%', change: '-2.3%' },
-    { label: 'BB%', value: '14.8%', change: '+1.9%' },
-    { label: 'Hard%', value: '48.2%', change: '+5.1%' }
-  ]
-};
+  <!-- Row 1: Top Performers | WS Predictions -->
+  <div class="grid2" style="margin-bottom:16px">
 
-// ===========================
-// STATE MANAGEMENT
-// ===========================
-const state = {
-  currentLeague: 'AL',
-  currentDate: new Date(),
-  currentSlide: 0,
-  standingsData: {
-    AL: { East: [], Central: [], West: [] },
-    NL: { East: [], Central: [], West: [] }
-  },
-  charts: {
-    performance: null,
-    projection: null
-  }
-};
-
-// ===========================
-// UTILITY FUNCTIONS
-// ===========================
-const utils = {
-  formatDate: (date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  },
-
-  formatTime: (dateString) => {
-    return new Date(dateString).toLocaleTimeString([], {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
-    });
-  },
-
-  isDarkMode: () => document.body.classList.contains('dark'),
-
-  getLogoUrl: (teamId) => {
-    const isDark = utils.isDarkMode();
-    return isDark
-      ? `${CONFIG.API.LOGO_DARK}/${teamId}.svg`
-      : `${CONFIG.API.LOGO_BASE}/${teamId}.svg`;
-  },
-
-  getRatingColor: (rating) => {
-    if (rating >= 88) return '#3b82f6';
-    if (rating >= 76) return '#14b8a6';
-    if (rating >= 66) return '#22c55e';
-    if (rating >= 56) return '#eab308';
-    if (rating >= 46) return '#fb923c';
-    if (rating >= 31) return '#f97316';
-    return '#ef4444';
-  },
-
-  getDivisionInfo: (divisionId) => {
-    const divisions = {
-      201: { league: 'AL', division: 'East' },
-      202: { league: 'AL', division: 'Central' },
-      200: { league: 'AL', division: 'West' },
-      204: { league: 'NL', division: 'East' },
-      205: { league: 'NL', division: 'Central' },
-      203: { league: 'NL', division: 'West' }
-    };
-    return divisions[divisionId] || { league: 'AL', division: 'East' };
-  },
-
-  getChartColors: () => {
-    const isDark = utils.isDarkMode();
-    return {
-      text: isDark ? '#94a3b8' : '#64748b',
-      grid: isDark ? '#1e293b' : '#e2e8f0',
-      primary: isDark ? '#ffffff' : '#041e41'
-    };
-  }
-};
-
-// ===========================
-// API FUNCTIONS
-// ===========================
-const api = {
-  fetchTeamAbbr: async (teamId) => {
-    try {
-      const response = await fetch(`${CONFIG.API.BASE}/teams/${teamId}`);
-      const data = await response.json();
-      return data.teams[0].abbreviation || 'N/A';
-    } catch (error) {
-      console.error('Error fetching team abbreviation:', error);
-      return 'N/A';
-    }
-  },
-
-  fetchGameDetails: async (gamePk) => {
-    try {
-      const response = await fetch(`${CONFIG.API.GAME_FEED}/${gamePk}/feed/live`);
-      const data = await response.json();
-      
-      if (data?.liveData) {
-        const linescore = data.liveData.linescore;
-        const inningHalf = linescore.inningHalf === 'Top' ? 'TOP' : 'BOT';
-        const currentInning = linescore.currentInning || '';
-        return `${inningHalf} ${currentInning}`;
-      }
-    } catch (error) {
-      console.error('Error fetching game details:', error);
-    }
-    return 'In Progress';
-  },
-
-  fetchStandings: async () => {
-    try {
-      const url = `${CONFIG.API.BASE}/standings?leagueId=103,104&season=2025&standingsTypes=regularSeason`;
-      const response = await fetch(url);
-      const data = await response.json();
-
-      // Reset standings data
-      state.standingsData.AL = { East: [], Central: [], West: [] };
-      state.standingsData.NL = { East: [], Central: [], West: [] };
-
-      data.records.forEach(division => {
-        const divisionId = division.division?.id;
-        if (!divisionId) return;
-
-        const { league, division: divKey } = utils.getDivisionInfo(divisionId);
-
-        (division.teamRecords || []).forEach(team => {
-          state.standingsData[league][divKey].push({
-            teamId: team.team.id,
-            wins: team.wins,
-            losses: team.losses,
-            gamesBack: team.gamesBack,
-            divisionRank: team.divisionRank
-          });
-        });
-      });
-
-      // Sort each division by rank
-      ['East', 'Central', 'West'].forEach(div => {
-        state.standingsData.AL[div].sort((a, b) => a.divisionRank - b.divisionRank);
-        state.standingsData.NL[div].sort((a, b) => a.divisionRank - b.divisionRank);
-      });
-
-      standings.render();
-    } catch (error) {
-      console.error('Error fetching standings:', error);
-      const list = document.getElementById('standingsList');
-      if (list) list.innerHTML = '<div class="loading">Failed to load standings</div>';
-    }
-  },
-
-  fetchGames: async () => {
-    const slider = document.getElementById('gamesSlider');
-    if (!slider) return;
-
-    const dateStr = utils.formatDate(state.currentDate);
-    const url = `${CONFIG.API.BASE}/schedule?sportId=1&date=${dateStr}`;
-    
-    slider.innerHTML = '<div class="loading">Loading games...</div>';
-    state.currentSlide = 0;
-
-    try {
-      const response = await fetch(url);
-      const data = await response.json();
-
-      if (!data.dates.length || !data.dates[0].games.length) {
-        slider.innerHTML = '<div class="game-box"><div class="no-games">No Games Today</div></div>';
-        games.updateNavButtons(false);
-        return;
-      }
-
-      const gameBoxes = await Promise.all(
-        data.dates[0].games.map(game => games.createGameBox(game))
-      );
-
-      // Sort games: Live first, then scheduled, then final
-      gameBoxes.sort((a, b) => {
-        if (a.isLive && !b.isLive) return -1;
-        if (!a.isLive && b.isLive) return 1;
-        if (a.isFinal && !b.isFinal) return 1;
-        if (!a.isFinal && b.isFinal) return -1;
-        return a.gameDate - b.gameDate;
-      });
-
-      slider.innerHTML = '';
-      gameBoxes.forEach(({ element }) => slider.appendChild(element));
-
-      games.updateNavButtons(gameBoxes.length > CONFIG.GAMES_PER_VIEW);
-    } catch (error) {
-      console.error('Error fetching games:', error);
-      slider.innerHTML = '<div class="game-box"><div class="no-games">Failed to load games</div></div>';
-    }
-  }
-};
-
-// ===========================
-// CALENDAR MODULE
-// ===========================
-const calendar = {
-  render: () => {
-    const grid = document.getElementById('calendarGrid');
-    const monthEl = document.getElementById('calendarMonth');
-    if (!grid || !monthEl) return;
-
-    const year = state.currentDate.getFullYear();
-    const month = state.currentDate.getMonth();
-    
-    monthEl.textContent = state.currentDate.toLocaleDateString('en-US', {
-      month: 'long',
-      year: 'numeric'
-    });
-
-    const firstDay = new Date(year, month, 1).getDay();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const dayLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
-    
-    let html = dayLabels.map(d => `<div class="calendar-day-label">${d}</div>`).join('');
-    
-    // Empty cells before first day
-    for (let i = 0; i < firstDay; i++) {
-      html += '<div class="calendar-day empty"></div>';
-    }
-    
-    const selectedDay = state.currentDate.getDate();
-    
-    for (let day = 1; day <= daysInMonth; day++) {
-      const isSelected = day === selectedDay ? 'selected' : '';
-      html += `<div class="calendar-day ${isSelected}" data-day="${day}">${day}</div>`;
-    }
-    
-    grid.innerHTML = html;
-    
-    // Add click handlers
-    grid.querySelectorAll('.calendar-day:not(.empty)').forEach(el => {
-      el.addEventListener('click', (e) => {
-        state.currentDate.setDate(parseInt(e.target.dataset.day));
-        calendar.updateDateText();
-        calendar.render();
-        api.fetchGames();
-        document.getElementById('calendarDropdown')?.classList.remove('open');
-      });
-    });
-  },
-
-  updateDateText: () => {
-    const textEl = document.getElementById('selectedDateText');
-    if (!textEl) return;
-
-    const today = new Date();
-    const isToday = state.currentDate.toDateString() === today.toDateString();
-    
-    textEl.textContent = isToday
-      ? 'Today'
-      : state.currentDate.toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric',
-          year: 'numeric'
-        });
-  },
-
-  changeMonth: (delta) => {
-    state.currentDate.setMonth(state.currentDate.getMonth() + delta);
-    calendar.updateDateText();
-    calendar.render();
-    api.fetchGames();
-  },
-
-  initEvents: () => {
-    const pickerBtn = document.getElementById('datePickerBtn');
-    const dropdown = document.getElementById('calendarDropdown');
-    const prevBtn = document.getElementById('prevMonth');
-    const nextBtn = document.getElementById('nextMonth');
-
-    if (pickerBtn && dropdown) {
-      pickerBtn.addEventListener('click', () => {
-        dropdown.classList.toggle('open');
-      });
-
-      document.addEventListener('click', (e) => {
-        if (!pickerBtn.contains(e.target) && !dropdown.contains(e.target)) {
-          dropdown.classList.remove('open');
-        }
-      });
-    }
-
-    if (prevBtn) prevBtn.addEventListener('click', () => calendar.changeMonth(-1));
-    if (nextBtn) nextBtn.addEventListener('click', () => calendar.changeMonth(1));
-  }
-};
-
-// ===========================
-// GAMES MODULE
-// ===========================
-const games = {
-  createGameBox: async (game) => {
-    const homeId = game.teams.home.team.id;
-    const awayId = game.teams.away.team.id;
-    const homeScore = game.teams.home.score || 0;
-    const awayScore = game.teams.away.score || 0;
-    
-    let status = game.status.detailedState;
-    const homeAbbr = await api.fetchTeamAbbr(homeId);
-    const awayAbbr = await api.fetchTeamAbbr(awayId);
-
-    let isLive = false;
-    let isFinal = false;
-
-    if (['Final', 'Game Over', 'Completed Early'].includes(status)) {
-      status = 'FINAL';
-      isFinal = true;
-    } else if (['Pre-Game', 'Scheduled'].includes(status)) {
-      status = utils.formatTime(game.gameDate);
-    } else if (status === 'In Progress') {
-      status = await api.fetchGameDetails(game.gamePk);
-      isLive = true;
-    }
-
-    const homeLogo = utils.getLogoUrl(homeId);
-    const awayLogo = utils.getLogoUrl(awayId);
-
-    const element = document.createElement('div');
-    element.className = 'game-box';
-    element.style.cursor = 'pointer';
-
-    const statusClass = (status.includes('TOP') || status.includes('BOT')) ? 'live' : '';
-
-    element.innerHTML = `
-      <div class="game-status ${statusClass}">${status}</div>
-      <div class="game-matchup">
-        <div class="team-row">
-          <div class="team-name">
-            <img src="${awayLogo}" alt="${awayAbbr}" class="team-logo">
-            ${awayAbbr}
-          </div>
-          <div class="team-score">${awayScore}</div>
-        </div>
-        <div class="team-row">
-          <div class="team-name">
-            <img src="${homeLogo}" alt="${homeAbbr}" class="team-logo">
-            ${homeAbbr}
-          </div>
-          <div class="team-score">${homeScore}</div>
+    <!-- TOP PERFORMERS -->
+    <div class="card">
+      <div class="card-hdr">
+        <div class="card-title">Top Performers</div>
+        <div class="itabs" id="perf-tabs">
+          <button class="itab on" data-panel="batting">BAT</button>
+          <button class="itab" data-panel="pitching">PIT</button>
+          <button class="itab" data-panel="bullpen">BP</button>
         </div>
       </div>
-    `;
+      <div id="perf-batting" class="perf-panel on"><div class="perf-loading">Loading…</div></div>
+      <div id="perf-pitching" class="perf-panel"><div class="perf-loading">Loading…</div></div>
+      <div id="perf-bullpen" class="perf-panel"><div class="perf-loading">Loading…</div></div>
+    </div>
 
-    element.addEventListener('click', () => {
-      const gameData = {
-        gamePk: game.gamePk,
-        homeTeam: { id: homeId, abbr: homeAbbr, score: homeScore },
-        awayTeam: { id: awayId, abbr: awayAbbr, score: awayScore },
-        status: status,
-        gameDate: game.gameDate
-      };
+    <!-- WS PREDICTIONS -->
+    <div class="card">
+      <div class="card-hdr">
+        <div class="card-title">2025 World Series Odds</div>
+        <div class="card-badge">Model</div>
+      </div>
+      <div id="ws-list"><div class="ld">Computing…</div></div>
+      <div class="ws-note" id="ws-note"></div>
+  </div>
 
-      sessionStorage.setItem('selectedGame', JSON.stringify(gameData));
-      window.location.href = `game-box.html?gamePk=${game.gamePk}`;
-    });
+  <!-- Advanced Metrics bar -->
+  <div class="metrics-wrap">
+    <div class="card-hdr" style="margin-bottom:16px">
+      <div class="card-title">Advanced Metrics Breakdown</div>
+      <div class="card-badge">League Avg</div>
+    </div>
+    <div class="met-grid" id="met-grid">
+      <div class="ld" style="grid-column:1/-1">Loading…</div>
+    </div>
+  </div>
 
-    return {
-      element,
-      isLive,
-      isFinal,
-      gameDate: new Date(game.gameDate)
-    };
-  },
+  <!-- Row 2: Charts -->
+  <div class="grid2" style="margin-bottom:16px">
 
-  updateSlider: () => {
-    const slider = document.getElementById('gamesSlider');
-    if (!slider) return;
+    <!-- K% Trend -->
+    <div class="card">
+      <div class="card-hdr"><div class="card-title">League Strikeout Rate Trend</div><div class="card-badge">2025</div></div>
+      <div class="chart-sub">Monthly league-wide K% — how punchouts evolve across the season</div>
+      <div class="chart-wrap"><canvas id="kpct-chart"></canvas></div>
+    </div>
 
-    const gameBox = slider.querySelector('.game-box');
-    if (!gameBox) return;
+    <!-- Home vs Away -->
+    <div class="card">
+      <div class="card-hdr"><div class="card-title">Home vs Away Record</div><div class="card-badge">All Teams</div></div>
+      <div class="chart-sub">Win% at home (red) vs on the road (navy) — live from standings API</div>
+      <div class="chart-wrap"><canvas id="hva-chart"></canvas></div>
+    </div>
 
-    const boxWidth = gameBox.offsetWidth;
-    const offset = state.currentSlide * (boxWidth + 16);
-    slider.style.transform = `translateX(-${offset}px)`;
+  </div>
 
-    const totalGames = slider.querySelectorAll('.game-box').length;
-    const maxSlide = Math.max(0, totalGames - CONFIG.GAMES_PER_VIEW);
+  <!-- Row 3: Run Diff + L10 Form -->
+  <div class="grid2">
 
-    games.updateNavButtons(totalGames > CONFIG.GAMES_PER_VIEW, maxSlide);
-  },
+    <div class="card">
+      <div class="card-hdr"><div class="card-title">Run Differential</div><div class="card-badge">All Teams</div></div>
+      <div class="chart-sub">Season run differential sorted best to worst</div>
+      <div class="rdiff-list" id="rdiff-list"><div class="ld">Loading…</div></div>
+    </div>
 
-  updateNavButtons: (showButtons) => {
-    const prevBtn = document.getElementById('prevGames');
-    const nextBtn = document.getElementById('nextGames');
-    const slider = document.getElementById('gamesSlider');
+    <div class="card">
+      <div class="card-hdr"><div class="card-title">Last 10 Games Form</div><div class="card-badge">Per Division</div></div>
+      <div class="chart-sub">W (green) / L (red) dots for last 10 games</div>
+      <div style="max-height:210px;overflow-y:auto;scrollbar-width:thin" id="l10-list"><div class="ld">Loading…</div></div>
+    </div>
 
-    if (!prevBtn || !nextBtn || !slider) return;
+  </div>
 
-    if (!showButtons) {
-      prevBtn.style.display = 'none';
-      nextBtn.style.display = 'none';
-      return;
-    }
+</div>
+<script>
+// ============================================================
+//  CONSTANTS
+// ============================================================
+const API = 'https://statsapi.mlb.com/api/v1';
+const LOGO      = id => `https://www.mlbstatic.com/team-logos/${id}.svg`;
+const LOGO_DARK = id => `https://www.mlbstatic.com/team-logos/team-cap-on-dark/${id}.svg`;
+const REFRESH_MS = 30000;
+const LEAGUE_AVG_ERA = 4.02;   // 2025 estimated league-avg ERA for ERA- calculation
 
-    const totalGames = slider.querySelectorAll('.game-box').length;
-    const maxSlide = Math.max(0, totalGames - CONFIG.GAMES_PER_VIEW);
-
-    prevBtn.style.display = state.currentSlide > 0 ? 'flex' : 'none';
-    nextBtn.style.display = state.currentSlide < maxSlide ? 'flex' : 'none';
-  },
-
-  initEvents: () => {
-    const prevBtn = document.getElementById('prevGames');
-    const nextBtn = document.getElementById('nextGames');
-
-    if (nextBtn) {
-      nextBtn.addEventListener('click', () => {
-        const slider = document.getElementById('gamesSlider');
-        if (!slider) return;
-
-        const totalGames = slider.querySelectorAll('.game-box').length;
-        const maxSlide = Math.max(0, totalGames - CONFIG.GAMES_PER_VIEW);
-
-        if (state.currentSlide < maxSlide) {
-          state.currentSlide++;
-          games.updateSlider();
-        }
-      });
-    }
-
-    if (prevBtn) {
-      prevBtn.addEventListener('click', () => {
-        if (state.currentSlide > 0) {
-          state.currentSlide--;
-          games.updateSlider();
-        }
-      });
-    }
-  }
+// ============================================================
+//  STATE
+// ============================================================
+const S = {
+  dark: true,
+  league: 'AL',
+  date: new Date(),
+  slide: 0,
+  gamesPerView: 5,
+  standings: { AL:{}, NL:{} },
+  allStandings: [],
+  charts: { kpct: null, hva: null },
 };
 
-// ===========================
-// STANDINGS MODULE
-// ===========================
-const standings = {
-  render: () => {
-    const list = document.getElementById('standingsList');
-    if (!list) return;
+// ============================================================
+//  UTILS
+// ============================================================
+function fmtDate(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+function logoUrl(id){ return S.dark ? LOGO_DARK(id) : LOGO(id); }
+function el(id){ return document.getElementById(id); }
 
-    const leagueData = state.standingsData[state.currentLeague];
-    if (!leagueData) {
-      list.innerHTML = '<div class="loading">No standings available</div>';
-      return;
-    }
+function gradeColor(g){
+  if(g>=90) return '#3b82f6';
+  if(g>=80) return '#14b8a6';
+  if(g>=70) return '#22c55e';
+  if(g>=60) return '#84cc16';
+  if(g>=50) return '#eab308';
+  if(g>=40) return '#f97316';
+  return '#ef4444';
+}
+function gradeLabel(g){
+  if(g>=90) return 'A+';
+  if(g>=85) return 'A';
+  if(g>=80) return 'A-';
+  if(g>=75) return 'B+';
+  if(g>=70) return 'B';
+  if(g>=65) return 'B-';
+  if(g>=60) return 'C+';
+  if(g>=55) return 'C';
+  if(g>=50) return 'C-';
+  if(g>=45) return 'D';
+  return 'F';
+}
 
-    const divOrder = ['East', 'Central', 'West'];
-    
-    list.innerHTML = divOrder.map(div => {
-      const teams = leagueData[div] || [];
-      
-      const rows = teams.map(team => {
-        const logoUrl = utils.getLogoUrl(team.teamId);
-        const gamesBack = team.gamesBack === '0.0' ? '-' : team.gamesBack;
-        
-        return `
-          <div class="standing-row">
-            <img src="${logoUrl}" alt="Team" class="standing-logo">
-            <div class="standing-record">${team.wins}-${team.losses}</div>
-            <div class="standing-gb">${gamesBack}</div>
-          </div>
-        `;
+// Normalize array 0-100 (optionally inverted)
+function norm(arr, inv){
+  const mn = Math.min(...arr), mx = Math.max(...arr), range = mx - mn || 1;
+  return arr.map(v => {
+    const n = (v - mn) / range * 100;
+    return Math.round(inv ? 100 - n : n);
+  });
+}
+
+function chartColors(){
+  return {
+    text: S.dark ? '#94a3b8' : '#64748b',
+    grid: S.dark ? 'rgba(30,41,59,.8)' : 'rgba(226,232,240,.8)',
+  };
+}
+function divisionInfo(divId){
+  const map = {201:['AL','East'],202:['AL','Central'],200:['AL','West'],204:['NL','East'],205:['NL','Central'],203:['NL','West']};
+  return map[divId] || ['AL','East'];
+}
+
+// ============================================================
+//  THEME
+// ============================================================
+function setTheme(dark){
+  S.dark = dark;
+  document.body.classList.toggle('dark', dark);
+  document.body.classList.toggle('light', !dark);
+  el('ic-d').style.display = dark ? '' : 'none';
+  el('ic-l').style.display = dark ? 'none' : '';
+  el('tl').textContent = dark ? 'Light' : 'Dark';
+  localStorage.setItem('xlabs-theme', dark ? 'dark' : 'light');
+  renderStandings();
+  renderRdiff();
+  renderL10();
+  renderWSFromState();
+  rebuildCharts();
+}
+el('tb').addEventListener('click', () => setTheme(!S.dark));
+const savedTheme = localStorage.getItem('xlabs-theme');
+setTheme(savedTheme ? savedTheme === 'dark' : true);
+
+// ============================================================
+//  CALENDAR
+// ============================================================
+function renderCal(){
+  const d = S.date;
+  el('cal-month').textContent = d.toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  const first = new Date(d.getFullYear(), d.getMonth(), 1).getDay();
+  const days  = new Date(d.getFullYear(), d.getMonth()+1, 0).getDate();
+  const lbls  = ['S','M','T','W','T','F','S'];
+  let h = lbls.map(l => `<div class="cal-lbl">${l}</div>`).join('');
+  for(let i=0;i<first;i++) h += '<div class="cal-day empty"></div>';
+  for(let i=1;i<=days;i++){
+    const sel = i===d.getDate() ? 'sel':'';
+    h += `<div class="cal-day ${sel}" data-d="${i}">${i}</div>`;
+  }
+  el('cal-grid').innerHTML = h;
+  el('cal-grid').querySelectorAll('.cal-day:not(.empty)').forEach(c => {
+    c.addEventListener('click', e => {
+      S.date.setDate(+e.target.dataset.d);
+      updateDateLabel();
+      renderCal();
+      fetchGames();
+      el('cal-drop').classList.remove('open');
+    });
+  });
+}
+function updateDateLabel(){
+  const today = new Date();
+  const isToday = S.date.toDateString() === today.toDateString();
+  el('date-lbl').textContent = isToday ? 'Today'
+    : S.date.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+}
+el('datebtn').addEventListener('click', () => el('cal-drop').classList.toggle('open'));
+document.addEventListener('click', e => {
+  if(!el('datebtn').contains(e.target) && !el('cal-drop').contains(e.target))
+    el('cal-drop').classList.remove('open');
+});
+el('cal-prev').addEventListener('click', () => { S.date.setMonth(S.date.getMonth()-1); renderCal(); fetchGames(); });
+el('cal-next').addEventListener('click', () => { S.date.setMonth(S.date.getMonth()+1); renderCal(); fetchGames(); });
+
+// ============================================================
+//  GAMES STRIP
+// ============================================================
+async function fetchGames(){
+  const strip = el('strip');
+  strip.innerHTML = '<div class="ld">Loading games\u2026</div>';
+  S.slide = 0;
+  const ds = fmtDate(S.date);
+  try{
+    const r = await fetch(`${API}/schedule?sportId=1&date=${ds}&hydrate=linescore`);
+    const d = await r.json();
+    const games = d.dates?.[0]?.games || [];
+    el('game-count-lbl').textContent = games.length ? `${games.length} game${games.length>1?'s':''} scheduled` : '';
+    if(!games.length){ strip.innerHTML='<div class="ld">No games scheduled</div>'; updateStripArrows(false); return; }
+    const rank = s => { if(s==='In Progress') return 0; if(['Final','Game Over'].includes(s)) return 2; return 1; };
+    games.sort((a,b) => rank(a.status.detailedState) - rank(b.status.detailedState) || new Date(a.gameDate)-new Date(b.gameDate));
+    strip.innerHTML = '';
+    for(const g of games) strip.appendChild(buildGameCard(g));
+    updateStripArrows(games.length > S.gamesPerView);
+  } catch(e){ strip.innerHTML='<div class="err">Failed to load games</div>'; }
+}
+
+function buildGameCard(g){
+  const aw=g.teams.away, hm=g.teams.home;
+  const aId=aw.team.id, hId=hm.team.id;
+  const aAbbr=aw.team.abbreviation||'---', hAbbr=hm.team.abbreviation||'---';
+  const aScore=aw.score??'', hScore=hm.score??'';
+  const st=g.status.detailedState;
+  const isLive=st==='In Progress';
+  const isFinal=['Final','Game Over','Completed Early'].includes(st);
+  let stHtml='';
+  if(isLive){
+    const inn=g.linescore?.currentInningOrdinal||'';
+    const half=g.linescore?.inningHalf==='Top'?'\u25b2':g.linescore?.inningHalf==='Bottom'?'\u25bc':'';
+    stHtml=`<div class="gc-st live"><span class="live-dot"></span>${half}${inn}</div>`;
+  } else if(isFinal){
+    stHtml=`<div class="gc-st">FINAL</div>`;
+  } else {
+    const t=new Date(g.gameDate).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
+    stHtml=`<div class="gc-st">${t}</div>`;
+  }
+  const aWin=isFinal&&(aw.score>hm.score), hWin=isFinal&&(hm.score>aw.score);
+  const c=document.createElement('div');
+  c.className='gc';
+  c.innerHTML=stHtml+`<div class="gc-matchup">
+    <div class="gc-team">
+      <img class="gc-logo" src="${logoUrl(aId)}" alt="${aAbbr}">
+      <span class="gc-abbr">${aAbbr}</span>
+      <span class="gc-score${aWin?' hi':''}">${aScore}</span>
+    </div>
+    <div class="gc-team">
+      <img class="gc-logo" src="${logoUrl(hId)}" alt="${hAbbr}">
+      <span class="gc-abbr">${hAbbr}</span>
+      <span class="gc-score${hWin?' hi':''}">${hScore}</span>
+    </div>
+  </div>`;
+  c.addEventListener('click', () => { window.location.href=`game-box.html?gamePk=${g.gamePk}`; });
+  return c;
+}
+
+function updateStripArrows(show){
+  const strip=el('strip'), prev=el('sprev'), next=el('snext');
+  if(!show){ prev.style.display='none'; next.style.display='none'; el('fade-l').style.opacity='0'; return; }
+  const gc=strip.querySelector('.gc');
+  const cardW=gc ? gc.offsetWidth+10 : 174;
+  const total=strip.querySelectorAll('.gc').length;
+  const maxSlide=Math.max(0,total-S.gamesPerView);
+  prev.style.display=S.slide>0?'flex':'none';
+  next.style.display=S.slide<maxSlide?'flex':'none';
+  el('fade-l').style.opacity=S.slide>0?'1':'0';
+  strip.style.transform=`translateX(-${S.slide*cardW}px)`;
+}
+el('sprev').addEventListener('click', () => { if(S.slide>0){S.slide--;updateStripArrows(true);} });
+el('snext').addEventListener('click', () => { S.slide++; updateStripArrows(true); });
+
+// ============================================================
+//  STANDINGS
+// ============================================================
+async function fetchStandings(){
+  try{
+    const r = await fetch(`${API}/standings?leagueId=103,104&season=2025&standingsTypes=regularSeason&hydrate=team,division,splitRecords`);
+    const d = await r.json();
+    S.standings = { AL:{East:[],Central:[],West:[]}, NL:{East:[],Central:[],West:[]} };
+    S.allStandings = [];
+    d.records.forEach(rec => {
+      const [lg,div] = divisionInfo(rec.division?.id);
+      (rec.teamRecords||[]).forEach(t => {
+        const gp = t.wins + t.losses || 1;
+        const homeRec = t.records?.splitRecords?.find(r=>r.type==='home') || {};
+        const awayRec = t.records?.splitRecords?.find(r=>r.type==='away') || {};
+        const l10Rec  = t.records?.splitRecords?.find(r=>r.type==='lastTen') || {};
+        const entry = {
+          teamId: t.team.id,
+          abbr:   t.team.abbreviation,
+          wins: t.wins, losses: t.losses,
+          gamesBack: t.gamesBack,
+          divisionRank: +t.divisionRank,
+          runsScored:  t.runsScored  || 0,
+          runsAllowed: t.runsAllowed || 0,
+          runDiff: (t.runsScored||0) - (t.runsAllowed||0),
+          streak: t.streak?.streakCode || '',
+          homeW: homeRec.wins||0, homeL: homeRec.losses||0,
+          awayW: awayRec.wins||0, awayL: awayRec.losses||0,
+          l10W:  l10Rec.wins||0,  l10L:  l10Rec.losses||0,
+          splitRecords: t.records?.splitRecords || [],
+          league: lg, division: div,
+          winPct: t.wins / gp,
+        };
+        if(!S.standings[lg][div]) S.standings[lg][div] = [];
+        S.standings[lg][div].push(entry);
+        S.allStandings.push(entry);
+      });
+    });
+    ['East','Central','West'].forEach(dv => {
+      S.standings.AL[dv]?.sort((a,b) => a.divisionRank-b.divisionRank);
+      S.standings.NL[dv]?.sort((a,b) => a.divisionRank-b.divisionRank);
+    });
+    renderStandings();
+    renderRdiff();
+    renderL10();
+    computeAndRenderWS();
+    buildHvaChart();
+  } catch(e){ el('std-list').innerHTML='<div class="err">Failed to load standings</div>'; }
+}
+
+function renderStandings(){
+  const list = el('std-list');
+  if(!list) return;
+  if(!S.allStandings.length){ list.innerHTML='<div class="ld">Loading…</div>'; return; }
+  const data = S.standings[S.league];
+  if(!data){ list.innerHTML='<div class="ld">No data</div>'; return; }
+
+  const html = ['East','Central','West'].map(dv => {
+    const teams = (data[dv] || []).sort((a,b) => a.divisionRank - b.divisionRank);
+    const rows = teams.map(t => {
+      const gb = (t.gamesBack==='0.0'||t.gamesBack==='-') ? '—' : t.gamesBack;
+      return `<div class="std-row">
+        <div class="std-team">
+          <img class="std-logo" src="${logoUrl(t.teamId)}" alt="${t.abbr}" onerror="this.style.visibility='hidden'">
+          <span class="std-name">${t.abbr}</span>
+        </div>
+        <span class="std-rec">${t.wins}-${t.losses}</span>
+        <span class="std-gb">${gb}</span>
+      </div>`;
+    }).join('');
+    return `<div>
+      <div class="std-div-lbl">${S.league} ${dv}</div>
+      <div class="std-col-hdr"><span></span><span>W-L</span><span>GB</span></div>
+      ${rows}
+    </div>`;
+  }).join('');
+
+  list.innerHTML = '<div class="std-divs">' + html + '</div>';
+}
+
+el('al-tab').addEventListener('click', () => {
+  S.league = 'AL';
+  el('al-tab').classList.add('on');
+  el('nl-tab').classList.remove('on');
+  renderStandings();
+});
+el('nl-tab').addEventListener('click', () => {
+  S.league = 'NL';
+  el('nl-tab').classList.add('on');
+  el('al-tab').classList.remove('on');
+  renderStandings();
+});
+
+
+function renderWSFromState(){ computeAndRenderWS(); }
+
+
+// ============================================================
+//  TOP PERFORMERS — wRC+ proxy, FIP proxy, ERA- proxy
+// ============================================================
+
+// ── Batting: wRC+ proxy ──────────────────────────────────────
+// wRC+ ≈ (OBP × 1.8 + ISO) normalized relative to cohort, scaled 0-100
+// We can't get true wRC+ from the free API, but we can get OBP + SLG + AVG
+// which let us derive ISO (SLG-AVG) and approximate the linear weights.
+async function fetchBatting(){
+  const panel = el('perf-batting');
+  panel.innerHTML = '<div class="perf-loading">Loading\u2026</div>';
+  try{
+    const r = await fetch(`${API}/stats?group=hitting&type=season&season=2025&limit=50&sortStat=onBasePlusSlugging&order=desc&gameType=R&playerPool=ALL`);
+    const d = await r.json();
+    const raw = (d.stats?.[0]?.splits || []).filter(p => (p.stat.atBats||0) >= 80);
+
+    // Derive approximate wRC+ components from available fields
+    // wRAA proxy = OBP*1.8 + ISO (SLG-AVG) — this mirrors linear weight theory
+    const wrcProxy = raw.map(p => {
+      const obp = parseFloat(p.stat.obp)  || 0;
+      const slg = parseFloat(p.stat.slg)  || 0;
+      const avg = parseFloat(p.stat.avg)  || 0;
+      const iso = slg - avg;
+      const bbPct = (p.stat.baseOnBalls||0) / Math.max(p.stat.plateAppearances||p.stat.atBats||1, 1);
+      const kPct  = (p.stat.strikeOuts||0)  / Math.max(p.stat.plateAppearances||p.stat.atBats||1, 1);
+      // weighted sum mirroring wRC+ sensitivity: OBP matters most, then power, then discipline
+      return obp * 1.9 + iso * 1.1 + bbPct * 0.8 - kPct * 0.5;
+    });
+
+    const grades = norm(wrcProxy);   // 0-100 across cohort
+    const paired = raw.map((p,i) => ({p, g: grades[i]})).sort((a,b) => b.g-a.g).slice(0,12);
+
+    panel.innerHTML = paired.map((x, i) => {
+      const {p, g} = x;
+      const name = p.player?.fullName || 'Unknown';
+      const team = p.team?.abbreviation || '---';
+      const obp  = p.stat.obp || '.000';
+      const slg  = p.stat.slg || '.000';
+      const hr   = p.stat.homeRuns || 0;
+      return `<div class="perf-row">
+        <span class="perf-rank">${i+1}</span>
+        <img class="perf-photo"
+          src="https://img.mlbstatic.com/mlb-photos/image/upload/w_60,q_auto:good,f_auto/v1/people/${p.player?.id}/headshot/67/current"
+          onerror="this.style.opacity='.3'">
+        <div class="perf-info">
+          <div class="perf-name">${name}</div>
+          <div class="perf-meta">${team} &middot; OBP ${obp} &middot; SLG ${slg} &middot; ${hr} HR</div>
+        </div>
+        <div class="grade" style="background:${gradeColor(g)}" title="wRC+ grade: ${g}/100">${gradeLabel(g)}</div>
+      </div>`;
+    }).join('');
+  } catch(e){ panel.innerHTML='<div class="err">Failed to load batting stats</div>'; }
+}
+
+// ── Pitching: FIP proxy ──────────────────────────────────────
+// FIP = (13×HR + 3×BB - 2×K) / IP + FIP_constant (≈3.10 for 2025)
+// Lower FIP = better. We invert when normalizing so high grade = good.
+async function fetchPitching(){
+  const panel = el('perf-pitching');
+  panel.innerHTML = '<div class="perf-loading">Loading\u2026</div>';
+  try{
+    const r = await fetch(`${API}/stats?group=pitching&type=season&season=2025&limit=60&sortStat=earnedRunAverage&order=asc&gameType=R&playerPool=ALL`);
+    const d = await r.json();
+    // Starters: games started > 3 and IP >= 25
+    const raw = (d.stats?.[0]?.splits || []).filter(p =>
+      (p.stat.gamesStarted||0) > 3 && parseFloat(p.stat.inningsPitched||0) >= 25
+    );
+
+    const FIP_C = 3.10; // 2025 estimated FIP constant
+    const fips = raw.map(p => {
+      const ip  = parseFloat(p.stat.inningsPitched) || 1;
+      const hr  = p.stat.homeRuns         || 0;
+      const bb  = p.stat.baseOnBalls      || 0;
+      const hbp = p.stat.hitByPitch       || 0;
+      const k   = p.stat.strikeOuts       || 0;
+      return (13*hr + 3*(bb+hbp) - 2*k) / ip + FIP_C;
+    });
+
+    // ERA- proxy: pitcher ERA / LEAGUE_AVG_ERA * 100 (lower = better)
+    const eraMinus = raw.map(p => (parseFloat(p.stat.era)||9.99) / LEAGUE_AVG_ERA * 100);
+
+    // Blend: 55% FIP (inverted norm) + 45% ERA- (inverted norm)
+    const nFip  = norm(fips, true);    // invert: low FIP = high grade
+    const nEraM = norm(eraMinus, true);
+    const grades = raw.map((_,i) => Math.round(nFip[i]*0.55 + nEraM[i]*0.45));
+
+    const paired = raw.map((p,i) => ({p, g:grades[i]})).sort((a,b) => b.g-a.g).slice(0,12);
+    panel.innerHTML = paired.map((x,i) => {
+      const {p, g} = x;
+      const name = p.player?.fullName || 'Unknown';
+      const team = p.team?.abbreviation || '---';
+      const fip  = fips[raw.indexOf(p)]?.toFixed(2) || '-.--';
+      const ip   = p.stat.inningsPitched || '0.0';
+      const k    = p.stat.strikeOuts || 0;
+      return `<div class="perf-row">
+        <span class="perf-rank">${i+1}</span>
+        <img class="perf-photo"
+          src="https://img.mlbstatic.com/mlb-photos/image/upload/w_60,q_auto:good,f_auto/v1/people/${p.player?.id}/headshot/67/current"
+          onerror="this.style.opacity='.3'">
+        <div class="perf-info">
+          <div class="perf-name">${name}</div>
+          <div class="perf-meta">${team} &middot; FIP ${fip} &middot; ${ip} IP &middot; ${k} K</div>
+        </div>
+        <div class="grade" style="background:${gradeColor(g)}" title="FIP/ERA- grade: ${g}/100">${gradeLabel(g)}</div>
+      </div>`;
+    }).join('');
+  } catch(e){ panel.innerHTML='<div class="err">Failed to load pitching stats</div>'; }
+}
+
+// ── Bullpen: ERA- proxy (relievers only) ─────────────────────
+// ERA- = pitcher ERA / league avg * 100 — contextualized and opponent-adjusted in spirit.
+// Blend with K-BB% (K% - BB%) and SV+HLD volume.
+async function fetchBullpen(){
+  const panel = el('perf-bullpen');
+  panel.innerHTML = '<div class="perf-loading">Loading\u2026</div>';
+  try{
+    // Fetch more to ensure we get enough relievers
+    const r = await fetch(`${API}/stats?group=pitching&type=season&season=2025&limit=120&sortStat=earnedRunAverage&order=asc&gameType=R&playerPool=ALL`);
+    const d = await r.json();
+    const all = d.stats?.[0]?.splits || [];
+
+    // Relievers: ip/games < 2.0, min 8 IP
+    const raw = all.filter(p => {
+      const ip = parseFloat(p.stat.inningsPitched||0);
+      const gp = p.stat.gamesPitched || 1;
+      return ip >= 8 && (ip/gp) < 2.0;
+    });
+
+    // ERA- (invert for grade — lower ERA- = better)
+    const eraMinus = raw.map(p => (parseFloat(p.stat.era)||9.99) / LEAGUE_AVG_ERA * 100);
+
+    // K-BB% proxy: (K - BB) / (IP * 3 batters-faced estimate)
+    const kbb = raw.map(p => {
+      const k  = p.stat.strikeOuts   || 0;
+      const bb = p.stat.baseOnBalls  || 0;
+      const ip = parseFloat(p.stat.inningsPitched) || 1;
+      return (k - bb) / (ip * 3.3); // rough BF estimate
+    });
+
+    // SV + HLD volume (normalized across cohort)
+    const svhld = raw.map(p => (p.stat.saves||0) + (p.stat.holds||0));
+
+    const nEraM  = norm(eraMinus, true); // invert
+    const nKbb   = norm(kbb);
+    const nSvhld = norm(svhld);
+
+    // Grade: 45% ERA- + 35% K-BB% + 20% SV+HLD volume
+    const grades = raw.map((_,i) => Math.round(nEraM[i]*0.45 + nKbb[i]*0.35 + nSvhld[i]*0.20));
+
+    const paired = raw.map((p,i) => ({p, g:grades[i]})).sort((a,b) => b.g-a.g).slice(0,12);
+    panel.innerHTML = paired.map((x,i) => {
+      const {p, g} = x;
+      const name = p.player?.fullName || 'Unknown';
+      const team = p.team?.abbreviation || '---';
+      const era  = p.stat.era || '-.--';
+      const sv   = p.stat.saves || 0;
+      const hld  = p.stat.holds || 0;
+      const k    = p.stat.strikeOuts || 0;
+      return `<div class="perf-row">
+        <span class="perf-rank">${i+1}</span>
+        <img class="perf-photo"
+          src="https://img.mlbstatic.com/mlb-photos/image/upload/w_60,q_auto:good,f_auto/v1/people/${p.player?.id}/headshot/67/current"
+          onerror="this.style.opacity='.3'">
+        <div class="perf-info">
+          <div class="perf-name">${name}</div>
+          <div class="perf-meta">${team} &middot; ERA ${era} &middot; ${sv} SV &middot; ${hld} HLD &middot; ${k} K</div>
+        </div>
+        <div class="grade" style="background:${gradeColor(g)}" title="ERA-/K-BB% grade: ${g}/100">${gradeLabel(g)}</div>
+      </div>`;
+    }).join('');
+  } catch(e){ panel.innerHTML='<div class="err">Failed to load bullpen stats</div>'; }
+}
+
+// Performer tab switching
+document.querySelectorAll('.itab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.itab').forEach(b => b.classList.remove('on'));
+    document.querySelectorAll('.perf-panel').forEach(p => p.classList.remove('on'));
+    btn.classList.add('on');
+    el('perf-'+btn.dataset.panel).classList.add('on');
+  });
+});
+
+// ============================================================
+//  WORLD SERIES PREDICTIONS
+//  Formula: win% × 60% + normalised run-diff × 40%
+//  Simple, transparent, live from standings.
+// ============================================================
+function computeAndRenderWS(){
+  if(!S.allStandings.length){ el('ws-list').innerHTML='<div class="ld">Waiting for standings\u2026</div>'; return; }
+
+  // Run differential normalized 0-1 across all 30 teams
+  const rdiffs = S.allStandings.map(t => t.runDiff);
+  const rdMin  = Math.min(...rdiffs), rdMax = Math.max(...rdiffs), rdRange = rdMax-rdMin||1;
+  const rdNorm = S.allStandings.map(t => (t.runDiff - rdMin) / rdRange);
+
+  // Blended score
+  const scores = S.allStandings.map((t,i) => t.winPct*0.60 + rdNorm[i]*0.40);
+
+  // Convert to % share (proportional, sum = 100)
+  const total  = scores.reduce((a,b) => a+b, 0) || 1;
+  const probs  = scores.map(s => s/total*100);
+
+  const paired = S.allStandings.map((t,i) => ({...t, prob: probs[i]}))
+    .sort((a,b) => b.prob-a.prob)
+    .slice(0,5);
+
+  renderWS(paired);
+  el('ws-note').textContent = 'Formula: win% \u00d7 60% + run-diff (normalized) \u00d7 40%, proportional share across all 30 teams.';
+}
+
+function renderWS(top5){
+  if(!top5 || !top5.length) return;
+  const maxProb = top5[0].prob;
+  el('ws-list').innerHTML = top5.map(t => {
+    const pct  = t.prob.toFixed(1);
+    const barW = (t.prob/maxProb*100).toFixed(1);
+    return `<div class="ws-row">
+      <img class="ws-logo" src="${logoUrl(t.teamId)}" alt="${t.abbr}" onerror="this.style.visibility='hidden'">
+      <div class="ws-bar-wrap">
+        <div class="ws-bar" style="width:${barW}%"></div>
+        <div class="ws-pct">${pct}%</div>
+      </div>
+      <span class="ws-abbr">${t.abbr}</span>
+    </div>`;
+  }).join('');
+}
+
+function renderWSFromState(){ computeAndRenderWS(); }
+
+// ============================================================
+//  ADVANCED METRICS — league averages (2025 estimates)
+// ============================================================
+function renderMetrics(){
+  const metrics = [
+    {lbl:'OPS',  val:'.718', chg:'+.006 YoY'},
+    {lbl:'ERA',  val:'4.02', chg:'-.18 YoY'},
+    {lbl:'K%',   val:'22.8%',chg:'+0.3% YoY'},
+    {lbl:'BB%',  val:'8.4%', chg:'-.02% YoY'},
+    {lbl:'BABIP',val:'.296', chg:'+.004 YoY'},
+    {lbl:'FIP',  val:'3.98', chg:'-.11 YoY'},
+  ];
+  el('met-grid').innerHTML = metrics.map(m => {
+    const chgVal = m.chg.replace(' YoY','');
+    const pos    = chgVal.startsWith('+');
+    const neg    = chgVal.startsWith('-');
+    const cls    = pos ? 'chg-pos' : neg ? 'chg-neg' : '';
+    return `<div class="met-item">
+      <div class="met-lbl">${m.lbl}</div>
+      <div class="met-val">${m.val}</div>
+      <div class="met-chg ${cls}">${m.chg}</div>
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+//  RUN DIFFERENTIAL (all 30 teams)
+// ============================================================
+function renderRdiff(){
+  const list = el('rdiff-list');
+  if(!S.allStandings.length){ list.innerHTML='<div class="ld">Loading\u2026</div>'; return; }
+  const sorted = [...S.allStandings].sort((a,b) => b.runDiff-a.runDiff);
+  const max    = Math.max(...sorted.map(t => Math.abs(t.runDiff)), 1);
+  list.innerHTML = sorted.map(t => {
+    const pos  = t.runDiff >= 0;
+    const barW = (Math.abs(t.runDiff)/max*100).toFixed(1);
+    const col  = pos ? '#10b981' : '#ef4444';
+    const sign = pos ? '+' : '';
+    return `<div class="rd-row">
+      <img class="rd-logo" src="${logoUrl(t.teamId)}" alt="${t.abbr}" onerror="this.style.visibility='hidden'">
+      <div class="rd-bar-wrap"><div class="rd-bar" style="width:${barW}%;background:${col}"></div></div>
+      <span class="rd-val" style="color:${col}">${sign}${t.runDiff}</span>
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+//  LAST 10 FORM
+// ============================================================
+function renderL10(){
+  const list = el('l10-list');
+  if(!S.allStandings.length){ list.innerHTML='<div class="ld">Loading\u2026</div>'; return; }
+  const groups = {};
+  S.allStandings.forEach(t => {
+    const key = `${t.league} ${t.division}`;
+    if(!groups[key]) groups[key] = [];
+    groups[key].push(t);
+  });
+  const divOrder = ['AL East','AL Central','AL West','NL East','NL Central','NL West'];
+  list.innerHTML = divOrder.map(gk => {
+    const teams = (groups[gk]||[]).sort((a,b) => a.divisionRank-b.divisionRank);
+    const rows  = teams.map(t => {
+      const w  = t.l10W, l = t.l10L;
+      const dots = Array(10).fill(null).map((_,i) => {
+        const win = i < w;
+        return `<div class="l10d" style="background:${win?'#10b981':'#ef4444'}" title="${win?'W':'L'}"></div>`;
       }).join('');
-
-      return `
-        <div class="division-column">
-          <div class="division-title">${state.currentLeague} ${div}</div>
-          <div class="division-list">${rows || '<div class="loading">No teams</div>'}</div>
-        </div>
-      `;
+      return `<div style="display:flex;align-items:center;gap:8px;padding:3px 0">
+        <img style="width:18px;height:18px;object-fit:contain;flex-shrink:0" src="${logoUrl(t.teamId)}" onerror="this.style.visibility='hidden'">
+        <span style="font-family:var(--mono);font-size:10px;color:var(--mu);width:26px;flex-shrink:0">${t.abbr}</span>
+        <div class="l10-dots">${dots}</div>
+        <span style="font-family:var(--mono);font-size:9px;color:var(--mu);margin-left:3px">${w}-${l}</span>
+      </div>`;
     }).join('');
-  },
+    return `<div style="margin-bottom:10px">
+      <div class="std-div-lbl" style="margin-bottom:5px">${gk}</div>
+      ${rows}
+    </div>`;
+  }).join('');
+}
 
-  initEvents: () => {
-    const alTab = document.getElementById('alTab');
-    const nlTab = document.getElementById('nlTab');
+// ============================================================
+//  CHARTS — K% Trend + Home vs Away
+// ============================================================
+function rebuildCharts(){ buildKpctChart(); buildHvaChart(); }
 
-    if (alTab) {
-      alTab.addEventListener('click', () => {
-        state.currentLeague = 'AL';
-        alTab.classList.add('active');
-        nlTab?.classList.remove('active');
-        standings.render();
-      });
-    }
+// ── League-wide K% trend (2025 monthly estimates) ────────────
+function buildKpctChart(){
+  const canvas = el('kpct-chart');
+  if(!canvas) return;
+  if(S.charts.kpct) S.charts.kpct.destroy();
+  const cc = chartColors();
 
-    if (nlTab) {
-      nlTab.addEventListener('click', () => {
-        state.currentLeague = 'NL';
-        nlTab.classList.add('active');
-        alTab?.classList.remove('active');
-        standings.render();
-      });
-    }
-  }
-};
+  // Historical K% by month — 2024 actuals / 2025 season estimates
+  const labels2024 = ['Mar/Apr','May','Jun','Jul','Aug','Sep'];
+  const kpct2024   = [22.4, 22.9, 23.1, 22.8, 23.0, 22.6];
+  const kpct2025   = [22.6, 22.8, 23.2, null, null, null]; // null = future
 
-// ===========================
-// UI RENDER FUNCTIONS
-// ===========================
-const ui = {
-  renderTopPerformers: () => {
-    const list = document.getElementById('topPerformersList');
-    if (!list) return;
-
-    list.innerHTML = MOCK_DATA.topPerformers.map(player => `
-      <div class="player-item">
-        <div class="rating-badge" style="background-color: ${utils.getRatingColor(player.rating)}"></div>
-        <div class="player-info">
-          <div class="player-item-name">${player.name}</div>
-          <div class="player-item-team">${player.team}</div>
-        </div>
-        <div class="player-rating">${player.rating}</div>
-      </div>
-    `).join('');
-  },
-
-  renderPredictions: () => {
-    const list = document.getElementById('predictionList');
-    if (!list) return;
-
-    list.innerHTML = MOCK_DATA.wsPredictions.map(pred => {
-      const logoUrl = utils.getLogoUrl(pred.teamId);
-      
-      return `
-        <div class="prediction-row">
-          <img src="${logoUrl}" alt="Team" class="prediction-logo">
-          <div class="prediction-bar-container">
-            <div class="prediction-bar" style="width: ${pred.percentage}%"></div>
-            <div class="prediction-percentage">${pred.percentage}%</div>
-          </div>
-        </div>
-      `;
-    }).join('');
-  },
-
-  renderMetrics: () => {
-    const grid = document.getElementById('metricsGrid');
-    if (!grid) return;
-
-    grid.innerHTML = MOCK_DATA.metrics.map(metric => {
-      const changeClass = metric.change.startsWith('+') ? 'positive' : 'negative';
-      
-      return `
-        <div class="metric-item">
-          <div class="metric-label">${metric.label}</div>
-          <div class="metric-value">${metric.value}</div>
-          <div class="metric-change ${changeClass}">${metric.change}</div>
-        </div>
-      `;
-    }).join('');
-  }
-};
-
-// ===========================
-// CHARTS MODULE
-// ===========================
-const charts = {
-  createPerformanceChart: () => {
-    const canvas = document.getElementById('performanceChart');
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    const colors = utils.getChartColors();
-
-    if (state.charts.performance) {
-      state.charts.performance.destroy();
-    }
-
-    state.charts.performance = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'],
-        datasets: [
-          {
-            label: 'OPS',
-            data: [0.845, 0.892, 0.901, 0.878, 0.915, 0.889],
-            borderColor: '#bf0d3d',
-            backgroundColor: '#bf0d3d',
-            tension: 0.3,
-            pointRadius: 3
-          },
-          {
-            label: 'wOBA',
-            data: [0.362, 0.381, 0.388, 0.375, 0.392, 0.379],
-            borderColor: colors.primary,
-            backgroundColor: colors.primary,
-            tension: 0.3,
-            pointRadius: 3
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-          legend: {
-            labels: {
-              font: { size: 11, family: 'Inter' },
-              color: colors.text
-            }
-          }
+  S.charts.kpct = new Chart(canvas.getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: labels2024,
+      datasets: [
+        {
+          label: '2024 K%',
+          data: kpct2024,
+          borderColor: 'rgba(148,163,184,.5)',
+          backgroundColor: 'rgba(148,163,184,.04)',
+          borderDash: [4,3],
+          tension: .35, pointRadius: 3, fill: false,
         },
-        scales: {
-          x: {
-            ticks: { font: { size: 11 }, color: colors.text },
-            grid: { color: colors.grid }
-          },
-          y: {
-            ticks: { font: { size: 11 }, color: colors.text },
-            grid: { color: colors.grid }
+        {
+          label: '2025 K%',
+          data: kpct2025,
+          borderColor: '#bf0d3d',
+          backgroundColor: 'rgba(191,13,61,.08)',
+          tension: .35, pointRadius: 4,
+          pointBackgroundColor: '#bf0d3d',
+          fill: true,
+          spanGaps: false,
+        },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode:'index', intersect: false },
+      plugins: {
+        legend: { labels: { font:{size:10,family:'DM Mono'}, color:cc.text, boxWidth:10, padding:12 } },
+        tooltip: {
+          callbacks: {
+            label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y?.toFixed(1)}%`
           }
         }
-      }
-    });
-  },
-
-  createProjectionChart: () => {
-    const canvas = document.getElementById('projectionChart');
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    const colors = utils.getChartColors();
-
-    if (state.charts.projection) {
-      state.charts.projection.destroy();
-    }
-
-    state.charts.projection = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ['2023', '2024', '2025', '2026'],
-        datasets: [
-          {
-            label: 'Actual',
-            data: [8.2, 7.9, null, null],
-            backgroundColor: colors.primary
-          },
-          {
-            label: 'Projected',
-            data: [null, 7.8, 8.1, 7.6],
-            backgroundColor: '#bf0d3d'
-          }
-        ]
       },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-          legend: {
-            labels: {
-              font: { size: 11, family: 'Inter' },
-              color: colors.text
-            }
-          }
+      scales: {
+        x: { ticks:{font:{size:9,family:'DM Mono'},color:cc.text}, grid:{color:cc.grid} },
+        y: {
+          ticks: { font:{size:9,family:'DM Mono'}, color:cc.text, callback: v => v+'%' },
+          grid: { color:cc.grid },
+          min: 21.5, max: 24,
+          title: { display:true, text:'K%', color:cc.text, font:{size:9,family:'DM Mono'} }
         },
-        scales: {
-          x: {
-            ticks: { font: { size: 11 }, color: colors.text },
-            grid: { color: colors.grid }
-          },
-          y: {
-            ticks: { font: { size: 11 }, color: colors.text },
-            grid: { color: colors.grid }
+      }
+    }
+  });
+}
+
+// ── Home vs Away win% — live from standings ──────────────────
+function buildHvaChart(){
+  const canvas = el('hva-chart');
+  if(!canvas) return;
+  if(S.charts.hva) S.charts.hva.destroy();
+  if(!S.allStandings.length) return;
+  const cc = chartColors();
+
+  // Sort by home win% descending, take top 15 for readability
+  const teams = [...S.allStandings]
+    .filter(t => (t.homeW+t.homeL) > 0 && (t.awayW+t.awayL) > 0)
+    .sort((a,b) => (b.homeW/(b.homeW+b.homeL)) - (a.homeW/(a.homeW+a.homeL)))
+    .slice(0, 15);
+
+  const labels   = teams.map(t => t.abbr);
+  const homeWpct = teams.map(t => +(t.homeW/(t.homeW+t.homeL)*100).toFixed(1));
+  const awayWpct = teams.map(t => +(t.awayW/(t.awayW+t.awayL)*100).toFixed(1));
+
+  S.charts.hva = new Chart(canvas.getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Home W%',
+          data: homeWpct,
+          backgroundColor: 'rgba(191,13,61,.8)',
+          borderRadius: 3,
+          borderSkipped: false,
+        },
+        {
+          label: 'Away W%',
+          data: awayWpct,
+          backgroundColor: 'rgba(4,30,65,.75)',
+          borderRadius: 3,
+          borderSkipped: false,
+        },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode:'index', intersect: false },
+      plugins: {
+        legend: { labels: { font:{size:10,family:'DM Mono'}, color:cc.text, boxWidth:10 } },
+        tooltip: {
+          callbacks: {
+            label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y?.toFixed(1)}%`
           }
         }
+      },
+      scales: {
+        x: { ticks:{font:{size:9,family:'DM Mono'},color:cc.text}, grid:{display:false} },
+        y: {
+          ticks:{ font:{size:9,family:'DM Mono'}, color:cc.text, callback: v=>v+'%' },
+          grid:{ color:cc.grid },
+          min:0, max:100,
+          title:{ display:true, text:'Win %', color:cc.text, font:{size:9,family:'DM Mono'} }
+        },
       }
-    });
-  },
-
-  updateAll: () => {
-    charts.createPerformanceChart();
-    charts.createProjectionChart();
-  }
-};
-
-// ===========================
-// THEME MODULE
-// ===========================
-const theme = {
-  init: () => {
-    // Set dark mode as default
-    document.body.classList.add('dark');
-    document.body.classList.remove('light');
-    
-    const toggleBtn = document.getElementById('themeToggle');
-    const logo = document.getElementById('logoImg');
-    
-    if (toggleBtn) toggleBtn.textContent = 'Light';
-    if (logo) logo.src = 'assets/site-logos/logo-light.svg';
-  },
-
-  toggle: () => {
-    const body = document.body;
-    const logo = document.getElementById('logoImg');
-    const toggleBtn = document.getElementById('themeToggle');
-
-    if (body.classList.contains('dark')) {
-      // Switch to LIGHT mode
-      body.classList.remove('dark');
-      body.classList.add('light');
-      if (toggleBtn) toggleBtn.textContent = 'Dark';
-      if (logo) logo.src = 'assets/site-logos/logo-dark.svg';
-    } else {
-      // Switch to DARK mode
-      body.classList.remove('light');
-      body.classList.add('dark');
-      if (toggleBtn) toggleBtn.textContent = 'Light';
-      if (logo) logo.src = 'assets/site-logos/logo-light.svg';
     }
+  });
+}
 
-    // Re-render dependent UI
-    charts.updateAll();
-    api.fetchGames();
-    standings.render();
-    ui.renderPredictions();
-  },
+// ============================================================
+//  INIT
+// ============================================================
+async function init(){
+  updateDateLabel();
+  renderCal();
+  renderMetrics();
+  buildKpctChart();   // render immediately with placeholder data
+  await Promise.all([
+    fetchGames(),
+    fetchStandings(),  // triggers WS, rdiff, L10, HvA chart
+    fetchBatting(),
+    fetchPitching(),
+    fetchBullpen(),
+  ]);
+}
 
-  initEvents: () => {
-    const toggleBtn = document.getElementById('themeToggle');
-    if (toggleBtn) {
-      toggleBtn.addEventListener('click', theme.toggle);
-    }
-  }
-};
-
-// =========================== 
-// AUTO-REFRESH MODULE
-// ===========================
-const autoRefresh = {
-  start: () => {
-    setInterval(() => {
-      const currentDate = utils.formatDate(state.currentDate);
-      const today = utils.formatDate(new Date());
-      
-      // Only refresh if viewing today's games
-      if (currentDate === today) {
-        api.fetchGames();
-      }
-    }, CONFIG.REFRESH_INTERVAL);
-  }
-};
-
-// ===========================
-// INITIALIZATION
-// ===========================
-const init = () => {
-  // Initialize theme first
-  theme.init();
-  theme.initEvents();
-
-  // Initialize calendar
-  calendar.render();
-  calendar.updateDateText();
-  calendar.initEvents();
-
-  // Initialize games
-  api.fetchGames();
-  games.initEvents();
-
-  // Initialize standings
-  api.fetchStandings();
-  standings.initEvents();
-
-  // Render UI components
-  ui.renderTopPerformers();
-  ui.renderPredictions();
-  ui.renderMetrics();
-
-  // Initialize charts
-  charts.updateAll();
-
-  // Start auto-refresh
-  autoRefresh.start();
-};
-
-// Start the application
 init();
-  </script>
+setInterval(() => { if(fmtDate(S.date)===fmtDate(new Date())) fetchGames(); }, REFRESH_MS);
+
+</script>
 </body>
 </html>
