@@ -103,8 +103,8 @@ body.light .strip-fade-r{background:linear-gradient(to left,#f0f4f8,transparent)
 .gc-score.hi{color:var(--red)}
 .strip-arrow{position:absolute;top:50%;transform:translateY(-50%);width:30px;height:30px;border-radius:50%;background:var(--sf);border:1px solid var(--bd);color:var(--tx);font-size:14px;cursor:pointer;display:none;align-items:center;justify-content:center;z-index:20;transition:background .2s,border-color .2s;box-shadow:var(--sh)}
 .strip-arrow:hover{background:var(--red);border-color:var(--red);color:#fff}
-.strip-arrow.prev{left:-15px}
-.strip-arrow.next{right:-15px}
+.strip-arrow.prev{left:1px}
+.strip-arrow.next{right:1px}
 
 /* ── MAIN GRID ── */
 .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px}
@@ -114,26 +114,30 @@ body.light .strip-fade-r{background:linear-gradient(to left,#f0f4f8,transparent)
 
 /* ── CARD ── */
 .card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:18px;box-shadow:var(--sh)}
-.card-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:8px;width: 51%;}
+.card-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:8px}
 .card-title{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:1.8px;text-transform:uppercase;color:var(--mu)}
 .card-badge{font-family:var(--mono);font-size:8px;font-weight:500;letter-spacing:.8px;text-transform:uppercase;color:var(--red);background:rgba(191,13,61,.1);border:1px solid rgba(191,13,61,.2);padding:3px 8px;border-radius:99px}
 
 /* ── INNER TABS ── */
-.itabs{display:flex;gap:3px;background:var(--sf2);border-radius:6px;padding:3px;align-items: center; justify-content: center}
+.itabs{display:flex;gap:3px;background:var(--sf2);border-radius:6px;padding:3px}
 .itab{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;border:none;background:transparent;color:var(--mu);padding:5px 10px;border-radius:4px;cursor:pointer;transition:background .2s,color .2s;white-space:nowrap}
 .itab.on{background:var(--red);color:#fff}
 
 /* ── STANDINGS ── */
+/* Standings — 3 divisions in a row */
 .std-divs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0}
 .std-div-col{padding:0 14px;border-right:1px solid var(--bd)}
 .std-div-col:first-child{padding-left:0}
 .std-div-col:last-child{border-right:none;padding-right:0}
 .std-div-lbl{font-family:var(--mono);font-size:8px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--mu);padding-bottom:5px;border-bottom:1px solid var(--bd);margin-bottom:4px}
 /* header row: team col auto, W-L fixed, GB fixed — no stretching */
-.std-col-hdr{display:flex;justify-content:space-between;padding:0 0 2px;margin-bottom:1px}
-.std-col-hdr span{font-family:var(--mono);font-size:7px;font-weight:500;letter-spacing:.8px;text-transform:uppercase;color:var(--mu)}
-.std-col-hdr .ch-wl{width:38px;text-align:right}
-.std-col-hdr .ch-gb{width:24px;text-align:right}
+.std-col-hdr{display:flex;align-items:center;padding:0 0 3px;margin-bottom:2px;border-bottom:1px solid var(--bd)}
+.std-col-hdr span{font-family:var(--mono);font-size:7px;font-weight:500;letter-spacing:.8px;text-transform:uppercase;color:var(--mu);text-align:right;flex-shrink:0}
+.std-col-hdr .ch-team{flex:1;text-align:left}
+.std-col-hdr .ch-wl{width:38px}
+.std-col-hdr .ch-gb{width:24px;padding-left:10px}
+.std-col-hdr .ch-rd{width:30px}
+.std-col-hdr .ch-stk{width:26px}
 /* each team row: logo+name flex-grow, W-L fixed, GB fixed */
 .std-row{display:flex;align-items:center;gap:0;padding:3px 0;border-bottom:1px solid rgba(30,41,59,.25)}
 .std-row:last-child{border-bottom:none}
@@ -142,15 +146,18 @@ body.light .strip-fade-r{background:linear-gradient(to left,#f0f4f8,transparent)
 .std-logo{width:18px;height:18px;object-fit:contain;flex-shrink:0}
 .std-name{font-size:11px;font-weight:700;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:color .15s}
 .std-rec{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--tx);width:38px;text-align:right;flex-shrink:0}
-.std-gb{font-family:var(--mono);font-size:10px;color:var(--mu);width:24px;text-align:right;flex-shrink:0}
+.std-rdiff{font-family:var(--mono);font-size:9px;font-weight:600;width:30px;text-align:right;flex-shrink:0}
+.std-streak{font-family:var(--mono);font-size:9px;font-weight:700;width:26px;text-align:right;flex-shrink:0}
+.streak-w{color:#10b981}
+.streak-l{color:#ef4444}
+.std-gb{font-family:var(--mono);font-size:10px;color:var(--mu);width:24px;text-align:right;flex-shrink:0;padding-left:10px}
 /* Mobile: stack divisions vertically */
 @media(max-width:600px){
   .std-divs{grid-template-columns:1fr}
   .std-div-col{padding:0;border-right:none;border-bottom:1px solid var(--bd);padding-bottom:10px;margin-bottom:4px}
   .std-div-col:last-child{border-bottom:none;padding-bottom:0;margin-bottom:0}
 }
-.streak-w{color:#10b981}
-.streak-l{color:#ef4444}
+
 .l10-dots{display:flex;gap:2px;align-items:center}
 .l10d{width:6px;height:6px;border-radius:50%;flex-shrink:0}
 
@@ -182,11 +189,15 @@ body.light .strip-fade-r{background:linear-gradient(to left,#f0f4f8,transparent)
 
 /* ── METRICS ROW ── */
 .metrics-wrap{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:18px;margin-bottom:16px;box-shadow:var(--sh)}
-.met-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:0;align-items:stretch}
+.met-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:0 0;align-items:stretch}
 @media(max-width:800px){.met-grid{grid-template-columns:repeat(3,1fr)}}
-.met-item{padding:4px 16px;border-right:1px solid var(--bd)}
+@media(max-width:500px){.met-grid{grid-template-columns:repeat(2,1fr)}}
+.met-item{padding:6px 16px;border-right:1px solid var(--bd)}
 .met-item:first-child{padding-left:0}
 .met-item:last-child{border-right:none;padding-right:0}
+.met-item:nth-child(n+7){border-top:1px solid var(--bd);padding-top:10px;margin-top:4px}
+.met-item:nth-child(7){padding-left:0}
+.met-item:nth-child(12){border-right:none;padding-right:0}
 .met-lbl{font-family:var(--mono);font-size:8px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:var(--mu);margin-bottom:4px}
 .met-val{font-size:20px;font-weight:800;color:var(--tx);letter-spacing:-.03em;line-height:1;margin-bottom:3px}
 .met-chg{font-family:var(--mono);font-size:10px;font-weight:600}
@@ -469,6 +480,7 @@ function setTheme(dark){
   renderL10();
   renderWSFromState();
   rebuildCharts();
+  fetchGames();   // re-fetch so game card logos swap dark/light
 }
 el('tb').addEventListener('click', () => setTheme(!S.dark));
 const savedTheme = localStorage.getItem('xlabs-theme');
@@ -513,7 +525,6 @@ document.addEventListener('click', e => {
 });
 el('cal-prev').addEventListener('click', () => { S.date.setMonth(S.date.getMonth()-1); renderCal(); fetchGames(); });
 el('cal-next').addEventListener('click', () => { S.date.setMonth(S.date.getMonth()+1); renderCal(); fetchGames(); });
-
 // ============================================================
 //  GAMES STRIP
 // ============================================================
@@ -523,7 +534,7 @@ async function fetchGames(){
   S.slide = 0;
   const ds = fmtDate(S.date);
   try{
-    const r = await fetch(`${API}/schedule?sportId=1&date=${ds}&hydrate=linescore`);
+    const r = await fetch(`${API}/schedule?sportId=1&date=${ds}&hydrate=linescore,team`);
     const d = await r.json();
     const games = d.dates?.[0]?.games || [];
     el('game-count-lbl').textContent = games.length ? `${games.length} game${games.length>1?'s':''} scheduled` : '';
@@ -540,7 +551,7 @@ function buildGameCard(g){
   const aw=g.teams.away, hm=g.teams.home;
   const aId=aw.team.id, hId=hm.team.id;
   const aAbbr=aw.team.abbreviation||'---', hAbbr=hm.team.abbreviation||'---';
-  const aScore=aw.score??'', hScore=hm.score??'';
+  const aScore=aw.score??0, hScore=hm.score??0;
   const st=g.status.detailedState;
   const isLive=st==='In Progress';
   const isFinal=['Final','Game Over','Completed Early'].includes(st);
@@ -589,12 +600,26 @@ function updateStripArrows(show){
 el('sprev').addEventListener('click', () => { if(S.slide>0){S.slide--;updateStripArrows(true);} });
 el('snext').addEventListener('click', () => { S.slide++; updateStripArrows(true); });
 
+// Recalculate strip position on resize so cards stay aligned after window resize
+let _resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(_resizeTimer);
+  _resizeTimer = setTimeout(() => {
+    // Reset slide to 0 on resize — avoids stale offset from old card width
+    S.slide = 0;
+    const strip = el('strip');
+    if(strip) strip.style.transform = 'translateX(0)';
+    const total = strip ? strip.querySelectorAll('.gc').length : 0;
+    updateStripArrows(total > S.gamesPerView);
+  }, 150);
+});
+
 // ============================================================
 //  STANDINGS
 // ============================================================
 async function fetchStandings(){
   try{
-    const r = await fetch(`${API}/standings?leagueId=103,104&season=2025&standingsTypes=regularSeason&hydrate=team,division,splitRecords`);
+    const r = await fetch(`${API}/standings?leagueId=103,104&season=2025&standingsTypes=regularSeason&hydrate=team,division,splitRecords,streak`);
     const d = await r.json();
     S.standings = { AL:{East:[],Central:[],West:[]}, NL:{East:[],Central:[],West:[]} };
     S.allStandings = [];
@@ -650,6 +675,10 @@ function renderStandings(){
     const teams = (data[dv] || []).sort((a,b) => a.divisionRank - b.divisionRank);
     const rows = teams.map(t => {
       const gb = (t.gamesBack==='0.0'||t.gamesBack==='-') ? '—' : t.gamesBack;
+      const rdiff = t.runDiff > 0 ? `+${t.runDiff}` : `${t.runDiff}`;
+      const rdColor = t.runDiff > 0 ? '#10b981' : t.runDiff < 0 ? '#ef4444' : 'var(--mu)';
+      const strkCls = t.streak?.startsWith('W') ? 'streak-w' : 'streak-l';
+      const strk = t.streak ? `<span class="std-streak ${strkCls}">${t.streak}</span>` : '<span class="std-streak"></span>';
       return `<div class="std-row">
         <div class="std-team">
           <img class="std-logo" src="${logoUrl(t.teamId)}" alt="${t.abbr}" onerror="this.style.visibility='hidden'">
@@ -657,11 +686,13 @@ function renderStandings(){
         </div>
         <span class="std-rec">${t.wins}-${t.losses}</span>
         <span class="std-gb">${gb}</span>
+        <span class="std-rdiff" style="color:${rdColor}">${rdiff}</span>
+        ${strk}
       </div>`;
     }).join('');
-    return `<div>
+    return `<div class="std-div-col">
       <div class="std-div-lbl">${S.league} ${dv}</div>
-      <div class="std-col-hdr"><span></span><span>W-L</span><span>GB</span></div>
+      <div class="std-col-hdr"><span class="ch-team"></span><span class="ch-wl">W-L</span><span class="ch-gb">GB</span><span class="ch-rd">DIFF</span><span class="ch-stk">STK</span></div>
       ${rows}
     </div>`;
   }).join('');
@@ -921,12 +952,18 @@ function renderWSFromState(){ computeAndRenderWS(); }
 // ============================================================
 function renderMetrics(){
   const metrics = [
-    {lbl:'OPS',  val:'.718', chg:'+.006 YoY'},
-    {lbl:'ERA',  val:'4.02', chg:'-.18 YoY'},
-    {lbl:'K%',   val:'22.8%',chg:'+0.3% YoY'},
-    {lbl:'BB%',  val:'8.4%', chg:'-.02% YoY'},
-    {lbl:'BABIP',val:'.296', chg:'+.004 YoY'},
-    {lbl:'FIP',  val:'3.98', chg:'-.11 YoY'},
+    {lbl:'OPS',     val:'.718',  chg:'+.006 YoY'},
+    {lbl:'ERA',     val:'4.02',  chg:'-.18 YoY'},
+    {lbl:'K%',      val:'22.8%', chg:'+0.3% YoY'},
+    {lbl:'BB%',     val:'8.4%',  chg:'-.02% YoY'},
+    {lbl:'BABIP',   val:'.296',  chg:'+.004 YoY'},
+    {lbl:'FIP',     val:'3.98',  chg:'-.11 YoY'},
+    {lbl:'wRC+',    val:'100',   chg:'+0 YoY'},
+    {lbl:'HR/G',    val:'1.12',  chg:'+.04 YoY'},
+    {lbl:'AVG',     val:'.248',  chg:'+.003 YoY'},
+    {lbl:'SB/G',    val:'0.52',  chg:'+.08 YoY'},
+    {lbl:'WHIP',    val:'1.30',  chg:'-.03 YoY'},
+    {lbl:'LOB%',    val:'71.4%', chg:'+0.6% YoY'},
   ];
   el('met-grid').innerHTML = metrics.map(m => {
     const chgVal = m.chg.replace(' YoY','');
