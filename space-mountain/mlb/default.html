@@ -164,8 +164,6 @@ body.light .strip-fade-r{background:linear-gradient(to left,#f0f4f8,transparent)
 /* ── PERFORMERS ── */
 .perf-panel{display:none}
 .perf-panel.on{display:flex;flex-direction:column;gap:5px;max-height:380px;overflow-y:auto;scrollbar-width:thin}
-.perf-panel::-webkit-scrollbar{width:3px}
-.perf-panel::-webkit-scrollbar-thumb{background:var(--bd);border-radius:99px}
 .perf-row{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:7px;transition:background .15s;cursor:default}
 .perf-row:hover{background:var(--sf2)}
 .perf-rank{font-family:var(--mono);font-size:9px;color:var(--mu);width:14px;text-align:center;flex-shrink:0}
@@ -210,13 +208,11 @@ body.light .strip-fade-r{background:linear-gradient(to left,#f0f4f8,transparent)
 
 /* ── RUN DIFF ── */
 .rdiff-list{display:flex;flex-direction:column;gap:5px;max-height:190px;overflow-y:auto;scrollbar-width:thin}
-.rdiff-list::-webkit-scrollbar{width:3px}
-.rdiff-list::-webkit-scrollbar-thumb{background:var(--bd);border-radius:99px}
 .rd-row{display:flex;align-items:center;gap:7px}
 .rd-logo{width:16px;height:16px;object-fit:contain;flex-shrink:0}
 .rd-bar-wrap{flex:1;height:13px;border-radius:3px;overflow:hidden;background:var(--sf2)}
 .rd-bar{height:100%;border-radius:3px;transition:width .5s var(--ease)}
-.rd-val{font-family:var(--mono);font-size:9px;color:var(--mu);width:32px;text-align:right;flex-shrink:0}
+.rd-val{font-family:var(--mono);font-size:9px;color:var(--mu);width:32px;text-align:left;flex-shrink:0}
 
 /* ── MOBILE ── */
 @media(max-width:700px){
@@ -227,6 +223,22 @@ body.light .strip-fade-r{background:linear-gradient(to left,#f0f4f8,transparent)
   .met-item{border-right:none;border-bottom:1px solid var(--bd);padding:8px 0}
   .met-item:last-child{border-bottom:none}
 }
+
+/* ── SCROLLBARS ── */
+/* Firefox */
+body.dark  * { scrollbar-width: thin; scrollbar-color: rgba(10, 14, 26, 1)   #151b2e; }
+body.light * { scrollbar-width: thin; scrollbar-color: rgba(191,13,61,.45) #f0f4f8; }
+/* Nav links — keep hidden */
+.nav-links { scrollbar-width: none; }
+.nav-links::-webkit-scrollbar { display: none; }
+/* WebKit / Blink (Chrome, Safari, Edge) */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; border-radius: 99px; }
+body.dark  ::-webkit-scrollbar-thumb { background: rgba(4,30,65,.9);    border-radius: 99px; }
+body.light ::-webkit-scrollbar-thumb { background: rgba(191,13,61,.4);  border-radius: 99px; }
+body.dark  ::-webkit-scrollbar-thumb:hover { background: rgba(4,30,65,1);   }
+body.light ::-webkit-scrollbar-thumb:hover { background: rgba(191,13,61,.65); }
+::-webkit-scrollbar-corner { background: transparent; }
 
 /* ── UTIL ── */
 .ld{text-align:center;padding:24px;font-family:var(--mono);font-size:11px;color:var(--mu)}
@@ -305,7 +317,7 @@ body.light .strip-fade-r{background:linear-gradient(to left,#f0f4f8,transparent)
  <!-- Standings -->
   <div class="card" style="margin-bottom:16px">
     <div class="card-hdr" style="margin-bottom:12px">
-      <div class="card-title">Standings</div>
+      <div class="card-badge">Standings</div>
       <div class="itabs">
         <button class="itab on" id="al-tab">AL</button>
         <button class="itab" id="nl-tab">NL</button>
@@ -1133,7 +1145,7 @@ function buildHvaChart(){
         {
           label: 'Away W%',
           data: awayWpct,
-          backgroundColor: 'rgba(4,30,65,.75)',
+          backgroundColor: S.dark ? 'rgba(16, 185, 129, 1)' : 'rgba(4,30,65,.75)',
           borderRadius: 3,
           borderSkipped: false,
         },

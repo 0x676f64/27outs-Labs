@@ -66,10 +66,10 @@ main{min-height:100dvh;display:flex;flex-direction:column;align-items:center;jus
 .sb-top{display:flex;align-items:stretch;border-bottom:1px solid var(--bd)}
 .sb-cell{flex:1;display:flex;flex-direction:column;justify-content:center;gap:3px;padding:13px 18px;border-right:1px solid var(--bd);min-width:0;transition:border-color .35s}
 .sb-cell:last-child{border-right:none}
-.sbl{font-family:var(--mono);font-size:8px;font-weight:500;letter-spacing:1.8px;text-transform:uppercase;color:var(--mu);transition:color .35s;white-space:nowrap}
+.sbl{font-family:var(--mono);font-size:8px;font-weight:500;letter-spacing:1.8px;text-transform:uppercase;color:var(--mu);transition:color .35s;white-space:nowrap;margin-left: 10px}
 .sbv{font-family:var(--mono);font-size:15px;font-weight:500;color:var(--tx);line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:color .35s}
 .sbv.red{color:var(--red)}
-.live-pill{display:inline-flex;align-items:center;gap:6px}
+.live-pill{display:inline-flex;align-items:center;gap:6px;margin-left:10px}
 .ldot{position:relative;width:7px;height:7px;flex-shrink:0}
 .ldot::before,.ldot::after{content:'';position:absolute;inset:0;border-radius:50%;background:var(--red)}
 .ldot::after{animation:ripple 2s ease-out infinite}
@@ -201,12 +201,12 @@ var rafId=null;
 function startTicker(){if(rafId)cancelAnimationFrame(rafId);var half=tickerEl.scrollWidth/2;if(half<20)return;var x=0;function step(){x-=0.38;if(x<=-half)x=0;tickerEl.style.transform='translateX('+x+'px)';rafId=requestAnimationFrame(step);}rafId=requestAnimationFrame(step);}
 function fetchGames(){
   var n=new Date(),ds=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0');
-  fetch('https://statsapi.mlb.com/api/v1/schedule?sportId=1&date='+ds+'&hydrate=linescore')
+  fetch('https://statsapi.mlb.com/api/v1/schedule?sportId=1&date='+ds+'&hydrate=linescore,team')
   .then(function(r){return r.json();})
   .then(function(d){
     var games=(d.dates&&d.dates[0]&&d.dates[0].games)||[];
     var live=games.filter(function(g){return g.status&&g.status.detailedState==='In Progress';}).length;
-    gamesEl.innerHTML=games.length?(games.length+' scheduled'+(live?' &mdash; <span style="color:var(--red)">'+live+' live</span>':'')):'<span style="opacity:.4">None today</span>';
+    gamesEl.innerHTML=games.length?(games.length+' Sched'+(live?' &mdash; <span style="color:var(--red)">'+live+' live</span>':'')):'<span style="opacity:.4">None today</span>';
     buildTicker(games);
   })
   .catch(function(){gamesEl.innerHTML='<span style="opacity:.4">--</span>';tickerEl.innerHTML='<div class="tg"><span class="state">Unavailable</span></div>';});
