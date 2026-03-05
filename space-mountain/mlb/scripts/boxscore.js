@@ -120,7 +120,7 @@ function createTeamContent(teamData, teamId, teamName) {
                             <span class="player-position">${position}</span>
                         </div>
                     </td>
-                    <td>${atBats}</td>
+                    <td>${atBats}                  </td>
                     <td>${stats.runs          ?? 0}</td>
                     <td>${stats.hits          ?? 0}</td>
                     <td>${stats.rbi           ?? 0}</td>

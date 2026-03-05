@@ -978,6 +978,12 @@
         gap: 20px;
     }
 
+    .tab-button-boxscore img {
+        width: 30px;
+        height: 30px;
+        object-fit: contain;
+    }
+
     .team-column { flex: 1; min-width: 0; }
 
     @media (max-width: 820px) {
@@ -996,20 +1002,39 @@
 
     .tab-navigation button {
         flex: 1;
-        padding: 9px;
+        padding: 9px 9px 7px;
         background: transparent;
         border: none;
+        border-bottom: 2px solid transparent;
         font-weight: 600;
         cursor: pointer;
-        transition: background var(--transition);
         font-size: 11px;
         color: var(--text-muted);
         font-family: var(--font-body);
+        position: relative;
+        transition: color .22s ease, border-color .22s ease;
+    }
+
+    .tab-navigation button::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 50%;
+        width: 0;
+        height: 2px;
+        background: var(--red);
+        border-radius: 99px;
+        transform: translateX(-50%);
+        transition: width .28s cubic-bezier(.25,.46,.45,.94);
     }
 
     .tab-navigation button.active {
-        background: var(--red);
-        color: white;
+        color: #fff;
+        border-bottom-color: transparent;
+    }
+
+    .tab-navigation button.active::after {
+        width: 60%;
     }
 
     .tab-content {
