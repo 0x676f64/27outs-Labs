@@ -245,7 +245,7 @@ body.light ::-webkit-scrollbar-thumb:hover { background: rgba(191,13,61,.65); }
 .err{text-align:center;padding:20px;font-family:var(--mono);font-size:10px;color:#ef4444}
 </style>
 </head>
-<body class="dark">
+<body class="light">
 <nav>
   <div class="nav-in">
     <a href="/hub.html" class="brand">
@@ -496,7 +496,7 @@ function setTheme(dark){
 }
 el('tb').addEventListener('click', () => setTheme(!S.dark));
 const savedTheme = localStorage.getItem('xlabs-theme');
-setTheme(savedTheme ? savedTheme === 'dark' : true);
+setTheme(savedTheme ? savedTheme === 'dark' : false);
 
 // ============================================================
 //  CALENDAR

@@ -6,7 +6,7 @@
   const LOGO_BASE = 'https://www.mlbstatic.com/team-logos';
   const IMG_BASE  = 'https://midfield.mlbstatic.com/v1/people';
 
-  const FINAL_STATUSES   = ['Final', 'Game Over', 'Final: Tied', 'Completed Early', 'Suspended: Rain'];
+  const FINAL_STATUSES   = ['Final', 'Game Over', 'Final: Tied', 'Completed Early', 'Suspended: Rain', 'Completed Early: Rain', 'Completed Early: Marcy'];
   const PREGAME_STATUSES = ['Pre-Game', 'Scheduled', 'Warmup', 'Delayed', 'Postponed'];
 
   // ===========================
@@ -96,20 +96,24 @@
   // THEME TOGGLE
   // ===========================
   const initThemeToggle = () => {
-    const btn    = document.getElementById('themeToggle');
-    const logoEl = document.getElementById('logoImg');
-    if (!btn || !logoEl) return;
-    document.body.classList.add('dark');
-    document.body.classList.remove('light');
-    btn.textContent = 'Light';
-    logoEl.src = 'assets/site-logos/logo-light.svg';
+    const btn = document.getElementById('themeToggle');
+    if (!btn) return;
+    // Default to dark
+    document.body.classList.add('light');
+    document.body.classList.remove('dark');
+    const icD = document.getElementById('ic-d');
+    const icL = document.getElementById('ic-l');
+    const tl  = document.getElementById('tl');
+    if (icD) icD.style.display = 'none';
+    if (icL) icL.style.display = '';
+    if (tl)  tl.textContent    = 'Dark';
     btn.addEventListener('click', () => {
-      const wasLight = document.body.classList.contains('light');
-      document.body.classList.toggle('light', !wasLight);
-      document.body.classList.toggle('dark',   wasLight);
-      btn.textContent = wasLight ? 'Light' : 'Dark';
-      logoEl.src = wasLight ? 'assets/site-logos/logo-light.svg' : 'assets/site-logos/logo-dark.svg';
-      updateTeamLogos(document.body.classList.contains('dark'));
+      const nowDark = document.body.classList.toggle('dark');
+      document.body.classList.toggle('light', !nowDark);
+      if (icD) icD.style.display = nowDark ? ''     : 'none';
+      if (icL) icL.style.display = nowDark ? 'none' : '';
+      if (tl)  tl.textContent    = nowDark ? 'Light' : 'Dark';
+      updateTeamLogos(nowDark);
     });
   };
 
@@ -229,8 +233,21 @@
     document.querySelector('.away-score').textContent  = liveData.linescore?.teams?.away?.runs ?? '0';
     document.querySelector('.home-score').textContent  = liveData.linescore?.teams?.home?.runs ?? '0';
     const status = gameData.status.detailedState;
-    document.querySelector('.game-status').textContent = PREGAME_STATUSES.includes(status)
-      ? `${gameData.datetime.time} ${gameData.datetime.ampm}` : status;
+    const ls = liveData.linescore;
+    let statusText;
+    if (PREGAME_STATUSES.includes(status)) {
+      statusText = `${gameData.datetime.time} ${gameData.datetime.ampm}`;
+    } else if (status === 'In Progress') {
+      const half    = ls?.inningHalf === 'Top' ? '▲' : ls?.inningHalf === 'Bottom' ? '▼' : '';
+      const ordinal = ls?.currentInningOrdinal || '';
+      statusText = `${half} ${ordinal}`.trim() || 'Live';
+    } else if (FINAL_STATUSES.includes(status)) {
+      const innings = ls?.currentInning ?? ls?.innings?.length ?? 9;
+      statusText = (innings === 9) ? 'Final' : `Final/${innings}`;
+    } else {
+      statusText = status;
+    }
+    document.querySelector('.game-status').textContent = statusText;
   };
 
   // ===========================
@@ -289,7 +306,7 @@
     c.querySelectorAll('.play-item').forEach(p => p.remove());
     if (!plays?.allPlays?.length) { c.style.display = 'none'; return; }
     c.style.display = '';
-    plays.allPlays.forEach(play => c.appendChild(createPlayItem(play, true, false)));
+    [...plays.allPlays].reverse().forEach(play => c.appendChild(createPlayItem(play, true, false)));
   };
 
   // ===========================
@@ -368,9 +385,17 @@
       // Inject tab nav buttons (renderGameTabs defined in game-box.html <script>)
       window.renderGameTabs?.(phase);
 
-      // Overview tab plays
-      renderScoringPlays(liveData.plays, gamePk, videoMatcher);
-      renderAllPlays(liveData.plays);
+      // Overview tab plays — hide entirely during pre-game
+      const playsGrid = document.querySelector('.plays-grid');
+      const scoringSection = document.querySelector('.section-divider:last-of-type');
+      if (phase === 'PREGAME') {
+        if (playsGrid) playsGrid.style.display = 'none';
+        // Hide both section dividers in overview for pregame
+        document.querySelectorAll('#game-overview-tab .section-divider').forEach(d => d.style.display = 'none');
+      } else {
+        renderScoringPlays(liveData.plays, gamePk, videoMatcher);
+        renderAllPlays(liveData.plays);
+      }
 
       // Box Score tab: batting + pitching tables (owned entirely by boxscore.js)
       if (typeof loadBoxScore === 'function') await loadBoxScore(data);

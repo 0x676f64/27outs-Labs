@@ -84,69 +84,109 @@
        NAVIGATION
     ============================================= */
     nav {
-        background: var(--nav-bg);
-        border-bottom: 1px solid var(--border);
         position: sticky;
         top: 0;
         z-index: 200;
-        backdrop-filter: blur(12px);
+        height: 56px;
+        background: var(--nav-bg);
+        border-bottom: 1px solid var(--border);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        transition: background 0.3s, border-color 0.3s;
     }
 
     .nav-container {
         max-width: 1200px;
         margin: 0 auto;
         padding: 0 24px;
+        height: 100%;
         display: flex;
-        justify-content: space-between;
         align-items: center;
-        height: 56px;
+        gap: 0;
     }
 
-    .logo img {
-        height: 2.4rem;
-        width: auto;
-        display: block;
+    .brand {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        flex-shrink: 0;
+        margin-right: 24px;
+        transition: opacity 0.2s;
+    }
+    .brand:hover { opacity: 0.8; }
+    .brand-name {
+        font-size: 0.85rem;
+        font-weight: 900;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--text);
+        line-height: 1;
     }
 
     .nav-links {
         display: flex;
-        gap: 24px;
         align-items: center;
+        gap: 2px;
+        flex: 1;
+        overflow-x: auto;
+        scrollbar-width: none;
     }
+    .nav-links::-webkit-scrollbar { display: none; }
 
-    .nav-links a {
+    .nav-a {
         font-size: 12px;
         font-weight: 500;
+        color: var(--text-muted);
         text-decoration: none;
-        color: var(--text);
-        opacity: 0.65;
-        letter-spacing: 0.3px;
-        transition: opacity var(--transition);
+        padding: 6px 10px;
+        border-radius: 6px;
+        white-space: nowrap;
+        transition: color 0.2s;
     }
-    .nav-links a:hover { opacity: 1; }
+    .nav-a:hover { color: var(--text); }
+    .nav-a.active { color: var(--red); font-weight: 700; }
 
-    .theme-toggle {
+    .nav-end {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+        margin-left: auto;
+    }
+
+    /* tb = theme button — matches default.html exactly */
+    .tb {
+        display: flex;
+        align-items: center;
+        gap: 5px;
         background: transparent;
         border: 1px solid var(--border);
-        padding: 5px 11px;
-        border-radius: var(--radius-sm);
+        color: var(--text-muted);
+        font-family: var(--font-body);
         font-size: 11px;
         font-weight: 600;
-        cursor: pointer;
-        color: var(--text);
-        font-family: var(--font-body);
-        transition: all var(--transition);
         letter-spacing: 0.5px;
+        padding: 5px 12px;
+        border-radius: 99px;
+        cursor: pointer;
+        transition: color 0.2s, border-color 0.2s;
+        white-space: nowrap;
     }
-    .theme-toggle:hover {
-        border-color: var(--red);
-        color: var(--red);
+    .tb svg {
+        width: 13px; height: 13px;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        flex-shrink: 0;
     }
+    .tb:hover { color: var(--red); border-color: rgba(191,13,61,.45); }
 
-    /* Hide nav links on small screens */
-    @media (max-width: 768px) {
-        .nav-links a:not(.theme-toggle-wrapper a) { display: none; }
-        .nav-links { gap: 8px; }
+    .hide-sm { display: inline; }
+    @media (max-width: 700px) {
+        .hide-sm { display: none; }
     }
 
     /* =============================================
@@ -198,7 +238,7 @@
     }
 
     .team-record {
-        font-size: 11px;
+        font-size: 14px;
         font-weight: 600;
         color: var(--text-muted);
         font-family: var(--font-mono);
@@ -230,7 +270,7 @@
         text-align: center;
         color: var(--red);
         font-weight: 700;
-        font-size: 13px;
+        font-size: 18px;
         letter-spacing: 0.5px;
         text-transform: uppercase;
     }
@@ -973,21 +1013,19 @@
         font-family: var(--font-mono);
     }
 
+    /* Desktop boxscore: side by side, hidden on mobile */
     .desktop-boxscore {
         display: flex;
         gap: 20px;
     }
-
-    .tab-button-boxscore img {
-        width: 30px;
-        height: 30px;
-        object-fit: contain;
-    }
-
     .team-column { flex: 1; min-width: 0; }
 
+    /* Mobile boxscore: tabbed, hidden on desktop */
+    .mobile-boxscore { display: none; }
+
     @media (max-width: 820px) {
-        .desktop-boxscore { flex-direction: column; }
+        .desktop-boxscore { display: none; }
+        .mobile-boxscore  { display: block; }
     }
 
     /* Mobile boxscore tab navigation */
@@ -1047,6 +1085,25 @@
 
     .tab-content.active { display: block; }
 
+    .tab-button-boxscore img {
+        width: 24px;
+        height: 24px;
+        object-fit: contain;
+    }
+
+    .team-header img{
+        width: 30px;
+        height: 30px;
+        object-fit: contain;
+    }
+
+    .team-header {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
     /* =============================================
        MISC / UTILITIES
     ============================================= */
@@ -1084,20 +1141,31 @@
     ======================== -->
     <nav>
         <div class="nav-container">
-            <div class="logo">
-                <a href="default.html">
-                    <img id="logoImg" src="assets/site-logos/logo-dark.svg" alt="Diamond Analytics">
-                </a>
-            </div>
+            <a href="/hub.html" class="brand">
+                <svg width="42" height="26" viewBox="0 0 68 42" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <ellipse cx="40" cy="39.5" rx="18" ry="2.5" fill="#041e42" opacity=".4"/>
+                    <path d="M12 30 C4 30 1 24 1 19.5 C1 13.5 6.5 10 12 10 C12.5 10 13 10 13.5 10.1 C14.5 6.5 18 4 23 4 C26 4 28.5 5.2 30.2 7 C32 5.4 34.5 4.4 37 4.4 C43 4.4 48 8.8 48 14.5 C48 14.9 47.9 15.3 47.8 15.7 C48.8 15.3 50 15.1 51.5 15.1 C57 15.1 61 18.5 61 23 C61 27.5 57 30.9 51.5 30.9 Q51 31 12 30Z" fill="#FFFFFF"/>
+                    <path d="M30.2 7 C32 5.4 34.5 4.4 37 4.4 C43 4.4 48 8.8 48 14.5 C46 13.5 43.5 13 41 13 C37 13 33.5 14.8 31.5 17.5 C30 13.5 27 9.8 22.5 8 C24.5 6.8 27.5 6.4 30.2 7Z" fill="#F0D060" opacity=".48"/>
+                    <line x1="1" y1="18.5" x2="9" y2="18.5" stroke="#bf0d3d" stroke-width="1.4" stroke-linecap="round" opacity=".75"/>
+                    <line x1="2" y1="22.5" x2="8" y2="22.5" stroke="#bf0d3d" stroke-width="1" stroke-linecap="round" opacity=".55"/>
+                    <line x1="0" y1="14.5" x2="6" y2="14.5" stroke="#bf0d3d" stroke-width=".8" stroke-linecap="round" opacity=".4"/>
+                    <path d="M14 28 Q32 31 51 29" stroke="rgba(255,255,255,.18)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                </svg>
+                <span class="brand-name">XLABS</span>
+            </a>
             <div class="nav-links">
-                <a href="/hub.html">Dashboard</a>
-                <a href="#">Players</a>
-                <a href="#">Teams</a>
-                <a href="#">Gamefeed</a>
-                <a href="#">Predictions</a>
-                <a href="#">Metrics</a>
-                <a href="#">Research</a>
-                <button class="theme-toggle" id="themeToggle">Dark</button>
+                <a href="/hub.html" class="nav-a">Dashboard</a>
+                <a href="#" class="nav-a hide-sm">Players</a>
+                <a href="#" class="nav-a hide-sm">Teams</a>
+                <a href="#" class="nav-a hide-sm">Predictions</a>
+                <a href="#" class="nav-a hide-sm">Research</a>
+            </div>
+            <div class="nav-end">
+                <button class="tb" id="themeToggle">
+                    <svg id="ic-d" viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                    <svg id="ic-l" viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                    <span id="tl">Light</span>
+                </button>
             </div>
         </div>
     </nav>
@@ -1378,7 +1446,7 @@
             });
         };
 
-        // Win prob loader — called lazily on tab click
+       // Win prob loader — called lazily on tab click
         window.loadWinProbabilityTab = async function(pk, cachedData) {
             const container = document.getElementById('win-prob-container');
             if (!container || container.dataset.loaded === 'true') return;
@@ -1501,8 +1569,8 @@
                         <div id="${ttId}"></div>
                         <svg id="wp-svg-${pk}" width="100%" viewBox="0 0 ${W} ${H}" style="overflow:visible;display:block;">
                             <rect x="${PL}" y="${PT}" width="${CW}" height="${CH}" fill="var(--surface-2)" rx="4"/>
-                            <polygon points="${poly}" fill="${awayColor}" opacity="0.25" clip-path="url(#ct-${pk})"/>
-                            <polygon points="${poly}" fill="${homeColor}" opacity="0.25" clip-path="url(#cb-${pk})"/>
+                            <polygon points="${poly}" fill="${awayColor}" clip-path="url(#ct-${pk})"/>
+                            <polygon points="${poly}" fill="${homeColor}" clip-path="url(#cb-${pk})"/>
                             <defs>
                                 <clipPath id="ct-${pk}"><rect x="${PL}" y="${PT}" width="${CW}" height="${CH/2}"/></clipPath>
                                 <clipPath id="cb-${pk}"><rect x="${PL}" y="${PT+CH/2}" width="${CW}" height="${CH/2}"/></clipPath>
@@ -1514,7 +1582,7 @@
                             <text x="${PL-4}" y="${PT+14}" text-anchor="end" font-size="7" fill="#999" font-family="DM Mono">100%</text>
                             <text x="${PL-4}" y="${PT+CH-2}" text-anchor="end" font-size="7" fill="#999" font-family="DM Mono">100%</text>
                             ${inningLines}
-                            <polyline points="${linePoints}" fill="none" stroke="#333" stroke-width="1.5" stroke-linejoin="round"/>
+                            <polyline points="${linePoints}" fill="none" stroke="rgba(0, 0, 0, 0.73)" stroke-width="0.5" stroke-linejoin="round"/>
                             ${pts.map((p,i)=>{
                                 const x = i===0 ? PL : pts[i-1].x+(p.x-pts[i-1].x)/2;
                                 const nx = i===pts.length-1 ? PL+CW : p.x+(pts[i+1].x-p.x)/2;
@@ -1532,7 +1600,7 @@
                                     data-event="${se}" data-desc="${sd}" data-inning="${il}"
                                     style="cursor:crosshair;"/>`;
                             }).join('')}
-                            <circle id="wp-dot-${pk}" cx="0" cy="0" r="4" fill="white" stroke="#333" stroke-width="2" style="display:none;pointer-events:none;"/>
+                            <circle id="wp-dot-${pk}" cx="0" cy="0" r="2.5" fill="white" stroke="rgba(0,0,0,.8)" stroke-width="1.2" style="display:none;pointer-events:none;"/>
                             <text x="${PL+CW/2}" y="${H-2}" text-anchor="middle" font-size="9" fill="#041e42" font-family="DM Mono">Inning</text>
                         </svg>
                     </div>
