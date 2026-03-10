@@ -6,7 +6,7 @@
   const LOGO_BASE = 'https://www.mlbstatic.com/team-logos';
   const IMG_BASE  = 'https://midfield.mlbstatic.com/v1/people';
 
-  const FINAL_STATUSES   = ['Final', 'Game Over', 'Final: Tied', 'Completed Early', 'Suspended: Rain', 'Completed Early: Rain', 'Completed Early: Marcy'];
+  const FINAL_STATUSES   = ['Final', 'Game Over', 'Final: Tied', 'Completed Early', 'Suspended: Rain'];
   const PREGAME_STATUSES = ['Pre-Game', 'Scheduled', 'Warmup', 'Delayed', 'Postponed'];
 
   // ===========================
@@ -93,20 +93,43 @@
   };
 
   // ===========================
+  // WIN PROB THEME UPDATE
+  // ===========================
+  const updateWinProbTheme = (dark) => {
+    const inningColor     = dark ? '#e2e8f0' : '#041e42';
+    const inningGridColor = dark ? 'rgba(226,232,240,0.1)' : 'rgba(4,30,66,0.12)';
+    // Update all inning number text elements
+    document.querySelectorAll('#win-prob-container text').forEach(el => {
+      if (el.getAttribute('font-family') === 'DM Mono' && !isNaN(el.textContent.trim())) {
+        el.setAttribute('fill', inningColor);
+      }
+    });
+    // Update inning tick lines (the short vertical marks below the chart)
+    document.querySelectorAll('#win-prob-container line').forEach(el => {
+      const dash = el.getAttribute('stroke-dasharray');
+      if (dash && dash.includes('3,3')) {
+        el.setAttribute('stroke', inningGridColor);
+      } else if (!dash && el.getAttribute('stroke') !== '#bbb') {
+        el.setAttribute('stroke', inningColor);
+      }
+    });
+  };
+
+  // ===========================
   // THEME TOGGLE
   // ===========================
   const initThemeToggle = () => {
     const btn = document.getElementById('themeToggle');
     if (!btn) return;
-    // Default to dark
+    // Default to light
     document.body.classList.add('light');
     document.body.classList.remove('dark');
     const icD = document.getElementById('ic-d');
     const icL = document.getElementById('ic-l');
     const tl  = document.getElementById('tl');
-    if (icD) icD.style.display = 'none';
-    if (icL) icL.style.display = '';
-    if (tl)  tl.textContent    = 'Dark';
+    if (icD) icD.style.display = '';
+    if (icL) icL.style.display = 'none';
+    if (tl)  tl.textContent    = 'Light';
     btn.addEventListener('click', () => {
       const nowDark = document.body.classList.toggle('dark');
       document.body.classList.toggle('light', !nowDark);
@@ -114,6 +137,7 @@
       if (icL) icL.style.display = nowDark ? 'none' : '';
       if (tl)  tl.textContent    = nowDark ? 'Light' : 'Dark';
       updateTeamLogos(nowDark);
+      updateWinProbTheme(nowDark);
     });
   };
 
@@ -290,9 +314,17 @@
   const renderScoringPlays = (plays, gamePkId, vm) => {
     const c = document.getElementById('scoring-plays-container');
     if (!c) return;
-    c.querySelectorAll('.play-item').forEach(p => p.remove());
-    if (!plays?.scoringPlays?.length) { c.style.display = 'none'; return; }
+    c.querySelectorAll('.play-item, .no-scoring-msg').forEach(p => p.remove());
+    // Always keep the container visible so the grid layout stays intact
     c.style.display = '';
+    if (!plays?.scoringPlays?.length) {
+      const msg = document.createElement('div');
+      msg.className = 'no-scoring-msg';
+      msg.style.cssText = 'text-align:center;padding:28px 12px;font-family:var(--font-mono);font-size:11px;color:var(--text-muted);opacity:.7;';
+      msg.textContent = 'No runs scored yet';
+      c.appendChild(msg);
+      return;
+    }
     plays.scoringPlays.forEach(idx => {
       const el = createPlayItem(plays.allPlays[idx], true, true);
       c.appendChild(el);
@@ -303,9 +335,17 @@
   const renderAllPlays = (plays) => {
     const c = document.getElementById('all-plays-container');
     if (!c) return;
-    c.querySelectorAll('.play-item').forEach(p => p.remove());
-    if (!plays?.allPlays?.length) { c.style.display = 'none'; return; }
+    c.querySelectorAll('.play-item, .no-plays-msg').forEach(p => p.remove());
+    // Always keep the container visible so the grid layout stays intact
     c.style.display = '';
+    if (!plays?.allPlays?.length) {
+      const msg = document.createElement('div');
+      msg.className = 'no-plays-msg';
+      msg.style.cssText = 'text-align:center;padding:28px 12px;font-family:var(--font-mono);font-size:11px;color:var(--text-muted);opacity:.7;';
+      msg.textContent = 'No plays yet';
+      c.appendChild(msg);
+      return;
+    }
     [...plays.allPlays].reverse().forEach(play => c.appendChild(createPlayItem(play, true, false)));
   };
 
@@ -385,14 +425,7 @@
       // Inject tab nav buttons (renderGameTabs defined in game-box.html <script>)
       window.renderGameTabs?.(phase);
 
-      // Overview tab plays — hide entirely during pre-game
-      const playsGrid = document.querySelector('.plays-grid');
-      const scoringSection = document.querySelector('.section-divider:last-of-type');
-      if (phase === 'PREGAME') {
-        if (playsGrid) playsGrid.style.display = 'none';
-        // Hide both section dividers in overview for pregame
-        document.querySelectorAll('#game-overview-tab .section-divider').forEach(d => d.style.display = 'none');
-      } else {
+      if (phase !== 'PREGAME') {
         renderScoringPlays(liveData.plays, gamePk, videoMatcher);
         renderAllPlays(liveData.plays);
       }

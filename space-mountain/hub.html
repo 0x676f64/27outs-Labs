@@ -25,7 +25,7 @@ body.dark nav {background-color:#151b2e}
 .brand:hover{transform:translateY(-1px)}
 .brand-cloud{width:52px;height:32px;flex-shrink:0;transition:filter .3s var(--ease),transform .3s var(--ease)}
 .brand:hover .brand-cloud{transform:translateX(3px);filter:drop-shadow(0 2px 9px rgba(191,13,61,.45))}
-.brand-name{font-size:.95rem;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:white;transition:color .3s;line-height:1}
+.brand-name{font-size:.95rem;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:#e2e8f0;transition:color .3s;line-height:1}
 .brand:hover .brand-name{color:var(--red)}
 .nav-r{display:flex;align-items:center;gap:4px}
 .nl{font-size:12px;font-weight:500;color:var(--mu);text-decoration:none;padding:6px 10px;border-radius:8px;transition:color .2s}
@@ -206,7 +206,7 @@ var rafId=null;
 function startTicker(){if(rafId)cancelAnimationFrame(rafId);var half=tickerEl.scrollWidth/2;if(half<20)return;var x=0;function step(){x-=0.38;if(x<=-half)x=0;tickerEl.style.transform='translateX('+x+'px)';rafId=requestAnimationFrame(step);}rafId=requestAnimationFrame(step);}
 function fetchGames(){
   var n=new Date(),ds=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0');
-  fetch('https://statsapi.mlb.com/api/v1/schedule?sportId=1&date='+ds+'&hydrate=linescore,team')
+  fetch('https://statsapi.mlb.com/api/v1/schedule?sportId=1,51&date='+ds+'&hydrate=linescore,team')
   .then(function(r){return r.json();})
   .then(function(d){
     var games=(d.dates&&d.dates[0]&&d.dates[0].games)||[];
