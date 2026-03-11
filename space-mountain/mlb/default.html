@@ -113,6 +113,13 @@ body.light .strip-fade-r{background:linear-gradient(to left,#f0f4f8,transparent)
 .strip-arrow:hover{background:var(--red);border-color:var(--red);color:#fff}
 .strip-arrow.prev{left:1px}
 .strip-arrow.next{right:1px}
+@media(max-width:768px){
+  .strip-arrow{display:none!important}
+  .strip{overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;transform:none!important}
+  .strip::-webkit-scrollbar{display:none}
+  .gc{scroll-snap-align:start}
+  .strip-fade-l,.strip-fade-r{width:24px}
+}
 
 /* ── MAIN GRID ── */
 .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px}
@@ -132,38 +139,48 @@ body.light .strip-fade-r{background:linear-gradient(to left,#f0f4f8,transparent)
 .itab.on{background:var(--red);color:#fff}
 
 /* ── STANDINGS ── */
-/* Standings — 3 divisions in a row */
 .std-divs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0}
 .std-div-col{padding:0 14px;border-right:1px solid var(--bd)}
 .std-div-col:first-child{padding-left:0}
 .std-div-col:last-child{border-right:none;padding-right:0}
 .std-div-lbl{font-family:var(--mono);font-size:8px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--mu);padding-bottom:5px;border-bottom:1px solid var(--bd);margin-bottom:4px}
-/* header row: team col auto, W-L fixed, GB fixed — no stretching */
+
+/* header */
 .std-col-hdr{display:flex;align-items:center;padding:0 0 3px;margin-bottom:2px;border-bottom:1px solid var(--bd)}
 .std-col-hdr span{font-family:var(--mono);font-size:7px;font-weight:500;letter-spacing:.8px;text-transform:uppercase;color:var(--mu);text-align:right;flex-shrink:0}
 .std-col-hdr .ch-team{flex:1;text-align:left}
-.std-col-hdr .ch-wl{width:38px}
-.std-col-hdr .ch-gb{width:24px;padding-left:10px}
-.std-col-hdr .ch-rd{width:30px}
-.std-col-hdr .ch-stk{width:26px}
-/* each team row: logo+name flex-grow, W-L fixed, GB fixed */
-.std-row{display:flex;align-items:center;gap:0;padding:3px 0;border-bottom:1px solid rgba(30,41,59,.25)}
+.std-col-hdr .ch-wl{width:42px;text-align:right}
+.std-col-hdr .ch-gb{width:28px;text-align:right}
+.std-col-hdr .ch-rd{width:32px;text-align:right}
+.std-col-hdr .ch-stk{width:28px;text-align:right}
+.std-col-hdr .ch-xwl{width:34px;text-align:right}
+
+/* rows */
+.std-row{display:flex;align-items:center;padding:3px 0;border-bottom:1px solid rgba(30,41,59,.25)}
 .std-row:last-child{border-bottom:none}
 .std-row:hover .std-name{color:var(--red)}
 .std-team{display:flex;align-items:center;gap:5px;flex:1;min-width:0}
 .std-logo{width:18px;height:18px;object-fit:contain;flex-shrink:0}
 .std-name{font-size:11px;font-weight:700;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:color .15s}
-.std-rec{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--tx);width:38px;text-align:right;flex-shrink:0}
-.std-rdiff{font-family:var(--mono);font-size:9px;font-weight:600;width:30px;text-align:right;flex-shrink:0}
-.std-streak{font-family:var(--mono);font-size:9px;font-weight:700;width:26px;text-align:right;flex-shrink:0}
+.std-rec{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--tx);width:42px;text-align:right;flex-shrink:0}
+.std-gb{font-family:var(--mono);font-size:10px;color:var(--mu);width:28px;text-align:right;flex-shrink:0}
+.std-rdiff{font-family:var(--mono);font-size:9px;font-weight:600;width:32px;text-align:right;flex-shrink:0}
+.std-streak{font-family:var(--mono);font-size:9px;font-weight:700;width:28px;text-align:right;flex-shrink:0}
+.std-xwl{font-family:var(--mono);font-size:9px;color:var(--mu);width:34px;text-align:right;flex-shrink:0}
 .streak-w{color:#10b981}
 .streak-l{color:#ef4444}
-.std-gb{font-family:var(--mono);font-size:10px;color:var(--mu);width:24px;text-align:right;flex-shrink:0;padding-left:10px}
-/* Mobile: stack divisions vertically */
+
+/* mobile */
 @media(max-width:600px){
   .std-divs{grid-template-columns:1fr}
   .std-div-col{padding:0;border-right:none;border-bottom:1px solid var(--bd);padding-bottom:10px;margin-bottom:4px}
   .std-div-col:last-child{border-bottom:none;padding-bottom:0;margin-bottom:0}
+  /* tighten columns on small screens */
+  .std-col-hdr .ch-wl,.std-rec{width:38px}
+  .std-col-hdr .ch-gb,.std-gb{width:24px}
+  .std-col-hdr .ch-rd,.std-rdiff{width:28px}
+  .std-col-hdr .ch-stk,.std-streak{width:24px}
+  .std-col-hdr .ch-xwl,.std-xwl{width:30px}
 }
 
 .l10-dots{display:flex;gap:2px;align-items:center}
@@ -195,20 +212,51 @@ body.light .strip-fade-r{background:linear-gradient(to left,#f0f4f8,transparent)
 
 /* ── METRICS ROW ── */
 .metrics-wrap{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:18px;margin-bottom:16px;box-shadow:var(--sh)}
-.met-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:0 0;align-items:stretch}
-@media(max-width:800px){.met-grid{grid-template-columns:repeat(3,1fr)}}
-@media(max-width:500px){.met-grid{grid-template-columns:repeat(2,1fr)}}
+.met-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:0}
+
 .met-item{padding:6px 16px;border-right:1px solid var(--bd)}
 .met-item:first-child{padding-left:0}
 .met-item:last-child{border-right:none;padding-right:0}
+.met-item:nth-child(6n){border-right:none}
 .met-item:nth-child(n+7){border-top:1px solid var(--bd);padding-top:10px;margin-top:4px}
 .met-item:nth-child(7){padding-left:0}
 .met-item:nth-child(12){border-right:none;padding-right:0}
+
 .met-lbl{font-family:var(--mono);font-size:8px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:var(--mu);margin-bottom:4px}
 .met-val{font-size:20px;font-weight:800;color:var(--tx);letter-spacing:-.03em;line-height:1;margin-bottom:3px}
 .met-chg{font-family:var(--mono);font-size:10px;font-weight:600}
 .chg-pos{color:#10b981}
 .chg-neg{color:#ef4444}
+
+/* Tablet: 3 columns */
+@media(max-width:800px){
+  .met-grid{grid-template-columns:repeat(3,1fr)}
+
+  /* reset desktop nth rules */
+  .met-item{border-right:1px solid var(--bd);padding:8px 12px}
+  .met-item:nth-child(6n){border-right:1px solid var(--bd)}
+  .met-item:nth-child(n+7){border-top:none;padding-top:8px;margin-top:0}
+  .met-item:nth-child(7){padding-left:12px}
+  .met-item:nth-child(12){border-right:1px solid var(--bd)}
+
+  /* 3-col rules */
+  .met-item:nth-child(3n){border-right:none}
+  .met-item:nth-child(n+4){border-top:1px solid var(--bd);padding-top:8px;margin-top:4px}
+  .met-item:nth-child(3n+1){padding-left:0}
+  .met-item:nth-child(3n){padding-right:0}
+  .met-item:first-child{padding-left:0}
+}
+
+/* Mobile: 3 columns still, tighten padding */
+@media(max-width:480px){
+  .met-grid{grid-template-columns:repeat(3,1fr)}
+  .met-item{padding:8px 8px}
+  .met-item:nth-child(3n+1){padding-left:0}
+  .met-item:nth-child(3n){padding-right:0;border-right:none}
+  .met-val{font-size:16px}
+  .met-lbl{font-size:7px;letter-spacing:1px}
+  .met-chg{font-size:9px}
+}
 
 /* ── CHARTS ── */
 .chart-wrap{position:relative;height:190px}
@@ -227,8 +275,8 @@ body.light .strip-fade-r{background:linear-gradient(to left,#f0f4f8,transparent)
   .main{padding:16px 14px 48px}
   .nav-a.hide-sm{display:none}
   .gc{min-width:148px;max-width:148px}
-  .met-grid{grid-template-columns:repeat(2,1fr)}
-  .met-item{border-right:none;border-bottom:1px solid var(--bd);padding:8px 0}
+  .met-grid{grid-template-columns:repeat(3,1fr)}
+  .met-item{border-right:none;border-bottom:1px solid var(--bd);padding:8px 0;text-align:center}
   .met-item:last-child{border-bottom:none}
 }
 
@@ -555,7 +603,7 @@ async function fetchGames(){
   S.slide = 0;
   const ds = fmtDate(S.date);
   try{
-    const r = await fetch(`${API}/schedule?sportId=1,51&date=${ds}&hydrate=linescore,team`);
+    const r = await fetch(`${API}/schedule?sportId=1&date=${ds}&hydrate=linescore,team`);
     const d = await r.json();
     const games = d.dates?.[0]?.games || [];
     el('game-count-lbl').textContent = games.length ? `${games.length} game${games.length>1?'s':''} scheduled` : '';
@@ -565,6 +613,7 @@ async function fetchGames(){
     strip.innerHTML = '';
     for(const g of games) strip.appendChild(buildGameCard(g));
     updateStripArrows(games.length > S.gamesPerView);
+    if(window._syncStripFades) window._syncStripFades();
   } catch(e){ strip.innerHTML='<div class="err">Failed to load games</div>'; }
 }
 
@@ -621,6 +670,28 @@ function updateStripArrows(show){
 el('sprev').addEventListener('click', () => { if(S.slide>0){S.slide--;updateStripArrows(true);} });
 el('snext').addEventListener('click', () => { S.slide++; updateStripArrows(true); });
 
+// ── Touch / mobile swipe ─────────────────────────────────────
+// On mobile (≤768px) the strip uses native CSS scroll-snap.
+// We just sync the fade overlays so they reflect scroll position.
+(function initStripTouch(){
+  const strip  = el('strip');
+  const fadeL  = el('fade-l');
+  const fadeR  = el('fade-r');
+
+  function syncFades(){
+    const atStart = strip.scrollLeft <= 4;
+    const atEnd   = strip.scrollLeft + strip.clientWidth >= strip.scrollWidth - 4;
+    fadeL.style.opacity = atStart ? '0' : '1';
+    fadeR.style.opacity = atEnd   ? '0' : '1';
+  }
+
+  // Update fades on every scroll tick
+  strip.addEventListener('scroll', syncFades, { passive: true });
+
+  // Also fire once after cards are rendered (called from fetchGames)
+  window._syncStripFades = syncFades;
+})();
+
 // Recalculate strip position on resize so cards stay aligned after window resize
 let _resizeTimer;
 window.addEventListener('resize', () => {
@@ -640,7 +711,7 @@ window.addEventListener('resize', () => {
 // ============================================================
 async function fetchStandings(){
   try{
-    const r = await fetch(`${API}/standings?leagueId=103,104&season=2025&standingsTypes=regularSeason&hydrate=team,division,splitRecords,streak`);
+    const r = await fetch(`${API}/standings?leagueId=103,104&season=2025&standingsTypes=regularSeason&hydrate=team,division,splitRecords,streak,expectedRecords`);
     const d = await r.json();
     S.standings = { AL:{East:[],Central:[],West:[]}, NL:{East:[],Central:[],West:[]} };
     S.allStandings = [];
@@ -651,6 +722,7 @@ async function fetchStandings(){
         const homeRec = t.records?.splitRecords?.find(r=>r.type==='home') || {};
         const awayRec = t.records?.splitRecords?.find(r=>r.type==='away') || {};
         const l10Rec  = t.records?.splitRecords?.find(r=>r.type==='lastTen') || {};
+        const xRec    = t.records?.expectedRecords?.find(r=>r.type==='xWinLoss') || {};
         const entry = {
           teamId: t.team.id,
           abbr:   t.team.abbreviation,
@@ -664,6 +736,7 @@ async function fetchStandings(){
           homeW: homeRec.wins||0, homeL: homeRec.losses||0,
           awayW: awayRec.wins||0, awayL: awayRec.losses||0,
           l10W:  l10Rec.wins||0,  l10L:  l10Rec.losses||0,
+          xW:    xRec.wins||0,    xL:    xRec.losses||0,
           splitRecords: t.records?.splitRecords || [],
           league: lg, division: div,
           winPct: t.wins / gp,
@@ -700,6 +773,7 @@ function renderStandings(){
       const rdColor = t.runDiff > 0 ? '#10b981' : t.runDiff < 0 ? '#ef4444' : 'var(--mu)';
       const strkCls = t.streak?.startsWith('W') ? 'streak-w' : 'streak-l';
       const strk = t.streak ? `<span class="std-streak ${strkCls}">${t.streak}</span>` : '<span class="std-streak"></span>';
+      const xwl = (t.xW || t.xL) ? `${t.xW}-${t.xL}` : '—';
       return `<div class="std-row">
         <div class="std-team">
           <img class="std-logo" src="${logoUrl(t.teamId)}" alt="${t.abbr}" onerror="this.style.visibility='hidden'">
@@ -709,11 +783,19 @@ function renderStandings(){
         <span class="std-gb">${gb}</span>
         <span class="std-rdiff" style="color:${rdColor}">${rdiff}</span>
         ${strk}
+        <span class="std-xwl">${xwl}</span>
       </div>`;
     }).join('');
     return `<div class="std-div-col">
       <div class="std-div-lbl">${S.league} ${dv}</div>
-      <div class="std-col-hdr"><span class="ch-team"></span><span class="ch-wl">W-L</span><span class="ch-gb">GB</span><span class="ch-rd">DIFF</span><span class="ch-stk">STK</span></div>
+      <div class="std-col-hdr">
+        <span class="ch-team"></span>
+        <span class="ch-wl">W-L</span>
+        <span class="ch-gb">GB</span>
+        <span class="ch-rd">DIFF</span>
+        <span class="ch-stk">STK</span>
+        <span class="ch-xwl">xW-L</span>
+      </div>
       ${rows}
     </div>`;
   }).join('');
@@ -733,7 +815,6 @@ el('nl-tab').addEventListener('click', () => {
   el('al-tab').classList.remove('on');
   renderStandings();
 });
-
 
 function renderWSFromState(){ computeAndRenderWS(); }
 
