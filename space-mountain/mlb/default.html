@@ -1102,101 +1102,54 @@ function renderMetrics(){
 // We pull two: a batter-level and pitcher-level leaderboard,
 // then compute the league-wide mean for each stat.
 async function fetchSavantMetrics(){
+  // Key mapping: JSON key → S_METRICS key
+  const KEY_MAP = {
+    hard_hit: 'hardhit',
+    barrel:   'barrel',
+    xba:      'xba',
+    sprint:   'sprint',
+    ppa:      'ppa',
+    chase:    'chase',
+  };
+ 
   try {
-    // Batters: exit velocity, barrel, xBA, sprint speed, pitches/PA
-    const batUrl = [
-      'https://baseballsavant.mlb.com/leaderboard/custom',
-      '?year=2025&type=batter&filter=&sort=4&sortDir=desc',
-      '&min=100&selections=',
-      'xba,exit_velocity_avg,barrel_batted_rate,sprint_speed,pitch_count_pa',
-      '&csv=true'
-    ].join('');
-
-    // Pitchers: chase rate (o_swing_pct)
-    const pitUrl = [
-      'https://baseballsavant.mlb.com/leaderboard/custom',
-      '?year=2025&type=pitcher&filter=&sort=4&sortDir=desc',
-      '&min=100&selections=',
-      'xba,exit_velocity_avg,barrel_batted_rate,o_swing_pct',
-      '&csv=true'
-    ].join('');
-
-    // Helper: parse CSV text → array of objects
-    const parseCSV = (text) => {
-      const lines  = text.trim().split('\n');
-      const header = lines[0].split(',').map(h => h.replace(/"/g,'').trim());
-      return lines.slice(1).map(row => {
-        const vals = row.split(',');
-        const obj  = {};
-        header.forEach((h, i) => { obj[h] = (vals[i]||'').replace(/"/g,'').trim(); });
-        return obj;
-      });
-    };
-
-    // Helper: compute league-wide mean for a numeric column
-    const mean = (rows, col) => {
-      const nums = rows.map(r => parseFloat(r[col])).filter(n => !isNaN(n));
-      if (!nums.length) return null;
-      return nums.reduce((s, n) => s + n, 0) / nums.length;
-    };
-
-    const [batRes, pitRes] = await Promise.allSettled([
-      fetch(batUrl).then(r => r.text()),
-      fetch(pitUrl).then(r => r.text()),
-    ]);
-
-    if (batRes.status === 'fulfilled') {
-      const batRows = parseCSV(batRes.value);
-
-      // Hard Hit% — exit velo ≥ 95 mph, compute fraction of all batted balls
-      // Savant's exit_velocity_avg isn't hard-hit% directly.
-      // Use barrel_batted_rate and xba columns directly as averages.
-      const barrel  = mean(batRows, 'barrel_batted_rate');
-      const xba     = mean(batRows, 'xba');
-      const hardHit = mean(batRows, 'exit_velocity_avg');
-      // exit_velocity_avg is EV, not hard-hit%; derive hard-hit% using
-      // a linear approximation: hard_hit_pct ≈ (ev_avg - 79) / 0.42
-      // (calibrated from public Savant data: ~EV 88 → ~21% hard hit)
-      const hardHitPct = hardHit ? Math.max(0, (hardHit - 79) / 0.42) : null;
-      const ppa     = mean(batRows, 'pitch_count_pa');
-      const sprint  = mean(batRows, 'sprint_speed');
-
-      if (barrel    !== null) { S_METRICS.barrel  = { val: barrel.toFixed(1)+'%',  chg: '2025 avg' }; }
-      if (xba       !== null) { S_METRICS.xba     = { val: '.'+xba.toFixed(3).split('.')[1], chg: '2025 avg' }; }
-      if (hardHitPct!== null) { S_METRICS.hardhit = { val: hardHitPct.toFixed(1)+'%', chg: '2025 avg' }; }
-      if (ppa       !== null) { S_METRICS.ppa     = { val: ppa.toFixed(2),           chg: '2025 avg' }; }
-      if (sprint    !== null) { S_METRICS.sprint  = { val: sprint.toFixed(1),        chg: '2025 avg' }; }
+    // savant-current.json lives in the same folder as default.html
+    // Re-run convert_savant.py whenever you download fresh CSVs from Savant
+    const r = await fetch('lib/savant-current.json');
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const data = await r.json();
+ 
+    const m = data.metrics || {};
+    let loaded = 0;
+ 
+    for (const [jsonKey, metricKey] of Object.entries(KEY_MAP)) {
+      const entry = m[jsonKey];
+      if (!entry) continue;
+      const chg = entry.delta && entry.delta !== 'n/a'
+        ? `${entry.delta} YoY`
+        : `${data.current_year ?? ''} avg`;
+      S_METRICS[metricKey] = { val: entry.val, chg };
+      loaded++;
     }
-
-    if (pitRes.status === 'fulfilled') {
-      const pitRows = parseCSV(pitRes.value);
-      const chase   = mean(pitRows, 'o_swing_pct');
-      if (chase !== null) { S_METRICS.chase = { val: (chase*100).toFixed(1)+'%', chg: '2025 avg' }; }
+ 
+    if (loaded > 0) {
+      console.info(`[Savant] Loaded ${loaded} metrics from savant-current.json (generated ${data.generated})`);
+      renderMetrics();
+      return;
     }
-
+    throw new Error('No metrics found in JSON');
+ 
   } catch(e) {
-    // Savant CORS block is common from localhost/cross-origin — fall back to derived formulas
-    console.warn('Savant fetch failed, using formula fallbacks:', e.message);
-    deriveSavantFallbacks();
+    console.warn('[Savant] savant-current.json unavailable, using built-in baselines:', e.message);
+    // Fallback: 2024 actuals so the UI always shows real numbers
+    S_METRICS.hardhit = { val: '38.4%', chg: '+0.3% YoY' };
+    S_METRICS.barrel  = { val: '8.4%',  chg: '+0.1% YoY' };
+    S_METRICS.xba     = { val: '.247',  chg: '+.001 YoY'  };
+    S_METRICS.chase   = { val: '29.4%', chg: '-.3% YoY'   };
+    S_METRICS.sprint  = { val: '27.1',  chg: '-0.1 YoY'   };
+    S_METRICS.ppa     = { val: '3.92',  chg: '+.02 YoY'   };
+    renderMetrics();
   }
-  renderMetrics();
-}
-
-// ── Formula fallbacks when Savant is unreachable ─────────────
-// Uses 2024 actuals + known 2025 early-season trends
-function deriveSavantFallbacks(){
-  // Hard Hit%: leaguewide ~38% in 2024, slight uptick in 2025
-  S_METRICS.hardhit = { val: '38.4%', chg: '+0.3% YoY' };
-  // Barrel%: ~8.4% leaguewide in 2024
-  S_METRICS.barrel  = { val: '8.4%',  chg: '+0.1% YoY' };
-  // xBA: ~.247 in 2024
-  S_METRICS.xba     = { val: '.247',  chg: '+.001 YoY' };
-  // Chase% (O-Swing%): ~29.4% in 2024, batters improving pitch recog
-  S_METRICS.chase   = { val: '29.4%', chg: '-.3% YoY'  };
-  // Sprint Speed: ~27.1 ft/s leaguewide in 2024
-  S_METRICS.sprint  = { val: '27.1',  chg: '−0.1 YoY'  };
-  // Pitches per PA: ~3.92 in 2024
-  S_METRICS.ppa     = { val: '3.92',  chg: '+.02 YoY'  };
 }
 
 // ============================================================

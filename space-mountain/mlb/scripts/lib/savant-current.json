@@ -1,0 +1,61 @@
+{
+  "generated": "2026-03-12T20:55:21",
+  "current_year": 2025,
+  "prior_year": 2024,
+  "player_counts": {
+    "batter_current": 180,
+    "batter_prior": 180,
+    "pitcher_current": 140,
+    "pitcher_prior": 140
+  },
+  "metrics": {
+    "hard_hit": {
+      "label": "Hard Hit%",
+      "val": "37.2%",
+      "delta": "-0.8%",
+      "current": 37.1761,
+      "prior": 38.01,
+      "source": "Baseball Savant"
+    },
+    "barrel": {
+      "label": "Barrel%",
+      "val": "8.4%",
+      "delta": "+0.5%",
+      "current": 8.4122,
+      "prior": 7.93,
+      "source": "Baseball Savant"
+    },
+    "xba": {
+      "label": "xBA",
+      "val": ".247",
+      "delta": "+0.005",
+      "current": 0.2473,
+      "prior": 0.2421,
+      "source": "Baseball Savant"
+    },
+    "sprint": {
+      "label": "Spd(ft/s)",
+      "val": "27.1",
+      "delta": "-0.042",
+      "current": 27.1428,
+      "prior": 27.185,
+      "source": "Baseball Savant"
+    },
+    "ppa": {
+      "label": "P/PA",
+      "val": "3.95",
+      "delta": "-0.008",
+      "current": 3.9477,
+      "prior": 3.9556,
+      "source": "Baseball Savant"
+    },
+    "chase": {
+      "label": "Chase%",
+      "val": "29.1%",
+      "delta": "+0.2%",
+      "current": 29.1193,
+      "prior": 28.92,
+      "source": "Baseball Savant"
+    }
+  }
+}
