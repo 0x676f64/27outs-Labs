@@ -220,7 +220,7 @@ body.light .strip-fade-r{background:linear-gradient(to left,#f0f4f8,transparent)
 .met-item:nth-child(6n){border-right:none}
 .met-item:nth-child(n+7){border-top:1px solid var(--bd);padding-top:10px;margin-top:4px}
 .met-item:nth-child(7){padding-left:0}
-.met-item:nth-child(12){border-right:none;padding-right:0}
+.met-item:nth-child(13){padding-left:0}
 
 .met-lbl{font-family:var(--mono);font-size:8px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:var(--mu);margin-bottom:4px}
 .met-val{font-size:20px;font-weight:800;color:var(--tx);letter-spacing:-.03em;line-height:1;margin-bottom:3px}
@@ -1074,12 +1074,12 @@ const METRIC_DEFAULTS = [
   {lbl:'xBA',       val:'--',    chg:'Loading…',  key:'xba'},
   {lbl:'Chase%',    val:'--',    chg:'Loading…',  key:'chase'},
   {lbl:'Spd(ft/s)', val:'--',    chg:'Loading…',  key:'sprint'},
-  {lbl:'P/PA',      val:'--',    chg:'Loading…',  key:'ppa'},
+  {lbl:'HR/G',      val:'--',    chg:'Loading…',  key:'hrpg'},
 ];
-
+ 
 const S_METRICS = {};   // live overrides keyed by metric.key
 METRIC_DEFAULTS.forEach(m => S_METRICS[m.key] = { val: m.val, chg: m.chg });
-
+ 
 function renderMetrics(){
   el('met-grid').innerHTML = METRIC_DEFAULTS.map(m => {
     const live   = S_METRICS[m.key];
@@ -1096,59 +1096,82 @@ function renderMetrics(){
     </div>`;
   }).join('');
 }
-
+ 
 // ── Baseball Savant league-average scraper ────────────────────
 // Savant exposes free CSV endpoints — no auth required.
 // We pull two: a batter-level and pitcher-level leaderboard,
 // then compute the league-wide mean for each stat.
 async function fetchSavantMetrics(){
-  // Key mapping: JSON key → S_METRICS key
   const KEY_MAP = {
-    hard_hit: 'hardhit',
-    barrel:   'barrel',
-    xba:      'xba',
-    sprint:   'sprint',
-    ppa:      'ppa',
-    chase:    'chase',
+    hard_hit:    'hardhit',
+    barrel:      'barrel',
+    xba:         'xba',
+    sprint:      'sprint',
+    chase:       'chase',
+    hr_per_game: 'hrpg',
   };
  
-  try {
-    // savant-current.json lives in the same folder as default.html
-    // Re-run convert_savant.py whenever you download fresh CSVs from Savant
-    const r = await fetch('lib/savant-current.json');
-    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    const data = await r.json();
+  // ── Hardcoded fallbacks (2024 full-season actuals) ────────
+  function applyFallbacks(reason){
+    console.warn(`[Savant] ${reason} — using 2024 baselines`);
+    S_METRICS.hardhit = { val: '39.2%', chg: '+0.0% YoY' };
+    S_METRICS.barrel  = { val: '8.0%',  chg: '+0.0% YoY' };
+    S_METRICS.xba     = { val: '.243',  chg: '+0.000 YoY' };
+    S_METRICS.chase   = { val: '29.4%', chg: '+0.0% YoY'  };
+    S_METRICS.sprint  = { val: '27.3',  chg: '+0.0 YoY'   };
+    S_METRICS.hrpg    = { val: '0.142', chg: '+0.000 YoY'  };
+    renderMetrics();
+  }
  
-    const m = data.metrics || {};
-    let loaded = 0;
+  // ── file:// protocol can't fetch() local files in most browsers ──
+  // Detect it and skip straight to fallbacks with a helpful message
+  if (window.location.protocol === 'file:') {
+    console.info('[Savant] Running from file:// — fetch() blocked by browser security. ' +
+      'Serve via a local web server to load savant-current.json. ' +
+      'Quick option: in the mlb/ folder run: python -m http.server 8080 ' +
+      'then open http://localhost:8080/default.html');
+    applyFallbacks('file:// protocol detected');
+    return;
+  }
+ 
+  try {
+    const r = await fetch('scripts/lib/savant-current.json');
+    if (!r.ok) throw new Error(`HTTP ${r.status} fetching savant-current.json`);
+ 
+    const data = await r.json();
+    const m    = data.metrics || {};
+    let loaded = 0, skipped = 0;
  
     for (const [jsonKey, metricKey] of Object.entries(KEY_MAP)) {
       const entry = m[jsonKey];
-      if (!entry) continue;
-      const chg = entry.delta && entry.delta !== 'n/a'
+      // Skip entries where the script couldn't compute a value
+      if (!entry || entry.val === '--' || entry.current === null) {
+        skipped++;
+        continue;
+      }
+      const chg = (entry.delta && entry.delta !== 'n/a')
         ? `${entry.delta} YoY`
         : `${data.current_year ?? ''} avg`;
       S_METRICS[metricKey] = { val: entry.val, chg };
       loaded++;
     }
  
-    if (loaded > 0) {
-      console.info(`[Savant] Loaded ${loaded} metrics from savant-current.json (generated ${data.generated})`);
-      renderMetrics();
-      return;
+    if (skipped > 0) {
+      console.warn(`[Savant] ${skipped} metric(s) missing from JSON — ` +
+        `pitcher CSV likely empty. Fallback values kept for those.`);
     }
-    throw new Error('No metrics found in JSON');
+ 
+    if (loaded > 0) {
+      console.info(`[Savant] Loaded ${loaded}/${Object.keys(KEY_MAP).length} metrics ` +
+        `(generated ${data.generated}, ${data.player_counts?.batter_current ?? '?'} batters, ` +
+        `${data.player_counts?.pitcher_current ?? '?'} pitchers)`);
+      renderMetrics();
+    } else {
+      throw new Error('All metric entries were null — JSON may be from a failed run');
+    }
  
   } catch(e) {
-    console.warn('[Savant] savant-current.json unavailable, using built-in baselines:', e.message);
-    // Fallback: 2024 actuals so the UI always shows real numbers
-    S_METRICS.hardhit = { val: '38.4%', chg: '+0.3% YoY' };
-    S_METRICS.barrel  = { val: '8.4%',  chg: '+0.1% YoY' };
-    S_METRICS.xba     = { val: '.247',  chg: '+.001 YoY'  };
-    S_METRICS.chase   = { val: '29.4%', chg: '-.3% YoY'   };
-    S_METRICS.sprint  = { val: '27.1',  chg: '-0.1 YoY'   };
-    S_METRICS.ppa     = { val: '3.92',  chg: '+.02 YoY'   };
-    renderMetrics();
+    applyFallbacks(e.message);
   }
 }
 
@@ -1351,9 +1374,10 @@ async function init(){
     fetchBatting(),
     fetchPitching(),
     fetchBullpen(),
+    fetchSavantMetrics(),  // Statcast row: Hard Hit%, Barrel%, xBA, Chase%, Sprint, P/PA
   ]);
 }
-
+ 
 init();
 setInterval(() => { if(fmtDate(S.date)===fmtDate(new Date())) fetchGames(); }, REFRESH_MS);
 

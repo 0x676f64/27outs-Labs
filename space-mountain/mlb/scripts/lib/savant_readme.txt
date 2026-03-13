@@ -1,112 +1,89 @@
 # Savant Data Pipeline — How To Update
 
-Every time you want fresh Statcast metrics on the dashboard, follow
-these four steps. Takes about 3 minutes once you've done it once.
+Run one script whenever you want fresh Statcast metrics:
+
+  python update_savant.py
+
+That's it. Downloads CSVs, converts to JSON, cleans up.
+Takes about 10–15 seconds.
 
 ────────────────────────────────────────────────────────────────────
-## STEP 1 — Download CSVs from Baseball Savant
+## REQUIREMENTS
 
-Open each URL below in your browser. It will download a CSV file.
-Save each file into the same folder as convert_savant.py.
+  - Python 3.10 or higher (no third-party packages needed)
+  - Internet connection when running
 
-### Current year batters (2025):
-https://baseballsavant.mlb.com/leaderboard/custom?year=2025&type=batter&filter=&sort=4&sortDir=desc&min=50&selections=xba,exit_velocity_avg,barrel_batted_rate,hard_hit_percent,sprint_speed,pitch_count_pa,oz_swing_percent&csv=true
-
-Save as: savant_batter_2025.csv
-
-### Current year pitchers (2025):
-https://baseballsavant.mlb.com/leaderboard/custom?year=2025&type=pitcher&filter=&sort=4&sortDir=desc&min=50&selections=oz_swing_percent,xba,exit_velocity_avg,barrel_batted_rate,hard_hit_percent&csv=true
-
-Save as: savant_pitcher_2025.csv
-
-### Prior year batters (2024) — only need to do this ONCE:
-https://baseballsavant.mlb.com/leaderboard/custom?year=2024&type=batter&filter=&sort=4&sortDir=desc&min=50&selections=xba,exit_velocity_avg,barrel_batted_rate,hard_hit_percent,sprint_speed,pitch_count_pa,oz_swing_percent&csv=true
-
-Save as: savant_batter_2024.csv
-
-### Prior year pitchers (2024) — only need to do this ONCE:
-https://baseballsavant.mlb.com/leaderboard/custom?year=2024&type=pitcher&filter=&sort=4&sortDir=desc&min=50&selections=oz_swing_percent,xba,exit_velocity_avg,barrel_batted_rate,hard_hit_percent&csv=true
-
-Save as: savant_pitcher_2024.csv
-
-NOTE: The 2024 files are full-season finals and never change.
-      You only need to re-download the 2025 files each update.
+Check your Python version:
+  python --version      (Windows Command Prompt)
+  python3 --version     (Mac / Linux)
 
 ────────────────────────────────────────────────────────────────────
-## STEP 2 — Run the conversion script
+## HOW TO RUN (Windows)
 
-Open a terminal in the folder containing convert_savant.py and run:
+Option 1 — Double-click update_savant.py in File Explorer
+  (right-click → Open With → Python if it doesn't run automatically)
+  The window will stay open so you can read the output.
 
-  python3 convert_savant.py \
-    --current          savant_batter_2025.csv \
-    --prior            savant_batter_2024.csv \
-    --pitcher-current  savant_pitcher_2025.csv \
-    --pitcher-prior    savant_pitcher_2024.csv \
-    --out              savant-current.json \
-    --current-year     2025 \
-    --prior-year       2024
-
-You should see output like:
-  [✓] Loaded 180 rows from savant_batter_2025.csv
-  Hard Hit%         38.7%   YoY: +0.3%
-  Barrel%            8.4%   YoY: +0.1%
-  ...
-  [✓] Written to: savant-current.json
+Option 2 — Command Prompt or PowerShell
+  cd path\to\space-mountain\mlb\scripts\lib
+  python update_savant.py
 
 ────────────────────────────────────────────────────────────────────
-## STEP 3 — Move savant-current.json next to default.html
+## WHAT IT DOES EACH RUN
 
-The dashboard fetches savant-current.json from the same directory
-as default.html. Just copy or move the file there:
-
-  cp savant-current.json /path/to/your/dashboard/savant-current.json
-
-If default.html and convert_savant.py are already in the same
-folder, use --out to write directly there:
-
-  python3 convert_savant.py ... --out ../dashboard/savant-current.json
+  1. Deletes any stale 2025 CSVs leftover from last run
+  2. Downloads fresh 2025 batter + pitcher CSVs from Savant
+  3. Skips 2024 download if files already exist (one-time only)
+  4. Computes league-wide means for all 6 metrics
+  5. Writes savant-current.json
+  6. Deletes the 2025 CSVs (no longer needed)
+  7. Leaves 2024 CSVs untouched (full-season finals, never change)
 
 ────────────────────────────────────────────────────────────────────
-## STEP 4 — Reload the dashboard
+## FILE LAYOUT
 
-Hard refresh the page (Ctrl+Shift+R / Cmd+Shift+R) and the Statcast
-row will show your new data. The browser console will log:
+  space-mountain\
+  └── mlb\
+      ├── default.html               ← reads scripts/lib/savant-current.json
+      ├── game-box.html
+      └── scripts\
+          └── lib\
+              ├── update_savant.py       ← RUN THIS daily
+              ├── savant-current.json    ← auto-generated here
+              ├── README.txt             ← this file
+              ├── savant_batter_2024.csv    ← kept permanently
+              └── savant_pitcher_2024.csv   ← kept permanently
 
-  [Savant] Loaded 6 metrics from savant-current.json (generated 2025-03-12T14:00:00)
+────────────────────────────────────────────────────────────────────
+## IF THE DOWNLOAD FAILS
+
+Savant occasionally throttles requests. If you see a download error:
+  - Wait 30 seconds and try again
+  - Make sure you have an internet connection
+  - savant-current.json is NOT overwritten on failure,
+    so your last good data stays in place
+
+You can also download the CSVs manually in your browser and place
+them in the lib folder, then run:
+  python update_savant.py --skip-download
 
 ────────────────────────────────────────────────────────────────────
 ## FALLBACK BEHAVIOR
 
-If savant-current.json is missing or can't be fetched, the dashboard
-automatically falls back to hardcoded 2024 actuals — the UI never
-shows blank dashes. The console will log a warning so you know.
-
-────────────────────────────────────────────────────────────────────
-## FILE LAYOUT (what goes where)
-
-  your-dashboard/
-  ├── default.html            ← dashboard
-  ├── game-box.html
-  ├── savant-current.json     ← generated by this script, update daily
-  └── savant-tools/
-      ├── convert_savant.py   ← the script
-      ├── README.txt          ← this file
-      ├── savant_batter_2025.csv    ← re-download daily
-      ├── savant_pitcher_2025.csv   ← re-download daily
-      ├── savant_batter_2024.csv    ← download once, never changes
-      └── savant_pitcher_2024.csv   ← download once, never changes
+If savant-current.json is missing, the dashboard automatically
+falls back to hardcoded 2024 actuals — the UI never shows blanks.
+The browser console will log a warning so you know.
 
 ────────────────────────────────────────────────────────────────────
 ## METRICS REFERENCE
 
-Metric       CSV Column              Source CSV   Notes
-─────────────────────────────────────────────────────────────────
-Hard Hit%    hard_hit_percent        batter       EV >= 95 mph
-Barrel%      barrel_batted_rate      batter       Optimal EV + LA
-xBA          xba                     batter       Expected BA
-Sprint Spd   sprint_speed            batter       ft/s, top runs
-P/PA         pitch_count_pa          batter       Pitches per PA
-Chase%       oz_swing_percent        pitcher      Batter O-swing %
+  Metric       Column                  Source    Notes
+  ──────────────────────────────────────────────────────────────
+  Hard Hit%    hard_hit_percent        batter    Exit velo >= 95 mph
+  Barrel%      barrel_batted_rate      batter    Optimal EV + launch angle
+  xBA          xba                     batter    Expected batting average
+  Sprint Spd   sprint_speed            batter    ft/s on fastest runs
+  P/PA         pitch_count_pa          batter    Pitches per plate appearance
+  Chase%       oz_swing_percent        pitcher   Batter O-swing %
 
-All values are unweighted league means across all qualifying
-players (min 50 PA for batters, 50 BF for pitchers).
+  All values = unweighted league mean, min 250 PA / BF.
