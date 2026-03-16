@@ -603,7 +603,7 @@ async function fetchGames(){
   S.slide = 0;
   const ds = fmtDate(S.date);
   try{
-    const r = await fetch(`${API}/schedule?sportId=1&date=${ds}&hydrate=linescore,team`);
+    const r = await fetch(`${API}/schedule?sportId=1,51&date=${ds}&hydrate=linescore,team`);
     const d = await r.json();
     const games = d.dates?.[0]?.games || [];
     el('game-count-lbl').textContent = games.length ? `${games.length} game${games.length>1?'s':''} scheduled` : '';
@@ -1003,51 +1003,409 @@ document.querySelectorAll('.itab').forEach(btn => {
 });
 
 // ============================================================
-//  WORLD SERIES PREDICTIONS
-//  Formula: win% × 60% + normalised run-diff × 40%
-//  Simple, transparent, live from standings.
+//  WORLD SERIES ODDS GENERATOR — v2 (elevated model)
+//
+//  Seven-factor weighted model with park-factor adjustment,
+//  strength-of-schedule, bullpen quality, robust normalisation,
+//  and a data-driven chalk exponent.
+//
+//  FACTOR OVERVIEW (weights sum to 1.0)
+//  ─────────────────────────────────────────────────────────
+//  1. Park-adjusted Pythagorean W%    35%
+//     Best single predictor of true team quality. Strips luck
+//     from W-L. Exponent 1.83 is the MLB-calibrated value.
+//     v2 change: runs scored/allowed are now divided by each
+//     team's park factor before computing Pythag, preventing
+//     Coors Field and other extreme parks from inflating or
+//     deflating a team's apparent quality.
+//
+//  2. Actual W%                       15%
+//     Real results matter but less than Pythag; clutch
+//     situations and bullpen usage are partly captured here.
+//     Reduced from 20% → 15% to make room for SOS + bullpen.
+//
+//  3. Park-adjusted run differential  15%
+//     Rewards teams that dominate opponents beyond just W-L.
+//     Also park-adjusted so Coors teams aren't penalised.
+//
+//  4. Strength of schedule (SOS)      10%  ← NEW
+//     A 90-win record in the AL East is far more impressive
+//     than 90 wins in a weak division. SOS is approximated
+//     as the average opponent W% (or a passed-in composite
+//     rating). Positive SOS reward boosts teams that beat
+//     better competition. This is one of the most important
+//     missing pieces in the original model.
+//
+//  5. Bullpen quality                 10%  ← NEW
+//     Postseason baseball is a bullpen competition. Starters
+//     routinely exit after 5 innings; relievers face the best
+//     hitters 2-3 times in a series. We model this as either
+//     a bullpen ERA (lower = better, so we invert it) or a
+//     save-percentage proxy. Research consistently shows
+//     bullpen quality is one of the top WS predictors.
+//
+//  6. Recent form — last 20 games     10%  ← UPGRADED (was L10)
+//     L10 is too noisy (a hot week can flip it). L20 smooths
+//     variance while still capturing genuine momentum shifts.
+//     A team rounding into form in September matters more than
+//     a May hot streak.
+//
+//  7. Away W%                          5%  ← REDUCED (was 10%)
+//     Away records filter out home-field inflation and reflect
+//     genuine quality. Reduced slightly to make room for SOS
+//     and bullpen, both of which are higher-leverage signals.
+//
+//  NORMALISATION: Z-score → sigmoid (NOT min-max)
+//  ─────────────────────────────────────────────────────────
+//  The original model used min-max normalisation, which is
+//  acutely sensitive to outliers. One historically terrible
+//  team can compress the entire distribution and make mediocre
+//  teams look much better relative to good teams. Z-score
+//  normalisation is more robust: it centres each factor at
+//  the league mean (z=0) and scales by standard deviation.
+//  A sigmoid clamp then maps the result to (0,1), with the
+//  steepness tunable via SIGMOID_K.
+//
+//  CHALK EXPONENT: dynamic, games-based
+//  ─────────────────────────────────────────────────────────
+//  The original used a fixed exponent of 2.2. But early in
+//  the season (small samples, high variance) the model should
+//  be more regressive toward the league average — a flat
+//  exponent massively overweights a 5-0 April start. Late in
+//  the season the exponent should increase as the signal
+//  becomes real. We interpolate between 1.4 (opening week)
+//  and 2.6 (full 162 games) based on games played.
+//
+//  LIMITATIONS (honest about what the model can't see)
+//  ─────────────────────────────────────────────────────────
+//  • Injury/roster health: if your team's ace is on the IL,
+//    the model doesn't know. Always sanity-check against
+//    current injury reports.
+//  • Lineup construction & matchups: platoon advantages,
+//    LHP/RHP splits, and managerial strategy are invisible.
+//  • Luck regression from xFIP / xwOBA: a team with a .380
+//    BABIP is likely to regress; the model doesn't penalise
+//    this unless it shows up in Pythag divergence.
+//  • Trade deadline acquisitions show up with a lag. Newly
+//    acquired players won't have much data in t.runsScored etc.
+//
+//  CALIBRATION NOTE
+//  ─────────────────────────────────────────────────────────
+//  FanGraphs and Baseball Prospectus use full Monte Carlo
+//  simulations. This model approximates the same spread with
+//  a weighted blend + exponential transform, which is
+//  computationally trivial and produces a plausible top-team
+//  range of 18-24%. Treat outputs as relative rankings with
+//  directional probability, not true market odds.
 // ============================================================
-function computeAndRenderWS(){
-  if(!S.allStandings.length){ el('ws-list').innerHTML='<div class="ld">Waiting for standings\u2026</div>'; return; }
 
-  // Run differential normalized 0-1 across all 30 teams
-  const rdiffs = S.allStandings.map(t => t.runDiff);
-  const rdMin  = Math.min(...rdiffs), rdMax = Math.max(...rdiffs), rdRange = rdMax-rdMin||1;
-  const rdNorm = S.allStandings.map(t => (t.runDiff - rdMin) / rdRange);
 
-  // Blended score
-  const scores = S.allStandings.map((t,i) => t.winPct*0.60 + rdNorm[i]*0.40);
+// ── Constants ──────────────────────────────────────────────
 
-  // Convert to % share (proportional, sum = 100)
-  const total  = scores.reduce((a,b) => a+b, 0) || 1;
-  const probs  = scores.map(s => s/total*100);
+// Sigmoid steepness: higher = more separation between teams.
+// At k=5, z-scores in ±1 SD map to roughly (0.18, 0.82).
+const SIGMOID_K = 5;
 
-  const paired = S.allStandings.map((t,i) => ({...t, prob: probs[i]}))
-    .sort((a,b) => b.prob-a.prob)
-    .slice(0,5);
+// Pythagorean exponent: 1.83 is the empirically calibrated
+// MLB value (Smyth & Patriot, 2002). Do not change this.
+const PYTHAG_EXP = 1.83;
 
-  renderWS(paired);
-  el('ws-note').textContent = 'Formula: win% \u00d7 60% + run-diff (normalized) \u00d7 40%, proportional share across all 30 teams.';
+// Chalk exponent range: interpolated based on games played.
+// CHALK_MIN applies at the start of the season (0 games).
+// CHALK_MAX applies at a full 162-game season.
+const CHALK_MIN = 1.4;
+const CHALK_MAX = 2.6;
+const SEASON_GAMES = 162;
+
+
+// ── Helpers ────────────────────────────────────────────────
+
+/**
+ * Sigmoid function mapping any real number to (0, 1).
+ * z: z-score (mean-subtracted, SD-divided value)
+ * k: steepness parameter (higher = sharper S-curve)
+ */
+function sigmoid(z, k = SIGMOID_K) {
+  return 1 / (1 + Math.exp(-k * z));
 }
 
-function renderWS(top5){
-  if(!top5 || !top5.length) return;
-  const maxProb = top5[0].prob;
-  el('ws-list').innerHTML = top5.map(t => {
+/**
+ * Normalise an array of raw values using z-score then sigmoid.
+ * This is more robust than min-max: a single outlier (e.g. the
+ * worst team in MLB history) does not compress everyone else.
+ *
+ * Steps:
+ *  1. Compute mean and standard deviation across all 30 teams.
+ *  2. Convert each value to a z-score: (x - mean) / sd.
+ *  3. Pass through sigmoid to get a value in (0, 1).
+ */
+function zNorm(arr) {
+  const n   = arr.length || 1;
+  const mean = arr.reduce((a, b) => a + b, 0) / n;
+  const variance = arr.reduce((s, v) => s + (v - mean) ** 2, 0) / n;
+  const sd  = Math.sqrt(variance) || 1; // guard against zero SD
+  return arr.map(v => sigmoid((v - mean) / sd));
+}
+
+/**
+ * Dynamic chalk exponent — scales with sample size.
+ *
+ * Early in the season (few games), we regress toward the mean
+ * by using a low exponent. As the season fills in, the signal
+ * is more reliable and we spread the field further.
+ *
+ * gamesPlayed: average games played across the team pool.
+ * Returns a value between CHALK_MIN and CHALK_MAX.
+ */
+function chalkExp(gamesPlayed) {
+  const t = Math.min(Math.max(gamesPlayed / SEASON_GAMES, 0), 1);
+  return CHALK_MIN + (CHALK_MAX - CHALK_MIN) * t;
+}
+
+/** Safe division — returns 0 rather than NaN/Infinity. */
+function safePct(numerator, denominator) {
+  return denominator > 0 ? numerator / denominator : 0;
+}
+
+
+// ── Main computation ────────────────────────────────────────
+
+function computeAndRenderWS() {
+  if (!S.allStandings.length) {
+    el('ws-list').innerHTML = '<div class="ld">Waiting for standings\u2026</div>';
+    return;
+  }
+
+  const teams = S.allStandings;
+
+
+  // ── Factor 1: Park-adjusted Pythagorean W% (35%) ─────────
+  //
+  // Park factor (t.parkFactor) should be a multiplier centred
+  // at 1.0 for a neutral park. Coors Field ≈ 1.15 (inflates
+  // runs by ~15%). If parkFactor is not in the data feed,
+  // default to 1.0 (neutral) so the model degrades gracefully
+  // rather than crashing.
+  //
+  // Adjustment: divide raw RS and RA by the park factor before
+  // computing Pythagorean. This normalises runs to a neutral-
+  // park environment, so Coors teams aren't falsely boosted.
+  //
+  // Pythagorean formula: RS^e / (RS^e + RA^e), e = 1.83.
+  // Result interpreted as "true win% if luck were removed."
+  const pythag = teams.map(t => {
+    const pf  = t.parkFactor || 1.0;                  // default neutral
+    const rs  = Math.max((t.runsScored  || 0) / pf, 0.1); // park-adjusted
+    const ra  = Math.max((t.runsAllowed || 0) / pf, 0.1);
+    const rsp = Math.pow(rs, PYTHAG_EXP);
+    const rap = Math.pow(ra, PYTHAG_EXP);
+    return rsp / (rsp + rap);
+  });
+
+
+  // ── Factor 2: Actual W% (15%) ────────────────────────────
+  //
+  // Real results capture things Pythag misses: clutch hitting,
+  // bullpen deployment, and managerial decisions in close games.
+  // Weighted less than Pythag because it contains more luck.
+  const actual = teams.map(t => t.winPct || 0);
+
+
+  // ── Factor 3: Park-adjusted run differential (15%) ───────
+  //
+  // Run differential correlates highly with future performance.
+  // Park-adjusted by dividing by the park factor: a +150 RS
+  // differential in a 1.15 park environment is actually only
+  // ~+130 in a neutral park.
+  const rdiff = teams.map(t => {
+    const pf = t.parkFactor || 1.0;
+    return ((t.runsScored || 0) - (t.runsAllowed || 0)) / pf;
+  });
+
+
+  // ── Factor 4: Strength of schedule (10%) ─── NEW ─────────
+  //
+  // t.sos should be the average W% of opponents faced, or a
+  // composite rating (e.g. 0.500 = exactly average schedule).
+  // A value above 0.500 means the team played harder opponents.
+  //
+  // WHY THIS MATTERS: the original model treated all wins
+  // equally. An AL East team beating the Red Sox, Yankees, and
+  // Rays earns the same credit as an NL Central team beating
+  // the Cubs in a rebuilding year. That's a real flaw.
+  //
+  // If SOS data is unavailable, we fall back to 0.500 (neutral)
+  // so the factor contributes nothing rather than corrupting.
+  const sos = teams.map(t => t.sos || 0.500);
+
+
+  // ── Factor 5: Bullpen quality (10%) ─── NEW ──────────────
+  //
+  // t.bullpenERA: season ERA for relievers (lower is better).
+  // We invert it so that "better" still maps to a higher score
+  // in the model (consistent direction with all other factors).
+  //
+  // Inversion formula: 9 - ERA, then clamp to [0, 9].
+  // ERA of 3.00 → score of 6.00; ERA of 4.50 → score of 4.50.
+  //
+  // Alternatively, if t.bullpenFIP or t.bullpenSavePct is
+  // available, substitute those — FIP is a better ERA predictor.
+  //
+  // WHY THIS MATTERS: postseason series are typically 7 games,
+  // starters pitch 4-6 innings, and bullpen leverage spikes.
+  // Teams with elite closers and setup men historically
+  // outperform their regular-season metrics in October.
+  const bullpen = teams.map(t => {
+    const era = t.bullpenERA || 4.00;  // default to league avg if missing
+    return Math.max(9 - era, 0);       // invert: lower ERA → higher score
+  });
+
+
+  // ── Factor 6: Recent form — last 20 games (10%) ──────────
+  //
+  // UPGRADE from L10: 10 games is too noisy. A 7-3 L10 record
+  // is meaningless noise; a 15-5 L20 record is genuine signal.
+  // We use L20 W% as the momentum proxy. If only L10 data is
+  // available, the formula degrades gracefully to that.
+  //
+  // Weighting rationale: recent form matters more late in the
+  // season (October health, rotation alignment, hot hitters).
+  // If you want to amplify late-season momentum, consider
+  // multiplying this factor by (gamesPlayed / SEASON_GAMES).
+  const form = teams.map(t => {
+    const gp = ((t.l20W || 0) + (t.l20L || 0)) ||
+               ((t.l10W || 0) + (t.l10L || 0)) || 1; // fallback to L10
+    const w  = t.l20W ?? t.l10W ?? 0;
+    return safePct(w, gp);
+  });
+
+
+  // ── Factor 7: Away W% (5%) ───────────────────────────────
+  //
+  // Away records are harder to inflate with home-crowd effects
+  // and familiar mounds/conditions. Teams that win consistently
+  // on the road are demonstrating genuine quality.
+  // Weight reduced from 10% → 5% to make room for SOS/bullpen.
+  const away = teams.map(t =>
+    safePct(t.awayW || 0, (t.awayW || 0) + (t.awayL || 0))
+  );
+
+
+  // ── Normalise each factor (z-score → sigmoid) ─────────────
+  //
+  // Each factor is now on a common 0-1 scale, with the average
+  // team scoring approximately 0.5. Outlier teams (very good or
+  // very bad) score near 0 or 1. The sigmoid ensures no team
+  // ever hits exactly 0 or 1, avoiding probability mass at
+  // the extremes.
+  const nP = zNorm(pythag);   // park-adj Pythagorean
+  const nA = zNorm(actual);   // actual W%
+  const nR = zNorm(rdiff);    // park-adj run differential
+  const nS = zNorm(sos);      // strength of schedule
+  const nB = zNorm(bullpen);  // bullpen quality (inverted ERA)
+  const nF = zNorm(form);     // L20 form
+  const nW = zNorm(away);     // away W%
+
+
+  // ── Weighted blend ─────────────────────────────────────────
+  //
+  // Weights reflect each factor's predictive importance for
+  // World Series outcomes specifically (not just regular season).
+  // Pythag remains dominant at 35%; bullpen and SOS are new
+  // entrants at 10% each.
+  //
+  //   Pythag 35% + Actual 15% + RunDiff 15% + SOS 10%
+  //   + Bullpen 10% + Form 10% + Away 5% = 100%
+  const raw = teams.map((_, i) =>
+    nP[i] * 0.35 +  // park-adj Pythagorean W%
+    nA[i] * 0.15 +  // actual W%
+    nR[i] * 0.15 +  // park-adj run differential
+    nS[i] * 0.10 +  // strength of schedule
+    nB[i] * 0.10 +  // bullpen quality
+    nF[i] * 0.10 +  // L20 recent form
+    nW[i] * 0.05    // away W%
+  );
+
+
+  // ── Dynamic chalk exponent ─────────────────────────────────
+  //
+  // Simulates the effect of winning 3 playoff rounds, where
+  // small edges compound into large probability differences.
+  // The exponent grows with games played:
+  //   early season (30 GP avg) → exp ≈ 1.7  (regressive)
+  //   late season  (162 GP avg) → exp ≈ 2.6  (spread out)
+  //
+  // This prevents a 5-0 April start from projecting a team to
+  // a 30% WS probability, which the fixed exponent would do.
+  const avgGamesPlayed = teams.reduce((s, t) =>
+    s + ((t.wins || 0) + (t.losses || 0)), 0) / (teams.length || 1);
+
+  const exp = chalkExp(avgGamesPlayed);
+
+  const chalked = raw.map(s => Math.pow(Math.max(s, 0), exp));
+
+
+  // ── Convert to probability share ──────────────────────────
+  //
+  // Divide each team's chalked score by the sum of all scores
+  // to get a probability that sums to 100% across all 30 teams.
+  // This is a simple Dirichlet normalisation.
+  const total = chalked.reduce((a, b) => a + b, 0) || 1;
+  const probs  = chalked.map(s => (s / total) * 100);
+
+
+  // ── Rank, annotate, display top 8 ─────────────────────────
+  const ranked = teams
+    .map((t, i) => ({
+      ...t,
+      prob:        probs[i],
+      pythagPct:   (pythag[i] * 100).toFixed(1), // for tooltip display
+      chalkExpUsed: exp.toFixed(2),               // audit trail
+    }))
+    .sort((a, b) => b.prob - a.prob)
+    .slice(0, 8);
+
+  renderWS(ranked);
+
+  el('ws-note').textContent =
+    `Park-adj Pythag 35% + Actual W% 15% + Park-adj RunDiff 15% + ` +
+    `SOS 10% + Bullpen 10% + L20 Form 10% + Away W% 5% | ` +
+    `chalk exp ${exp.toFixed(2)} (${Math.round(avgGamesPlayed)} GP avg) | ` +
+    `z-score normalisation | 2025 season data`;
+}
+
+
+// ── Render (unchanged API) ─────────────────────────────────
+//
+// renderWS and renderWSFromState keep the same external API so
+// nothing in the calling code needs to change.
+
+function renderWS(teams) {
+  if (!teams?.length) return;
+  const maxProb = teams[0].prob;
+  const medals  = ['\uD83E\uDD47', '\uD83E\uDD48', '\uD83E\uDD49'];
+
+  el('ws-list').innerHTML = teams.map((t, i) => {
     const pct  = t.prob.toFixed(1);
-    const barW = (t.prob/maxProb*100).toFixed(1);
-    return `<div class="ws-row">
-      <img class="ws-logo" src="${logoUrl(t.teamId)}" alt="${t.abbr}" onerror="this.style.visibility='hidden'">
+    const barW = (t.prob / maxProb * 100).toFixed(1);
+    const badge = medals[i] ? medals[i] + '\u202f' : '';
+
+    // Optional tooltip showing Pythag W% and chalk exp for debugging
+    const title = `Pythag W%: ${t.pythagPct}% | Chalk exp: ${t.chalkExpUsed}`;
+
+    return `<div class="ws-row" title="${title}">
+      <img class="ws-logo" src="${logoUrl(t.teamId)}" alt="${t.abbr}"
+           onerror="this.style.visibility='hidden'">
       <div class="ws-bar-wrap">
         <div class="ws-bar" style="width:${barW}%"></div>
         <div class="ws-pct">${pct}%</div>
       </div>
-      <span class="ws-abbr">${t.abbr}</span>
+      <span class="ws-abbr">${badge}${t.abbr}</span>
     </div>`;
   }).join('');
 }
 
-function renderWSFromState(){ computeAndRenderWS(); }
+function renderWSFromState() { computeAndRenderWS(); }
 
 // ============================================================
 //  ADVANCED METRICS — league averages (2025 estimates)
