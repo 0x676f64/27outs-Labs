@@ -187,7 +187,7 @@ const MO=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec
 function tick(){const n=new Date();let h=n.getHours(),m=n.getMinutes(),s=n.getSeconds();const ap=h>=12?'PM':'AM';h=h%12||12;timeEl.textContent=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')+' '+ap;dateEl.textContent=WD[n.getDay()]+' '+MO[n.getMonth()]+' '+n.getDate();}
 tick();setInterval(tick,1000);
 const gamesEl=document.getElementById('sb-games'),tickerEl=document.getElementById('sb-ticker');
-function shortSt(s){if(!s)return'';if(s==='In Progress')return'LIVE';if(s==='Final'||s==='Game Over')return'Final';if(s.startsWith('Delayed'))return'DLY';if(s==='Postponed')return'PPD';return s.substring(0,3).toUpperCase();}
+function shortSt(s){if(!s)return'';if(s==='In Progress')return'LIVE';if(s==='Final'||s==='Game Over'||s==='Final: Tied' || s==='Completed Early')return'Final';if(s.startsWith('Delayed'))return'DLY';if(s==='Postponed')return'PPD';if(s==='Suspended: Rain')return'SUSPENED';return s.substring(0,3).toUpperCase();}
 function buildTicker(games){
   if(!games.length){tickerEl.innerHTML='<div class="tg"><span class="state">No MLB games today</span></div>';return;}
   var html=games.map(function(g){

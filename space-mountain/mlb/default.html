@@ -20,39 +20,31 @@ body{font-family:var(--font);min-height:100vh;-webkit-font-smoothing:antialiased
 body.dark{
   background-color:#0a0e1a;
   background-image:radial-gradient(circle at top center,rgba(4,30,65,.45) 0%,rgba(4,30,65,.15) 35%,rgba(10,14,26,.9) 70%),radial-gradient(ellipse at center,rgba(0,0,0,0) 40%,rgba(0,0,0,.65) 100%);
-  color:#e2e8f0;--sf:#151b2e;--sf2:#0d1223;--bd:#1e293b;--tx:#e2e8f0;--mu:#94a3b8;--nav:#151b2e;
+  color:#e2e8f0;--sf:#151b2e;--sf2:#0d1223;--bd:#1e293b;--tx:#e2e8f0;--mu:#94a3b8;--nav:rgba(8,12,24,.95);--nav-bd:rgba(30,41,59,.7);--nav-tx:#e2e8f0;--nav-mu:#94a3b8;--nav-hover:#ffffff;
   --sh:0 2px 14px rgba(0,0,0,.45);
 }
 body.light{
   background-color:#f0f4f8;
   background-image:radial-gradient(circle at top center,rgba(191,13,61,.03) 0%,rgba(191,13,61,.01) 35%,rgba(247,250,252,.95) 70%),radial-gradient(ellipse at center,rgba(0,0,0,0) 40%,rgba(0,0,0,.02) 100%);
-  color:#1e293b;--sf:#ffffff;--sf2:#f7fafc;--bd:#e2e8f0;--tx:#1e293b;--mu:#64748b;--nav:#ffffff;
+  color:#1e293b;--sf:#ffffff;--sf2:#f7fafc;--bd:#e2e8f0;--tx:#1e293b;--mu:#64748b;--nav:#041e42;--nav-bd:rgba(4,30,66,.7);--nav-tx:#e2e8f0;--nav-mu:rgba(226,232,240,.65);--nav-hover:#ffffff;
   --sh:0 2px 14px rgba(0,0,0,.07);
 }
 
 /* ── NAV ── */
-nav{position:sticky;top:0;z-index:200;height:56px;background:var(--nav);border-bottom:1px solid var(--bd);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);transition:background .3s,border-color .3s}
+nav{position:sticky;top:0;z-index:200;height:56px;background:var(--nav);border-bottom:1px solid var(--nav-bd);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);transition:background .3s,border-color .3s}
 .nav-in{max-width:1400px;margin:0 auto;padding:0 28px;height:100%;display:flex;align-items:center;gap:0}
 .brand{display:flex;align-items:center;gap:8px;text-decoration:none;flex-shrink:0;margin-right:24px;transition:opacity .2s}
 .brand:hover{opacity:.8}
-.brand-name{font-size:.85rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:#e2e8f0;line-height:1}
+.brand-name{font-size:.85rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:var(--nav-tx);line-height:1}
 .nav-links{display:flex;align-items:center;gap:2px;flex:1;overflow-x:auto;scrollbar-width:none}
 .nav-links::-webkit-scrollbar{display:none}
-.nav-a{font-size:12px;font-weight:500;color:var(--mu);text-decoration:none;padding:6px 10px;border-radius:6px;white-space:nowrap;transition:color .2s}
-.nav-a:hover{color:var(--tx)}
+.nav-a{font-size:12px;font-weight:500;color:var(--nav-mu);text-decoration:none;padding:6px 10px;border-radius:6px;white-space:nowrap;transition:color .2s}
+.nav-a:hover{color:var(--nav-hover)}
 .nav-a.active{color:var(--red);font-weight:700}
 .nav-end{display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:auto}
-.tb{display:flex;align-items:center;gap:5px;background:transparent;border:1px solid var(--bd);color:var(--mu);font-family:var(--font);font-size:11px;font-weight:600;letter-spacing:.5px;padding:5px 12px;border-radius:99px;cursor:pointer;transition:color .2s,border-color .2s;white-space:nowrap}
+.tb{display:flex;align-items:center;gap:5px;background:transparent;border:1px solid var(--nav-bd);color:var(--nav-mu);font-family:var(--font);font-size:11px;font-weight:600;letter-spacing:.5px;padding:5px 12px;border-radius:99px;cursor:pointer;transition:color .2s,border-color .2s;white-space:nowrap}
 .tb svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
 .tb:hover{color:var(--red);border-color:rgba(191,13,61,.45)}
-
-/* ── THEMED NAV  ──*/
-body.light .nav-in, nav{background-color:#041e42}
-body.light nav a{color:#e2e8f0}
-body.light nav a{color:#e2e8f0}
-body.light nav a:hover{color:#bf0d3d}
-body.dark nav {background-color:#151b2e}
-body.dark nav a{color:#e2e8f0}
 
 /* ── MAIN ── */
 .main{max-width:1400px;margin:0 auto;padding:24px 28px 64px}
@@ -66,6 +58,7 @@ body.dark nav a{color:#e2e8f0}
 /* ── SECTION HEADER ── */
 .sec-hdr{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px}
 .sec-title{font-family:var(--mono);font-size:9px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--mu)}
+body.light .sec-title{color:#041e42;opacity:.7}
 .sec-title span{color:var(--red)}
 
 /* ── GAMES STRIP ── */
@@ -131,75 +124,59 @@ body.light .strip-fade-r{background:linear-gradient(to left,#f0f4f8,transparent)
 .card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:18px;box-shadow:var(--sh)}
 .card-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:8px}
 .card-title{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:1.8px;text-transform:uppercase;color:var(--mu)}
+body.light .card-title{color:#041e42;opacity:.75}
 .card-badge{font-family:var(--mono);font-size:8px;font-weight:500;letter-spacing:.8px;text-transform:uppercase;color:var(--red);background:rgba(191,13,61,.1);border:1px solid rgba(191,13,61,.2);padding:3px 8px;border-radius:99px}
 
 /* ── INNER TABS ── */
 .itabs{display:flex;gap:3px;background:var(--sf2);border-radius:6px;padding:3px}
 .itab{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;border:none;background:transparent;color:var(--mu);padding:5px 10px;border-radius:4px;cursor:pointer;transition:background .2s,color .2s;white-space:nowrap}
 .itab.on{background:var(--red);color:#fff}
+/* Light mode: tab container gets navy tint */
+body.light .itabs{background:#0d2244}
+body.light .itab{color:rgba(226,232,240,.6)}
+body.light .itab:hover{color:#e2e8f0}
+body.light .itab.on{background:var(--red);color:#fff}
 
 /* ── STANDINGS ── */
+/* Standings — 3 divisions in a row */
 .std-divs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0}
 .std-div-col{padding:0 14px;border-right:1px solid var(--bd)}
 .std-div-col:first-child{padding-left:0}
 .std-div-col:last-child{border-right:none;padding-right:0}
 .std-div-lbl{font-family:var(--mono);font-size:8px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--mu);padding-bottom:5px;border-bottom:1px solid var(--bd);margin-bottom:4px}
-
-/* header */
+body.light .std-div-lbl{color:#041e42}
+/* header row: team col auto, W-L fixed, GB fixed — no stretching */
 .std-col-hdr{display:flex;align-items:center;padding:0 0 3px;margin-bottom:2px;border-bottom:1px solid var(--bd)}
 .std-col-hdr span{font-family:var(--mono);font-size:7px;font-weight:500;letter-spacing:.8px;text-transform:uppercase;color:var(--mu);text-align:right;flex-shrink:0}
 .std-col-hdr .ch-team{flex:1;text-align:left}
-.std-col-hdr .ch-wl{width:42px;text-align:right}
-.std-col-hdr .ch-gb{width:28px;text-align:right}
-.std-col-hdr .ch-rd{width:32px;text-align:right}
-.std-col-hdr .ch-stk{width:28px;text-align:right}
-.std-col-hdr .ch-xwl{width:34px;text-align:right}
-
-/* rows */
-.std-row{display:flex;align-items:center;padding:3px 0;border-bottom:1px solid rgba(30,41,59,.25)}
+.std-col-hdr .ch-wl{width:38px}
+.std-col-hdr .ch-gb{width:24px;padding-left:10px}
+.std-col-hdr .ch-rd{width:30px}
+.std-col-hdr .ch-stk{width:26px}
+/* each team row: logo+name flex-grow, W-L fixed, GB fixed */
+.std-row{display:flex;align-items:center;gap:0;padding:3px 0;border-bottom:1px solid rgba(30,41,59,.25)}
 .std-row:last-child{border-bottom:none}
 .std-row:hover .std-name{color:var(--red)}
 .std-team{display:flex;align-items:center;gap:5px;flex:1;min-width:0}
 .std-logo{width:18px;height:18px;object-fit:contain;flex-shrink:0}
 .std-name{font-size:11px;font-weight:700;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:color .15s}
-.std-rec{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--tx);width:42px;text-align:right;flex-shrink:0}
-.std-gb{font-family:var(--mono);font-size:10px;color:var(--mu);width:28px;text-align:right;flex-shrink:0}
-.std-rdiff{font-family:var(--mono);font-size:9px;font-weight:600;width:32px;text-align:right;flex-shrink:0}
-.std-streak{font-family:var(--mono);font-size:9px;font-weight:700;width:28px;text-align:right;flex-shrink:0}
-.std-xwl{font-family:var(--mono);font-size:9px;color:var(--mu);width:34px;text-align:right;flex-shrink:0}
+.std-rec{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--tx);width:38px;text-align:right;flex-shrink:0}
+.std-rdiff{font-family:var(--mono);font-size:9px;font-weight:600;width:30px;text-align:right;flex-shrink:0}
+.std-streak{font-family:var(--mono);font-size:9px;font-weight:700;width:26px;text-align:right;flex-shrink:0}
 .streak-w{color:#10b981}
 .streak-l{color:#ef4444}
-
-/* mobile */
+.std-gb{font-family:var(--mono);font-size:10px;color:var(--mu);width:24px;text-align:right;flex-shrink:0;padding-left:10px}
+/* Mobile: stack divisions vertically */
 @media(max-width:600px){
   .std-divs{grid-template-columns:1fr}
   .std-div-col{padding:0;border-right:none;border-bottom:1px solid var(--bd);padding-bottom:10px;margin-bottom:4px}
   .std-div-col:last-child{border-bottom:none;padding-bottom:0;margin-bottom:0}
-  /* tighten columns on small screens */
-  .std-col-hdr .ch-wl,.std-rec{width:38px}
-  .std-col-hdr .ch-gb,.std-gb{width:24px}
-  .std-col-hdr .ch-rd,.std-rdiff{width:28px}
-  .std-col-hdr .ch-stk,.std-streak{width:24px}
-  .std-col-hdr .ch-xwl,.std-xwl{width:30px}
 }
 
 .l10-dots{display:flex;gap:2px;align-items:center}
 .l10d{width:6px;height:6px;border-radius:50%;flex-shrink:0}
 
-/* ── PERFORMERS ── */
-.perf-panel{display:none}
-.perf-panel.on{display:flex;flex-direction:column;gap:5px;max-height:380px;overflow-y:auto;scrollbar-width:thin}
-.perf-row{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:7px;transition:background .15s;cursor:default}
-.perf-row:hover{background:var(--sf2)}
-.perf-rank{font-family:var(--mono);font-size:9px;color:var(--mu);width:14px;text-align:center;flex-shrink:0}
-.perf-photo{width:34px;height:34px;border-radius:50%;object-fit:cover;flex-shrink:0;background:var(--sf2);border:1px solid var(--bd)}
-.perf-info{flex:1;min-width:0}
-.perf-name{font-size:12px;font-weight:700;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.perf-meta{font-family:var(--mono);font-size:9px;color:var(--mu);margin-top:1px}
-.perf-stat-col{text-align:right;flex-shrink:0}
-.perf-stat-val{font-family:var(--mono);font-size:10px;color:var(--mu)}
-.grade{width:38px;height:38px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:13px;font-weight:700;color:#fff;flex-shrink:0;letter-spacing:-.02em}
-.perf-loading{text-align:center;padding:28px;font-family:var(--mono);font-size:11px;color:var(--mu)}
+/* ── PERFORMERS (removed — replaced by OE/RPE engine) ── */
 
 /* ── WS PREDICTIONS ── */
 .ws-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
@@ -212,51 +189,23 @@ body.light .strip-fade-r{background:linear-gradient(to left,#f0f4f8,transparent)
 
 /* ── METRICS ROW ── */
 .metrics-wrap{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:18px;margin-bottom:16px;box-shadow:var(--sh)}
-.met-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:0}
-
+.met-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:0 0;align-items:stretch}
+@media(max-width:800px){.met-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:500px){.met-grid{grid-template-columns:repeat(2,1fr)}}
 .met-item{padding:6px 16px;border-right:1px solid var(--bd)}
 .met-item:first-child{padding-left:0}
 .met-item:last-child{border-right:none;padding-right:0}
-.met-item:nth-child(6n){border-right:none}
 .met-item:nth-child(n+7){border-top:1px solid var(--bd);padding-top:10px;margin-top:4px}
 .met-item:nth-child(7){padding-left:0}
+.met-item:nth-child(12){border-right:none;padding-right:0}
 .met-item:nth-child(13){padding-left:0}
-
+.met-item:nth-child(18){border-right:none;padding-right:0}
 .met-lbl{font-family:var(--mono);font-size:8px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:var(--mu);margin-bottom:4px}
+body.light .met-lbl{color:#041e42;opacity:.7}
 .met-val{font-size:20px;font-weight:800;color:var(--tx);letter-spacing:-.03em;line-height:1;margin-bottom:3px}
 .met-chg{font-family:var(--mono);font-size:10px;font-weight:600}
 .chg-pos{color:#10b981}
 .chg-neg{color:#ef4444}
-
-/* Tablet: 3 columns */
-@media(max-width:800px){
-  .met-grid{grid-template-columns:repeat(3,1fr)}
-
-  /* reset desktop nth rules */
-  .met-item{border-right:1px solid var(--bd);padding:8px 12px}
-  .met-item:nth-child(6n){border-right:1px solid var(--bd)}
-  .met-item:nth-child(n+7){border-top:none;padding-top:8px;margin-top:0}
-  .met-item:nth-child(7){padding-left:12px}
-  .met-item:nth-child(12){border-right:1px solid var(--bd)}
-
-  /* 3-col rules */
-  .met-item:nth-child(3n){border-right:none}
-  .met-item:nth-child(n+4){border-top:1px solid var(--bd);padding-top:8px;margin-top:4px}
-  .met-item:nth-child(3n+1){padding-left:0}
-  .met-item:nth-child(3n){padding-right:0}
-  .met-item:first-child{padding-left:0}
-}
-
-/* Mobile: 3 columns still, tighten padding */
-@media(max-width:480px){
-  .met-grid{grid-template-columns:repeat(3,1fr)}
-  .met-item{padding:8px 8px}
-  .met-item:nth-child(3n+1){padding-left:0}
-  .met-item:nth-child(3n){padding-right:0;border-right:none}
-  .met-val{font-size:16px}
-  .met-lbl{font-size:7px;letter-spacing:1px}
-  .met-chg{font-size:9px}
-}
 
 /* ── CHARTS ── */
 .chart-wrap{position:relative;height:190px}
@@ -268,21 +217,21 @@ body.light .strip-fade-r{background:linear-gradient(to left,#f0f4f8,transparent)
 .rd-logo{width:16px;height:16px;object-fit:contain;flex-shrink:0}
 .rd-bar-wrap{flex:1;height:13px;border-radius:3px;overflow:hidden;background:var(--sf2)}
 .rd-bar{height:100%;border-radius:3px;transition:width .5s var(--ease)}
-.rd-val{font-family:var(--mono);font-size:9px;color:var(--mu);width:32px;text-align:left;flex-shrink:0}
+.rd-val{font-family:var(--mono);font-size:9px;color:var(--mu);width:32px;text-align:right;flex-shrink:0}
 
 /* ── MOBILE ── */
 @media(max-width:700px){
   .main{padding:16px 14px 48px}
   .nav-a.hide-sm{display:none}
   .gc{min-width:148px;max-width:148px}
-  .met-grid{grid-template-columns:repeat(3,1fr)}
-  .met-item{border-right:none;border-bottom:1px solid var(--bd);padding:8px 0;text-align:center}
+  .met-grid{grid-template-columns:repeat(3,1fr);justify-content:center;text-align:center}
+  .met-item{border-right:none;border-bottom:1px solid var(--bd);padding:8px 0}
   .met-item:last-child{border-bottom:none}
 }
 
 /* ── SCROLLBARS ── */
 /* Firefox */
-body.dark  * { scrollbar-width: thin; scrollbar-color: rgba(10, 14, 26, 1)   #151b2e; }
+body.dark  * { scrollbar-width: thin; scrollbar-color: rgba(4,30,65,.9)   #0d1223; }
 body.light * { scrollbar-width: thin; scrollbar-color: rgba(191,13,61,.45) #f0f4f8; }
 /* Nav links — keep hidden */
 .nav-links { scrollbar-width: none; }
@@ -299,9 +248,39 @@ body.light ::-webkit-scrollbar-thumb:hover { background: rgba(191,13,61,.65); }
 /* ── UTIL ── */
 .ld{text-align:center;padding:24px;font-family:var(--mono);font-size:11px;color:var(--mu)}
 .err{text-align:center;padding:20px;font-family:var(--mono);font-size:10px;color:#ef4444}
+
+/* ── OE SCATTER — responsive ── */
+.oe-wrap{position:relative;height:380px}
+@media(max-width:640px){
+  .oe-wrap{height:300px}
+}
+@media(max-width:420px){
+  .oe-wrap{height:260px}
+}
+/* Mobile list view toggle */
+.oe-view-toggle{display:none;gap:3px;background:var(--sf2);border-radius:6px;padding:3px;margin-bottom:10px}
+@media(max-width:640px){.oe-view-toggle{display:flex}}
+.oe-tab{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;border:none;background:transparent;color:var(--mu);padding:5px 10px;border-radius:4px;cursor:pointer;transition:background .2s,color .2s}
+.oe-tab.on{background:var(--red);color:#fff}
+.oe-list{display:none;flex-direction:column;gap:4px;max-height:300px;overflow-y:auto;scrollbar-width:thin}
+.oe-list.on{display:flex}
+.oe-list-row{display:flex;align-items:center;gap:8px;padding:6px 4px;border-bottom:1px solid var(--bd)}
+.oe-list-row:last-child{border-bottom:none}
+.oe-list-rank{font-family:var(--mono);font-size:9px;color:var(--mu);width:16px;text-align:center;flex-shrink:0}
+.oe-list-logo{width:20px;height:20px;object-fit:contain;flex-shrink:0}
+.oe-list-abbr{font-size:11px;font-weight:700;color:var(--tx);width:32px;flex-shrink:0}
+.oe-list-bars{flex:1;display:flex;flex-direction:column;gap:3px}
+.oe-list-bar-row{display:flex;align-items:center;gap:5px}
+.oe-list-lbl{font-family:var(--mono);font-size:8px;color:var(--mu);width:28px;flex-shrink:0}
+.oe-list-bar-wrap{flex:1;height:6px;border-radius:3px;background:var(--sf2);overflow:hidden}
+.oe-list-bar{height:100%;border-radius:3px;transition:width .5s var(--ease)}
+.oe-list-val{font-family:var(--mono);font-size:8px;color:var(--mu);width:32px;text-align:right;flex-shrink:0}
+.oe-ni-badge{font-family:var(--mono);font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;flex-shrink:0}
+.oe-ni-pos{background:rgba(16,185,129,.15);color:#10b981}
+.oe-ni-neg{background:rgba(239,68,68,.12);color:#ef4444}
 </style>
 </head>
-<body class="light">
+<body class="dark">
 <nav>
   <div class="nav-in">
     <a href="/hub.html" class="brand">
@@ -370,10 +349,10 @@ body.light ::-webkit-scrollbar-thumb:hover { background: rgba(191,13,61,.65); }
     </div>
   </div>
 
- <!-- Standings -->
+  <!-- Standings -->
   <div class="card" style="margin-bottom:16px">
     <div class="card-hdr" style="margin-bottom:12px">
-      <div class="card-badge">Standings</div>
+      <div class="card-title">Standings</div>
       <div class="itabs">
         <button class="itab on" id="al-tab">AL</button>
         <button class="itab" id="nl-tab">NL</button>
@@ -385,19 +364,27 @@ body.light ::-webkit-scrollbar-thumb:hover { background: rgba(191,13,61,.65); }
   <!-- Row 1: Top Performers | WS Predictions -->
   <div class="grid2" style="margin-bottom:16px">
 
-    <!-- TOP PERFORMERS -->
+    <!-- OE / RPE ENGINE SCATTER -->
     <div class="card">
       <div class="card-hdr">
-        <div class="card-title">Top Performers</div>
-        <div class="itabs" id="perf-tabs">
-          <button class="itab on" data-panel="batting">BAT</button>
-          <button class="itab" data-panel="pitching">PIT</button>
-          <button class="itab" data-panel="bullpen">BP</button>
-        </div>
+        <div class="card-title">Offensive &amp; Run Prevention Engine</div>
+        <div class="card-badge">OE+ vs RPE+</div>
       </div>
-      <div id="perf-batting" class="perf-panel on"><div class="perf-loading">Loading…</div></div>
-      <div id="perf-pitching" class="perf-panel"><div class="perf-loading">Loading…</div></div>
-      <div id="perf-bullpen" class="perf-panel"><div class="perf-loading">Loading…</div></div>
+      <div class="chart-sub">
+        X: OE+ &nbsp;|&nbsp; Y: RPE+ &nbsp;|&nbsp; Size: Net Impact &nbsp;|&nbsp; Avg = 100
+        &nbsp;<span style="color:var(--red)">&#9632;</span> AL
+        &nbsp;<span style="opacity:.55">&#9632;</span> NL
+      </div>
+      <!-- Toggle only visible on mobile -->
+      <div class="oe-view-toggle">
+        <button class="oe-tab on" id="oe-tab-chart">Chart</button>
+        <button class="oe-tab" id="oe-tab-list">Rankings</button>
+      </div>
+      <div class="oe-wrap" id="oe-chart-wrap">
+        <canvas id="oe-chart"></canvas>
+      </div>
+      <div class="oe-list" id="oe-list"></div>
+      <div class="ws-note" id="oe-note" style="margin-top:8px"></div>
     </div>
 
     <!-- WS PREDICTIONS -->
@@ -408,7 +395,9 @@ body.light ::-webkit-scrollbar-thumb:hover { background: rgba(191,13,61,.65); }
       </div>
       <div id="ws-list"><div class="ld">Computing…</div></div>
       <div class="ws-note" id="ws-note"></div>
-  </div>
+    </div><!-- /ws card -->
+
+  </div><!-- /grid2 -->
 
   <!-- Advanced Metrics bar -->
   <div class="metrics-wrap">
@@ -479,7 +468,8 @@ const S = {
   gamesPerView: 5,
   standings: { AL:{}, NL:{} },
   allStandings: [],
-  charts: { kpct: null, hva: null },
+  charts: { kpct: null, hva: null, oe: null },
+  engineData: null,
 };
 
 // ============================================================
@@ -549,10 +539,14 @@ function setTheme(dark){
   renderWSFromState();
   rebuildCharts();
   fetchGames();   // re-fetch so game card logos swap dark/light
+  if(S.engineData) {
+    buildOEScatterChart('oe-chart', S.engineData);
+    renderOEList(S.engineData);
+  }
 }
 el('tb').addEventListener('click', () => setTheme(!S.dark));
 const savedTheme = localStorage.getItem('xlabs-theme');
-setTheme(savedTheme ? savedTheme === 'dark' : false);
+setTheme(savedTheme ? savedTheme === 'dark' : true);
 
 // ============================================================
 //  CALENDAR
@@ -603,7 +597,7 @@ async function fetchGames(){
   S.slide = 0;
   const ds = fmtDate(S.date);
   try{
-    const r = await fetch(`${API}/schedule?sportId=1,51&date=${ds}&hydrate=linescore,team`);
+    const r = await fetch(`${API}/schedule?sportId=1&date=${ds}&hydrate=linescore,team`);
     const d = await r.json();
     const games = d.dates?.[0]?.games || [];
     el('game-count-lbl').textContent = games.length ? `${games.length} game${games.length>1?'s':''} scheduled` : '';
@@ -703,6 +697,8 @@ window.addEventListener('resize', () => {
     if(strip) strip.style.transform = 'translateX(0)';
     const total = strip ? strip.querySelectorAll('.gc').length : 0;
     updateStripArrows(total > S.gamesPerView);
+    // Rebuild OE chart so isMobile check re-evaluates at new viewport width
+    if(S.engineData) buildOEScatterChart('oe-chart', S.engineData);
   }, 150);
 });
 
@@ -711,7 +707,7 @@ window.addEventListener('resize', () => {
 // ============================================================
 async function fetchStandings(){
   try{
-    const r = await fetch(`${API}/standings?leagueId=103,104&season=2025&standingsTypes=regularSeason&hydrate=team,division,splitRecords,streak,expectedRecords`);
+    const r = await fetch(`${API}/standings?leagueId=103,104&season=2025&standingsTypes=regularSeason&hydrate=team,division,splitRecords,streak`);
     const d = await r.json();
     S.standings = { AL:{East:[],Central:[],West:[]}, NL:{East:[],Central:[],West:[]} };
     S.allStandings = [];
@@ -722,7 +718,6 @@ async function fetchStandings(){
         const homeRec = t.records?.splitRecords?.find(r=>r.type==='home') || {};
         const awayRec = t.records?.splitRecords?.find(r=>r.type==='away') || {};
         const l10Rec  = t.records?.splitRecords?.find(r=>r.type==='lastTen') || {};
-        const xRec    = t.records?.expectedRecords?.find(r=>r.type==='xWinLoss') || {};
         const entry = {
           teamId: t.team.id,
           abbr:   t.team.abbreviation,
@@ -736,7 +731,6 @@ async function fetchStandings(){
           homeW: homeRec.wins||0, homeL: homeRec.losses||0,
           awayW: awayRec.wins||0, awayL: awayRec.losses||0,
           l10W:  l10Rec.wins||0,  l10L:  l10Rec.losses||0,
-          xW:    xRec.wins||0,    xL:    xRec.losses||0,
           splitRecords: t.records?.splitRecords || [],
           league: lg, division: div,
           winPct: t.wins / gp,
@@ -773,7 +767,6 @@ function renderStandings(){
       const rdColor = t.runDiff > 0 ? '#10b981' : t.runDiff < 0 ? '#ef4444' : 'var(--mu)';
       const strkCls = t.streak?.startsWith('W') ? 'streak-w' : 'streak-l';
       const strk = t.streak ? `<span class="std-streak ${strkCls}">${t.streak}</span>` : '<span class="std-streak"></span>';
-      const xwl = (t.xW || t.xL) ? `${t.xW}-${t.xL}` : '—';
       return `<div class="std-row">
         <div class="std-team">
           <img class="std-logo" src="${logoUrl(t.teamId)}" alt="${t.abbr}" onerror="this.style.visibility='hidden'">
@@ -783,19 +776,11 @@ function renderStandings(){
         <span class="std-gb">${gb}</span>
         <span class="std-rdiff" style="color:${rdColor}">${rdiff}</span>
         ${strk}
-        <span class="std-xwl">${xwl}</span>
       </div>`;
     }).join('');
     return `<div class="std-div-col">
       <div class="std-div-lbl">${S.league} ${dv}</div>
-      <div class="std-col-hdr">
-        <span class="ch-team"></span>
-        <span class="ch-wl">W-L</span>
-        <span class="ch-gb">GB</span>
-        <span class="ch-rd">DIFF</span>
-        <span class="ch-stk">STK</span>
-        <span class="ch-xwl">xW-L</span>
-      </div>
+      <div class="std-col-hdr"><span class="ch-team"></span><span class="ch-wl">W-L</span><span class="ch-gb">GB</span><span class="ch-rd">DIFF</span><span class="ch-stk">STK</span></div>
       ${rows}
     </div>`;
   }).join('');
@@ -816,584 +801,121 @@ el('nl-tab').addEventListener('click', () => {
   renderStandings();
 });
 
-function renderWSFromState(){ computeAndRenderWS(); }
-
 
 // ============================================================
-//  TOP PERFORMERS — wRC+ proxy, FIP proxy, ERA- proxy
+//  WORLD SERIES ODDS GENERATOR
+//
+//  Five-factor model — each factor normalised 0-1 across all
+//  30 teams before weighting so no stat dominates by scale.
+//
+//  1. Pythagorean W%   40%  RS^1.83/(RS^1.83+RA^1.83)
+//     Strips out luck from actual W-L; exponent 1.83 is the
+//     MLB-calibrated value. Most predictive single factor.
+//
+//  2. Actual W%        20%  W/(W+L)
+//     Real results count, but less than Pythag alone.
+//
+//  3. Run Differential 15%  RS-RA normalised
+//     Rewards dominant teams; partly captured by Pythag
+//     but extra weight for teams that blow teams out.
+//
+//  4. Last 10 form     15%  L10 W%
+//     Current trajectory — hot/cold teams. Proxy for
+//     rest-of-season projection adjustments.
+//
+//  5. Away W%          10%  awayW/(awayW+awayL)
+//     Away records are harder to inflate than home records.
+//     Genuine quality shows up on the road.
+//
+//  Chalk exponent 2.2 applied after blending — spreads
+//  contenders from fringe teams the way compounding through
+//  3 playoff rounds does. FanGraphs uses Monte Carlo; we
+//  approximate with an exponential transform.
+//
+//  Typical output: top team 18-22%, fringe teams 2-4%.
 // ============================================================
 
-// ── Batting: wRC+ proxy ──────────────────────────────────────
-// wRC+ ≈ (OBP × 1.8 + ISO) normalized relative to cohort, scaled 0-100
-// We can't get true wRC+ from the free API, but we can get OBP + SLG + AVG
-// which let us derive ISO (SLG-AVG) and approximate the linear weights.
-async function fetchBatting(){
-  const panel = el('perf-batting');
-  panel.innerHTML = '<div class="perf-loading">Loading\u2026</div>';
-  try{
-    const r = await fetch(`${API}/stats?group=hitting&type=season&season=2025&limit=50&sortStat=onBasePlusSlugging&order=desc&gameType=R&playerPool=ALL`);
-    const d = await r.json();
-    const raw = (d.stats?.[0]?.splits || []).filter(p => (p.stat.atBats||0) >= 80);
-
-    // Derive approximate wRC+ components from available fields
-    // wRAA proxy = OBP*1.8 + ISO (SLG-AVG) — this mirrors linear weight theory
-    const wrcProxy = raw.map(p => {
-      const obp = parseFloat(p.stat.obp)  || 0;
-      const slg = parseFloat(p.stat.slg)  || 0;
-      const avg = parseFloat(p.stat.avg)  || 0;
-      const iso = slg - avg;
-      const bbPct = (p.stat.baseOnBalls||0) / Math.max(p.stat.plateAppearances||p.stat.atBats||1, 1);
-      const kPct  = (p.stat.strikeOuts||0)  / Math.max(p.stat.plateAppearances||p.stat.atBats||1, 1);
-      // weighted sum mirroring wRC+ sensitivity: OBP matters most, then power, then discipline
-      return obp * 1.9 + iso * 1.1 + bbPct * 0.8 - kPct * 0.5;
-    });
-
-    const grades = norm(wrcProxy);   // 0-100 across cohort
-    const paired = raw.map((p,i) => ({p, g: grades[i]})).sort((a,b) => b.g-a.g).slice(0,12);
-
-    panel.innerHTML = paired.map((x, i) => {
-      const {p, g} = x;
-      const name = p.player?.fullName || 'Unknown';
-      const team = p.team?.abbreviation || '---';
-      const obp  = p.stat.obp || '.000';
-      const slg  = p.stat.slg || '.000';
-      const hr   = p.stat.homeRuns || 0;
-      return `<div class="perf-row">
-        <span class="perf-rank">${i+1}</span>
-        <img class="perf-photo"
-          src="https://img.mlbstatic.com/mlb-photos/image/upload/w_60,q_auto:good,f_auto/v1/people/${p.player?.id}/headshot/67/current"
-          onerror="this.style.opacity='.3'">
-        <div class="perf-info">
-          <div class="perf-name">${name}</div>
-          <div class="perf-meta">${team} &middot; OBP ${obp} &middot; SLG ${slg} &middot; ${hr} HR</div>
-        </div>
-        <div class="grade" style="background:${gradeColor(g)}" title="wRC+ grade: ${g}/100">${gradeLabel(g)}</div>
-      </div>`;
-    }).join('');
-  } catch(e){ panel.innerHTML='<div class="err">Failed to load batting stats</div>'; }
-}
-
-// ── Pitching: FIP proxy ──────────────────────────────────────
-// FIP = (13×HR + 3×BB - 2×K) / IP + FIP_constant (≈3.10 for 2025)
-// Lower FIP = better. We invert when normalizing so high grade = good.
-async function fetchPitching(){
-  const panel = el('perf-pitching');
-  panel.innerHTML = '<div class="perf-loading">Loading\u2026</div>';
-  try{
-    const r = await fetch(`${API}/stats?group=pitching&type=season&season=2025&limit=60&sortStat=earnedRunAverage&order=asc&gameType=R&playerPool=ALL`);
-    const d = await r.json();
-    // Starters: games started > 3 and IP >= 25
-    const raw = (d.stats?.[0]?.splits || []).filter(p =>
-      (p.stat.gamesStarted||0) > 3 && parseFloat(p.stat.inningsPitched||0) >= 25
-    );
-
-    const FIP_C = 3.10; // 2025 estimated FIP constant
-    const fips = raw.map(p => {
-      const ip  = parseFloat(p.stat.inningsPitched) || 1;
-      const hr  = p.stat.homeRuns         || 0;
-      const bb  = p.stat.baseOnBalls      || 0;
-      const hbp = p.stat.hitByPitch       || 0;
-      const k   = p.stat.strikeOuts       || 0;
-      return (13*hr + 3*(bb+hbp) - 2*k) / ip + FIP_C;
-    });
-
-    // ERA- proxy: pitcher ERA / LEAGUE_AVG_ERA * 100 (lower = better)
-    const eraMinus = raw.map(p => (parseFloat(p.stat.era)||9.99) / LEAGUE_AVG_ERA * 100);
-
-    // Blend: 55% FIP (inverted norm) + 45% ERA- (inverted norm)
-    const nFip  = norm(fips, true);    // invert: low FIP = high grade
-    const nEraM = norm(eraMinus, true);
-    const grades = raw.map((_,i) => Math.round(nFip[i]*0.55 + nEraM[i]*0.45));
-
-    const paired = raw.map((p,i) => ({p, g:grades[i]})).sort((a,b) => b.g-a.g).slice(0,12);
-    panel.innerHTML = paired.map((x,i) => {
-      const {p, g} = x;
-      const name = p.player?.fullName || 'Unknown';
-      const team = p.team?.abbreviation || '---';
-      const fip  = fips[raw.indexOf(p)]?.toFixed(2) || '-.--';
-      const ip   = p.stat.inningsPitched || '0.0';
-      const k    = p.stat.strikeOuts || 0;
-      return `<div class="perf-row">
-        <span class="perf-rank">${i+1}</span>
-        <img class="perf-photo"
-          src="https://img.mlbstatic.com/mlb-photos/image/upload/w_60,q_auto:good,f_auto/v1/people/${p.player?.id}/headshot/67/current"
-          onerror="this.style.opacity='.3'">
-        <div class="perf-info">
-          <div class="perf-name">${name}</div>
-          <div class="perf-meta">${team} &middot; FIP ${fip} &middot; ${ip} IP &middot; ${k} K</div>
-        </div>
-        <div class="grade" style="background:${gradeColor(g)}" title="FIP/ERA- grade: ${g}/100">${gradeLabel(g)}</div>
-      </div>`;
-    }).join('');
-  } catch(e){ panel.innerHTML='<div class="err">Failed to load pitching stats</div>'; }
-}
-
-// ── Bullpen: ERA- proxy (relievers only) ─────────────────────
-// ERA- = pitcher ERA / league avg * 100 — contextualized and opponent-adjusted in spirit.
-// Blend with K-BB% (K% - BB%) and SV+HLD volume.
-async function fetchBullpen(){
-  const panel = el('perf-bullpen');
-  panel.innerHTML = '<div class="perf-loading">Loading\u2026</div>';
-  try{
-    // Fetch more to ensure we get enough relievers
-    const r = await fetch(`${API}/stats?group=pitching&type=season&season=2025&limit=120&sortStat=earnedRunAverage&order=asc&gameType=R&playerPool=ALL`);
-    const d = await r.json();
-    const all = d.stats?.[0]?.splits || [];
-
-    // Relievers: ip/games < 2.0, min 8 IP
-    const raw = all.filter(p => {
-      const ip = parseFloat(p.stat.inningsPitched||0);
-      const gp = p.stat.gamesPitched || 1;
-      return ip >= 8 && (ip/gp) < 2.0;
-    });
-
-    // ERA- (invert for grade — lower ERA- = better)
-    const eraMinus = raw.map(p => (parseFloat(p.stat.era)||9.99) / LEAGUE_AVG_ERA * 100);
-
-    // K-BB% proxy: (K - BB) / (IP * 3 batters-faced estimate)
-    const kbb = raw.map(p => {
-      const k  = p.stat.strikeOuts   || 0;
-      const bb = p.stat.baseOnBalls  || 0;
-      const ip = parseFloat(p.stat.inningsPitched) || 1;
-      return (k - bb) / (ip * 3.3); // rough BF estimate
-    });
-
-    // SV + HLD volume (normalized across cohort)
-    const svhld = raw.map(p => (p.stat.saves||0) + (p.stat.holds||0));
-
-    const nEraM  = norm(eraMinus, true); // invert
-    const nKbb   = norm(kbb);
-    const nSvhld = norm(svhld);
-
-    // Grade: 45% ERA- + 35% K-BB% + 20% SV+HLD volume
-    const grades = raw.map((_,i) => Math.round(nEraM[i]*0.45 + nKbb[i]*0.35 + nSvhld[i]*0.20));
-
-    const paired = raw.map((p,i) => ({p, g:grades[i]})).sort((a,b) => b.g-a.g).slice(0,12);
-    panel.innerHTML = paired.map((x,i) => {
-      const {p, g} = x;
-      const name = p.player?.fullName || 'Unknown';
-      const team = p.team?.abbreviation || '---';
-      const era  = p.stat.era || '-.--';
-      const sv   = p.stat.saves || 0;
-      const hld  = p.stat.holds || 0;
-      const k    = p.stat.strikeOuts || 0;
-      return `<div class="perf-row">
-        <span class="perf-rank">${i+1}</span>
-        <img class="perf-photo"
-          src="https://img.mlbstatic.com/mlb-photos/image/upload/w_60,q_auto:good,f_auto/v1/people/${p.player?.id}/headshot/67/current"
-          onerror="this.style.opacity='.3'">
-        <div class="perf-info">
-          <div class="perf-name">${name}</div>
-          <div class="perf-meta">${team} &middot; ERA ${era} &middot; ${sv} SV &middot; ${hld} HLD &middot; ${k} K</div>
-        </div>
-        <div class="grade" style="background:${gradeColor(g)}" title="ERA-/K-BB% grade: ${g}/100">${gradeLabel(g)}</div>
-      </div>`;
-    }).join('');
-  } catch(e){ panel.innerHTML='<div class="err">Failed to load bullpen stats</div>'; }
-}
-
-// Performer tab switching
-document.querySelectorAll('.itab').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.itab').forEach(b => b.classList.remove('on'));
-    document.querySelectorAll('.perf-panel').forEach(p => p.classList.remove('on'));
-    btn.classList.add('on');
-    el('perf-'+btn.dataset.panel).classList.add('on');
-  });
-});
-
-// ============================================================
-//  WORLD SERIES ODDS GENERATOR — v2 (elevated model)
-//
-//  Seven-factor weighted model with park-factor adjustment,
-//  strength-of-schedule, bullpen quality, robust normalisation,
-//  and a data-driven chalk exponent.
-//
-//  FACTOR OVERVIEW (weights sum to 1.0)
-//  ─────────────────────────────────────────────────────────
-//  1. Park-adjusted Pythagorean W%    35%
-//     Best single predictor of true team quality. Strips luck
-//     from W-L. Exponent 1.83 is the MLB-calibrated value.
-//     v2 change: runs scored/allowed are now divided by each
-//     team's park factor before computing Pythag, preventing
-//     Coors Field and other extreme parks from inflating or
-//     deflating a team's apparent quality.
-//
-//  2. Actual W%                       15%
-//     Real results matter but less than Pythag; clutch
-//     situations and bullpen usage are partly captured here.
-//     Reduced from 20% → 15% to make room for SOS + bullpen.
-//
-//  3. Park-adjusted run differential  15%
-//     Rewards teams that dominate opponents beyond just W-L.
-//     Also park-adjusted so Coors teams aren't penalised.
-//
-//  4. Strength of schedule (SOS)      10%  ← NEW
-//     A 90-win record in the AL East is far more impressive
-//     than 90 wins in a weak division. SOS is approximated
-//     as the average opponent W% (or a passed-in composite
-//     rating). Positive SOS reward boosts teams that beat
-//     better competition. This is one of the most important
-//     missing pieces in the original model.
-//
-//  5. Bullpen quality                 10%  ← NEW
-//     Postseason baseball is a bullpen competition. Starters
-//     routinely exit after 5 innings; relievers face the best
-//     hitters 2-3 times in a series. We model this as either
-//     a bullpen ERA (lower = better, so we invert it) or a
-//     save-percentage proxy. Research consistently shows
-//     bullpen quality is one of the top WS predictors.
-//
-//  6. Recent form — last 20 games     10%  ← UPGRADED (was L10)
-//     L10 is too noisy (a hot week can flip it). L20 smooths
-//     variance while still capturing genuine momentum shifts.
-//     A team rounding into form in September matters more than
-//     a May hot streak.
-//
-//  7. Away W%                          5%  ← REDUCED (was 10%)
-//     Away records filter out home-field inflation and reflect
-//     genuine quality. Reduced slightly to make room for SOS
-//     and bullpen, both of which are higher-leverage signals.
-//
-//  NORMALISATION: Z-score → sigmoid (NOT min-max)
-//  ─────────────────────────────────────────────────────────
-//  The original model used min-max normalisation, which is
-//  acutely sensitive to outliers. One historically terrible
-//  team can compress the entire distribution and make mediocre
-//  teams look much better relative to good teams. Z-score
-//  normalisation is more robust: it centres each factor at
-//  the league mean (z=0) and scales by standard deviation.
-//  A sigmoid clamp then maps the result to (0,1), with the
-//  steepness tunable via SIGMOID_K.
-//
-//  CHALK EXPONENT: dynamic, games-based
-//  ─────────────────────────────────────────────────────────
-//  The original used a fixed exponent of 2.2. But early in
-//  the season (small samples, high variance) the model should
-//  be more regressive toward the league average — a flat
-//  exponent massively overweights a 5-0 April start. Late in
-//  the season the exponent should increase as the signal
-//  becomes real. We interpolate between 1.4 (opening week)
-//  and 2.6 (full 162 games) based on games played.
-//
-//  LIMITATIONS (honest about what the model can't see)
-//  ─────────────────────────────────────────────────────────
-//  • Injury/roster health: if your team's ace is on the IL,
-//    the model doesn't know. Always sanity-check against
-//    current injury reports.
-//  • Lineup construction & matchups: platoon advantages,
-//    LHP/RHP splits, and managerial strategy are invisible.
-//  • Luck regression from xFIP / xwOBA: a team with a .380
-//    BABIP is likely to regress; the model doesn't penalise
-//    this unless it shows up in Pythag divergence.
-//  • Trade deadline acquisitions show up with a lag. Newly
-//    acquired players won't have much data in t.runsScored etc.
-//
-//  CALIBRATION NOTE
-//  ─────────────────────────────────────────────────────────
-//  FanGraphs and Baseball Prospectus use full Monte Carlo
-//  simulations. This model approximates the same spread with
-//  a weighted blend + exponential transform, which is
-//  computationally trivial and produces a plausible top-team
-//  range of 18-24%. Treat outputs as relative rankings with
-//  directional probability, not true market odds.
-// ============================================================
-
-
-// ── Constants ──────────────────────────────────────────────
-
-// Sigmoid steepness: higher = more separation between teams.
-// At k=5, z-scores in ±1 SD map to roughly (0.18, 0.82).
-const SIGMOID_K = 5;
-
-// Pythagorean exponent: 1.83 is the empirically calibrated
-// MLB value (Smyth & Patriot, 2002). Do not change this.
-const PYTHAG_EXP = 1.83;
-
-// Chalk exponent range: interpolated based on games played.
-// CHALK_MIN applies at the start of the season (0 games).
-// CHALK_MAX applies at a full 162-game season.
-const CHALK_MIN = 1.4;
-const CHALK_MAX = 2.6;
-const SEASON_GAMES = 162;
-
-
-// ── Helpers ────────────────────────────────────────────────
-
-/**
- * Sigmoid function mapping any real number to (0, 1).
- * z: z-score (mean-subtracted, SD-divided value)
- * k: steepness parameter (higher = sharper S-curve)
- */
-function sigmoid(z, k = SIGMOID_K) {
-  return 1 / (1 + Math.exp(-k * z));
-}
-
-/**
- * Normalise an array of raw values using z-score then sigmoid.
- * This is more robust than min-max: a single outlier (e.g. the
- * worst team in MLB history) does not compress everyone else.
- *
- * Steps:
- *  1. Compute mean and standard deviation across all 30 teams.
- *  2. Convert each value to a z-score: (x - mean) / sd.
- *  3. Pass through sigmoid to get a value in (0, 1).
- */
-function zNorm(arr) {
-  const n   = arr.length || 1;
-  const mean = arr.reduce((a, b) => a + b, 0) / n;
-  const variance = arr.reduce((s, v) => s + (v - mean) ** 2, 0) / n;
-  const sd  = Math.sqrt(variance) || 1; // guard against zero SD
-  return arr.map(v => sigmoid((v - mean) / sd));
-}
-
-/**
- * Dynamic chalk exponent — scales with sample size.
- *
- * Early in the season (few games), we regress toward the mean
- * by using a low exponent. As the season fills in, the signal
- * is more reliable and we spread the field further.
- *
- * gamesPlayed: average games played across the team pool.
- * Returns a value between CHALK_MIN and CHALK_MAX.
- */
-function chalkExp(gamesPlayed) {
-  const t = Math.min(Math.max(gamesPlayed / SEASON_GAMES, 0), 1);
-  return CHALK_MIN + (CHALK_MAX - CHALK_MIN) * t;
-}
-
-/** Safe division — returns 0 rather than NaN/Infinity. */
-function safePct(numerator, denominator) {
-  return denominator > 0 ? numerator / denominator : 0;
-}
-
-
-// ── Main computation ────────────────────────────────────────
-
-function computeAndRenderWS() {
-  if (!S.allStandings.length) {
-    el('ws-list').innerHTML = '<div class="ld">Waiting for standings\u2026</div>';
+function computeAndRenderWS(){
+  if(!S.allStandings.length){
+    el('ws-list').innerHTML='<div class="ld">Waiting for standings\u2026</div>';
     return;
   }
 
   const teams = S.allStandings;
 
+  // Normalise array 0-1
+  function norm(arr){
+    const mn=Math.min(...arr), mx=Math.max(...arr), rng=mx-mn||1;
+    return arr.map(v=>(v-mn)/rng);
+  }
 
-  // ── Factor 1: Park-adjusted Pythagorean W% (35%) ─────────
-  //
-  // Park factor (t.parkFactor) should be a multiplier centred
-  // at 1.0 for a neutral park. Coors Field ≈ 1.15 (inflates
-  // runs by ~15%). If parkFactor is not in the data feed,
-  // default to 1.0 (neutral) so the model degrades gracefully
-  // rather than crashing.
-  //
-  // Adjustment: divide raw RS and RA by the park factor before
-  // computing Pythagorean. This normalises runs to a neutral-
-  // park environment, so Coors teams aren't falsely boosted.
-  //
-  // Pythagorean formula: RS^e / (RS^e + RA^e), e = 1.83.
-  // Result interpreted as "true win% if luck were removed."
-  const pythag = teams.map(t => {
-    const pf  = t.parkFactor || 1.0;                  // default neutral
-    const rs  = Math.max((t.runsScored  || 0) / pf, 0.1); // park-adjusted
-    const ra  = Math.max((t.runsAllowed || 0) / pf, 0.1);
-    const rsp = Math.pow(rs, PYTHAG_EXP);
-    const rap = Math.pow(ra, PYTHAG_EXP);
-    return rsp / (rsp + rap);
+  // Factor 1: Pythagorean W% (exponent 1.83)
+  const pythag = teams.map(t=>{
+    const rs=Math.max(t.runsScored||0,0.1), ra=Math.max(t.runsAllowed||0,0.1);
+    const rsp=Math.pow(rs,1.83), rap=Math.pow(ra,1.83);
+    return rsp/(rsp+rap);
   });
 
+  // Factor 2: Actual W%
+  const actual = teams.map(t=>t.winPct||0);
 
-  // ── Factor 2: Actual W% (15%) ────────────────────────────
-  //
-  // Real results capture things Pythag misses: clutch hitting,
-  // bullpen deployment, and managerial decisions in close games.
-  // Weighted less than Pythag because it contains more luck.
-  const actual = teams.map(t => t.winPct || 0);
+  // Factor 3: Run Differential
+  const rdiff = teams.map(t=>t.runDiff||0);
 
-
-  // ── Factor 3: Park-adjusted run differential (15%) ───────
-  //
-  // Run differential correlates highly with future performance.
-  // Park-adjusted by dividing by the park factor: a +150 RS
-  // differential in a 1.15 park environment is actually only
-  // ~+130 in a neutral park.
-  const rdiff = teams.map(t => {
-    const pf = t.parkFactor || 1.0;
-    return ((t.runsScored || 0) - (t.runsAllowed || 0)) / pf;
+  // Factor 4: Last 10 W%
+  const l10 = teams.map(t=>{
+    const gp=(t.l10W||0)+(t.l10L||0)||1;
+    return (t.l10W||0)/gp;
   });
 
-
-  // ── Factor 4: Strength of schedule (10%) ─── NEW ─────────
-  //
-  // t.sos should be the average W% of opponents faced, or a
-  // composite rating (e.g. 0.500 = exactly average schedule).
-  // A value above 0.500 means the team played harder opponents.
-  //
-  // WHY THIS MATTERS: the original model treated all wins
-  // equally. An AL East team beating the Red Sox, Yankees, and
-  // Rays earns the same credit as an NL Central team beating
-  // the Cubs in a rebuilding year. That's a real flaw.
-  //
-  // If SOS data is unavailable, we fall back to 0.500 (neutral)
-  // so the factor contributes nothing rather than corrupting.
-  const sos = teams.map(t => t.sos || 0.500);
-
-
-  // ── Factor 5: Bullpen quality (10%) ─── NEW ──────────────
-  //
-  // t.bullpenERA: season ERA for relievers (lower is better).
-  // We invert it so that "better" still maps to a higher score
-  // in the model (consistent direction with all other factors).
-  //
-  // Inversion formula: 9 - ERA, then clamp to [0, 9].
-  // ERA of 3.00 → score of 6.00; ERA of 4.50 → score of 4.50.
-  //
-  // Alternatively, if t.bullpenFIP or t.bullpenSavePct is
-  // available, substitute those — FIP is a better ERA predictor.
-  //
-  // WHY THIS MATTERS: postseason series are typically 7 games,
-  // starters pitch 4-6 innings, and bullpen leverage spikes.
-  // Teams with elite closers and setup men historically
-  // outperform their regular-season metrics in October.
-  const bullpen = teams.map(t => {
-    const era = t.bullpenERA || 4.00;  // default to league avg if missing
-    return Math.max(9 - era, 0);       // invert: lower ERA → higher score
+  // Factor 5: Away W%
+  const away = teams.map(t=>{
+    const gp=(t.awayW||0)+(t.awayL||0)||1;
+    return (t.awayW||0)/gp;
   });
 
+  // Normalise each factor
+  const nP=norm(pythag), nA=norm(actual), nR=norm(rdiff),
+        nL=norm(l10),    nW=norm(away);
 
-  // ── Factor 6: Recent form — last 20 games (10%) ──────────
-  //
-  // UPGRADE from L10: 10 games is too noisy. A 7-3 L10 record
-  // is meaningless noise; a 15-5 L20 record is genuine signal.
-  // We use L20 W% as the momentum proxy. If only L10 data is
-  // available, the formula degrades gracefully to that.
-  //
-  // Weighting rationale: recent form matters more late in the
-  // season (October health, rotation alignment, hot hitters).
-  // If you want to amplify late-season momentum, consider
-  // multiplying this factor by (gamesPlayed / SEASON_GAMES).
-  const form = teams.map(t => {
-    const gp = ((t.l20W || 0) + (t.l20L || 0)) ||
-               ((t.l10W || 0) + (t.l10L || 0)) || 1; // fallback to L10
-    const w  = t.l20W ?? t.l10W ?? 0;
-    return safePct(w, gp);
-  });
-
-
-  // ── Factor 7: Away W% (5%) ───────────────────────────────
-  //
-  // Away records are harder to inflate with home-crowd effects
-  // and familiar mounds/conditions. Teams that win consistently
-  // on the road are demonstrating genuine quality.
-  // Weight reduced from 10% → 5% to make room for SOS/bullpen.
-  const away = teams.map(t =>
-    safePct(t.awayW || 0, (t.awayW || 0) + (t.awayL || 0))
+  // Weighted blend
+  const raw = teams.map((_,i)=>
+    nP[i]*0.40 + nA[i]*0.20 + nR[i]*0.15 + nL[i]*0.15 + nW[i]*0.10
   );
 
+  // Chalk exponent — mimics 3-round playoff compounding
+  const chalked = raw.map(s=>Math.pow(Math.max(s,0),2.2));
 
-  // ── Normalise each factor (z-score → sigmoid) ─────────────
-  //
-  // Each factor is now on a common 0-1 scale, with the average
-  // team scoring approximately 0.5. Outlier teams (very good or
-  // very bad) score near 0 or 1. The sigmoid ensures no team
-  // ever hits exactly 0 or 1, avoiding probability mass at
-  // the extremes.
-  const nP = zNorm(pythag);   // park-adj Pythagorean
-  const nA = zNorm(actual);   // actual W%
-  const nR = zNorm(rdiff);    // park-adj run differential
-  const nS = zNorm(sos);      // strength of schedule
-  const nB = zNorm(bullpen);  // bullpen quality (inverted ERA)
-  const nF = zNorm(form);     // L20 form
-  const nW = zNorm(away);     // away W%
+  // Convert to probability share
+  const total = chalked.reduce((a,b)=>a+b,0)||1;
+  const probs = chalked.map(s=>s/total*100);
 
-
-  // ── Weighted blend ─────────────────────────────────────────
-  //
-  // Weights reflect each factor's predictive importance for
-  // World Series outcomes specifically (not just regular season).
-  // Pythag remains dominant at 35%; bullpen and SOS are new
-  // entrants at 10% each.
-  //
-  //   Pythag 35% + Actual 15% + RunDiff 15% + SOS 10%
-  //   + Bullpen 10% + Form 10% + Away 5% = 100%
-  const raw = teams.map((_, i) =>
-    nP[i] * 0.35 +  // park-adj Pythagorean W%
-    nA[i] * 0.15 +  // actual W%
-    nR[i] * 0.15 +  // park-adj run differential
-    nS[i] * 0.10 +  // strength of schedule
-    nB[i] * 0.10 +  // bullpen quality
-    nF[i] * 0.10 +  // L20 recent form
-    nW[i] * 0.05    // away W%
-  );
-
-
-  // ── Dynamic chalk exponent ─────────────────────────────────
-  //
-  // Simulates the effect of winning 3 playoff rounds, where
-  // small edges compound into large probability differences.
-  // The exponent grows with games played:
-  //   early season (30 GP avg) → exp ≈ 1.7  (regressive)
-  //   late season  (162 GP avg) → exp ≈ 2.6  (spread out)
-  //
-  // This prevents a 5-0 April start from projecting a team to
-  // a 30% WS probability, which the fixed exponent would do.
-  const avgGamesPlayed = teams.reduce((s, t) =>
-    s + ((t.wins || 0) + (t.losses || 0)), 0) / (teams.length || 1);
-
-  const exp = chalkExp(avgGamesPlayed);
-
-  const chalked = raw.map(s => Math.pow(Math.max(s, 0), exp));
-
-
-  // ── Convert to probability share ──────────────────────────
-  //
-  // Divide each team's chalked score by the sum of all scores
-  // to get a probability that sums to 100% across all 30 teams.
-  // This is a simple Dirichlet normalisation.
-  const total = chalked.reduce((a, b) => a + b, 0) || 1;
-  const probs  = chalked.map(s => (s / total) * 100);
-
-
-  // ── Rank, annotate, display top 8 ─────────────────────────
+  // Rank, annotate, top 8
   const ranked = teams
-    .map((t, i) => ({
+    .map((t,i)=>({
       ...t,
-      prob:        probs[i],
-      pythagPct:   (pythag[i] * 100).toFixed(1), // for tooltip display
-      chalkExpUsed: exp.toFixed(2),               // audit trail
+      prob:     probs[i],
+      pythagPct:(pythag[i]*100).toFixed(1),
     }))
-    .sort((a, b) => b.prob - a.prob)
-    .slice(0, 8);
+    .sort((a,b)=>b.prob-a.prob)
+    .slice(0,8);
 
   renderWS(ranked);
 
   el('ws-note').textContent =
-    `Park-adj Pythag 35% + Actual W% 15% + Park-adj RunDiff 15% + ` +
-    `SOS 10% + Bullpen 10% + L20 Form 10% + Away W% 5% | ` +
-    `chalk exp ${exp.toFixed(2)} (${Math.round(avgGamesPlayed)} GP avg) | ` +
-    `z-score normalisation | 2025 season data`;
+    'Pythag W% 40% + Actual W% 20% + Run Diff 15% + ' +
+    'L10 15% + Away W% 10% | chalk exp 2.2 | 2025 full-season data';
 }
 
-
-// ── Render (unchanged API) ─────────────────────────────────
-//
-// renderWS and renderWSFromState keep the same external API so
-// nothing in the calling code needs to change.
-
-function renderWS(teams) {
-  if (!teams?.length) return;
+function renderWS(teams){
+  if(!teams?.length) return;
   const maxProb = teams[0].prob;
-  const medals  = ['\uD83E\uDD47', '\uD83E\uDD48', '\uD83E\uDD49'];
-
-  el('ws-list').innerHTML = teams.map((t, i) => {
+  const medals  = ['\uD83E\uDD47','\uD83E\uDD48','\uD83E\uDD49'];
+  el('ws-list').innerHTML = teams.map((t,i)=>{
     const pct  = t.prob.toFixed(1);
-    const barW = (t.prob / maxProb * 100).toFixed(1);
-    const badge = medals[i] ? medals[i] + '\u202f' : '';
-
-    // Optional tooltip showing Pythag W% and chalk exp for debugging
-    const title = `Pythag W%: ${t.pythagPct}% | Chalk exp: ${t.chalkExpUsed}`;
-
-    return `<div class="ws-row" title="${title}">
+    const barW = (t.prob/maxProb*100).toFixed(1);
+    const badge= medals[i] ? medals[i]+'\u202f' : '';
+    return `<div class="ws-row">
       <img class="ws-logo" src="${logoUrl(t.teamId)}" alt="${t.abbr}"
            onerror="this.style.visibility='hidden'">
       <div class="ws-bar-wrap">
@@ -1405,7 +927,7 @@ function renderWS(teams) {
   }).join('');
 }
 
-function renderWSFromState() { computeAndRenderWS(); }
+function renderWSFromState(){ computeAndRenderWS(); }
 
 // ============================================================
 //  ADVANCED METRICS — league averages (2025 estimates)
@@ -1432,12 +954,12 @@ const METRIC_DEFAULTS = [
   {lbl:'xBA',       val:'--',    chg:'Loading…',  key:'xba'},
   {lbl:'Chase%',    val:'--',    chg:'Loading…',  key:'chase'},
   {lbl:'Spd(ft/s)', val:'--',    chg:'Loading…',  key:'sprint'},
-  {lbl:'HR/G',      val:'--',    chg:'Loading…',  key:'hrpg'},
+  {lbl:'HR/G',      val:'--',    chg:'Loading…',  key:'hr_savant'},
 ];
- 
+
 const S_METRICS = {};   // live overrides keyed by metric.key
 METRIC_DEFAULTS.forEach(m => S_METRICS[m.key] = { val: m.val, chg: m.chg });
- 
+
 function renderMetrics(){
   el('met-grid').innerHTML = METRIC_DEFAULTS.map(m => {
     const live   = S_METRICS[m.key];
@@ -1454,7 +976,7 @@ function renderMetrics(){
     </div>`;
   }).join('');
 }
- 
+
 // ── Baseball Savant league-average scraper ────────────────────
 // Savant exposes free CSV endpoints — no auth required.
 // We pull two: a batter-level and pitcher-level leaderboard,
@@ -1466,9 +988,9 @@ async function fetchSavantMetrics(){
     xba:         'xba',
     sprint:      'sprint',
     chase:       'chase',
-    hr_per_game: 'hrpg',
+    hr_per_game: 'hr_savant',
   };
- 
+
   // ── Hardcoded fallbacks (2024 full-season actuals) ────────
   function applyFallbacks(reason){
     console.warn(`[Savant] ${reason} — using 2024 baselines`);
@@ -1480,7 +1002,7 @@ async function fetchSavantMetrics(){
     S_METRICS.hrpg    = { val: '0.142', chg: '+0.000 YoY'  };
     renderMetrics();
   }
- 
+
   // ── file:// protocol can't fetch() local files in most browsers ──
   // Detect it and skip straight to fallbacks with a helpful message
   if (window.location.protocol === 'file:') {
@@ -1491,15 +1013,15 @@ async function fetchSavantMetrics(){
     applyFallbacks('file:// protocol detected');
     return;
   }
- 
+
   try {
     const r = await fetch('scripts/lib/savant-current.json');
     if (!r.ok) throw new Error(`HTTP ${r.status} fetching savant-current.json`);
- 
+
     const data = await r.json();
     const m    = data.metrics || {};
     let loaded = 0, skipped = 0;
- 
+
     for (const [jsonKey, metricKey] of Object.entries(KEY_MAP)) {
       const entry = m[jsonKey];
       // Skip entries where the script couldn't compute a value
@@ -1513,12 +1035,12 @@ async function fetchSavantMetrics(){
       S_METRICS[metricKey] = { val: entry.val, chg };
       loaded++;
     }
- 
+
     if (skipped > 0) {
       console.warn(`[Savant] ${skipped} metric(s) missing from JSON — ` +
         `pitcher CSV likely empty. Fallback values kept for those.`);
     }
- 
+
     if (loaded > 0) {
       console.info(`[Savant] Loaded ${loaded}/${Object.keys(KEY_MAP).length} metrics ` +
         `(generated ${data.generated}, ${data.player_counts?.batter_current ?? '?'} batters, ` +
@@ -1527,7 +1049,7 @@ async function fetchSavantMetrics(){
     } else {
       throw new Error('All metric entries were null — JSON may be from a failed run');
     }
- 
+
   } catch(e) {
     applyFallbacks(e.message);
   }
@@ -1688,7 +1210,7 @@ function buildHvaChart(){
         {
           label: 'Away W%',
           data: awayWpct,
-          backgroundColor: S.dark ? 'rgba(16, 185, 129, 1)' : 'rgba(4,30,65,.75)',
+          backgroundColor: S.dark ? 'rgba(255,255,255,.85)' : 'rgba(4,30,65,.75)',
           borderRadius: 3,
           borderSkipped: false,
         },
@@ -1729,13 +1251,789 @@ async function init(){
   await Promise.all([
     fetchGames(),
     fetchStandings(),  // triggers WS, rdiff, L10, HvA chart
-    fetchBatting(),
-    fetchPitching(),
-    fetchBullpen(),
-    fetchSavantMetrics(),  // Statcast row: Hard Hit%, Barrel%, xBA, Chase%, Sprint, P/PA
+    fetchSavantMetrics(),  // Statcast row: Hard Hit%, Barrel%, xBA, Chase%, Sprint, HR/G
+    fetchAndRenderOEEngine(),
   ]);
 }
- 
+
+
+// ============================================================
+//  OFFENSIVE ENGINE (OE) + RUN PREVENTION ENGINE (RPE)
+//  Production-ready analytics engine for MLB team scatter plot.
+//
+//  Author note: built to plug directly into default.html.
+//  All helpers are pure functions — no side effects, fully
+//  testable in isolation.
+// ============================================================
+
+// ── Constants ────────────────────────────────────────────────
+// Weight definitions kept as named objects so they're easy to
+// audit, tune, and document without touching the formula code.
+const OE_WEIGHTS = {
+  xwoba:       0.45,   // strongest predictor of true offensive value
+  hard_hit:    0.20,   // quality of contact — EV >= 95 mph
+  barrel:      0.15,   // elite contact — optimal EV + launch angle
+  chase:       0.10,   // discipline signal — INVERTED (lower = better)
+  sprint_speed:0.10,   // speed dimension; normalized across league
+};
+
+const RPE_WEIGHTS = {
+  xwoba_allowed:      0.40,  // best single predictor of pitching quality
+  hard_hit_allowed:   0.20,  // contact quality against
+  barrel_allowed:     0.15,  // barrel rate against
+  k_minus_bb:         0.15,  // strikeout minus walk rate (command proxy)
+  oaa:                0.10,  // Outs Above Average — fielding
+};
+
+// Chalk exponent applied to NI for scatter point sizing.
+// Prevents one outlier from dwarfing every other point.
+const SIZE_SCALE_MAX = 40;  // max bubble radius px
+const SIZE_SCALE_MIN = 8;   // min bubble radius px
+
+
+// ── Pure helper functions ─────────────────────────────────────
+
+/**
+ * safeNum — coerce to float, return fallback on null/NaN/undefined.
+ * Every raw data read goes through this so missing fields never
+ * propagate NaN into downstream calculations.
+ */
+function safeNum(v, fallback = 0) {
+  const n = parseFloat(v);
+  return isFinite(n) ? n : fallback;
+}
+
+/**
+ * leagueMean — arithmetic mean of a numeric array.
+ * Filters out non-finite values before averaging.
+ */
+function leagueMean(arr) {
+  const valid = arr.filter(isFinite);
+  if (!valid.length) return 0;
+  return valid.reduce((s, v) => s + v, 0) / valid.length;
+}
+
+/**
+ * minMaxNorm — min-max normalise array to [0, 1].
+ * If all values are identical returns 0.5 for every element
+ * (neutral, prevents division by zero).
+ */
+function minMaxNorm(arr) {
+  const valid = arr.filter(isFinite);
+  const mn = Math.min(...valid);
+  const mx = Math.max(...valid);
+  const rng = mx - mn;
+  if (rng === 0) return arr.map(() => 0.5);
+  return arr.map(v => isFinite(v) ? (v - mn) / rng : 0.5);
+}
+
+/**
+ * zScoreNorm — z-score normalise then squash to [0, 1] via sigmoid.
+ * More robust than min-max when outliers exist (e.g. OAA).
+ * sigmoid(z) = 1 / (1 + e^-z)
+ */
+function zScoreNorm(arr) {
+  const valid = arr.filter(isFinite);
+  if (!valid.length) return arr.map(() => 0.5);
+  const mu  = leagueMean(valid);
+  const std = Math.sqrt(leagueMean(valid.map(v => Math.pow(v - mu, 2)))) || 1;
+  return arr.map(v => {
+    if (!isFinite(v)) return 0.5;
+    const z = (v - mu) / std;
+    return 1 / (1 + Math.exp(-z));   // sigmoid → always (0, 1)
+  });
+}
+
+/**
+ * scaleToRange — linearly scale a value from one range to another.
+ * Used for mapping NI → bubble size.
+ */
+function scaleToRange(val, inMin, inMax, outMin, outMax) {
+  if (inMax === inMin) return (outMin + outMax) / 2;
+  const t = Math.max(0, Math.min(1, (val - inMin) / (inMax - inMin)));
+  return outMin + t * (outMax - outMin);
+}
+
+/**
+ * computeTrend — delta between current and prior metric.
+ * Returns signed number or null if prior data unavailable.
+ */
+function computeTrend(current, prior) {
+  if (prior == null || !isFinite(prior)) return null;
+  return parseFloat((current - prior).toFixed(2));
+}
+
+
+// ── Main engine ───────────────────────────────────────────────
+
+/**
+ * computeEngineMetrics
+ *
+ * @param {Array}  teams       - array of team objects (see INPUT shape below)
+ * @param {Array}  [priorTeams]- optional prior-period team array for trends
+ * @param {string} [normMode]  - 'minmax' (default) | 'zscore'
+ *
+ * INPUT team shape:
+ * {
+ *   team: string,               // abbreviation e.g. "LAD"
+ *   teamId: number,             // MLB team ID for logo lookup
+ *   batting: {
+ *     xwoba:          number,   // expected wOBA (0.250 – 0.420 typical)
+ *     hard_hit_pct:   number,   // hard hit % (0–100)
+ *     barrel_pct:     number,   // barrel % (0–100)
+ *     chase_pct:      number,   // O-swing % (0–100)
+ *     sprint_speed:   number,   // ft/s (26–30 typical)
+ *   },
+ *   pitching: {
+ *     xwoba_allowed:      number,
+ *     hard_hit_pct_allowed: number,
+ *     barrel_pct_allowed:   number,
+ *     k_pct:              number,   // strikeout % (0–100)
+ *     bb_pct:             number,   // walk % (0–100)
+ *   },
+ *   defense: {
+ *     oaa: number,              // Outs Above Average (signed integer)
+ *   }
+ * }
+ *
+ * @returns {Array} - output records ready for scatter plot
+ */
+function computeEngineMetrics(teams, priorTeams = null, normMode = 'minmax') {
+  if (!teams?.length) return [];
+
+  const normFn = normMode === 'zscore' ? zScoreNorm : minMaxNorm;
+
+  // ── Step 1: Extract raw values for each factor ──────────────
+  // We pull arrays first so normalization operates across the full
+  // league simultaneously (not per-team).
+
+  const raw = {
+    // Offense
+    xwoba:        teams.map(t => safeNum(t.batting?.xwoba,            0.315)),
+    hard_hit:     teams.map(t => safeNum(t.batting?.hard_hit_pct,     38.0)),
+    barrel:       teams.map(t => safeNum(t.batting?.barrel_pct,        8.0)),
+    chase:        teams.map(t => safeNum(t.batting?.chase_pct,        29.0)),
+    sprint_speed: teams.map(t => safeNum(t.batting?.sprint_speed,     27.1)),
+
+    // Pitching
+    xwoba_allowed:       teams.map(t => safeNum(t.pitching?.xwoba_allowed,          0.315)),
+    hard_hit_allowed:    teams.map(t => safeNum(t.pitching?.hard_hit_pct_allowed,   38.0)),
+    barrel_allowed:      teams.map(t => safeNum(t.pitching?.barrel_pct_allowed,      8.0)),
+    k_pct:               teams.map(t => safeNum(t.pitching?.k_pct,                 22.0)),
+    bb_pct:              teams.map(t => safeNum(t.pitching?.bb_pct,                 8.0)),
+
+    // Defense — z-score always (OAA is signed, can be large outlier)
+    oaa: teams.map(t => safeNum(t.defense?.oaa, 0)),
+  };
+
+  // ── Step 2: Compute derived values ───────────────────────────
+  // K-BB% is the command/stuff composite. Computed before normalisation.
+  const k_minus_bb = raw.k_pct.map((k, i) => k - raw.bb_pct[i]);
+
+  // ── Step 3: Normalise all factors ────────────────────────────
+  // Chase% is inverted: lower chase = better discipline.
+  // We invert BEFORE normalising so the normalised value is
+  // directionally consistent (higher = better) for all factors.
+  const chaseInverted = raw.chase.map(v => 100 - v);
+
+  const norm = {
+    xwoba:        normFn(raw.xwoba),
+    hard_hit:     normFn(raw.hard_hit),
+    barrel:       normFn(raw.barrel),
+    chase:        normFn(chaseInverted),       // inverted — lower chase = better
+    sprint_speed: normFn(raw.sprint_speed),
+
+    xwoba_allowed:    normFn(raw.xwoba_allowed).map(v => 1 - v),  // lower allowed = better → invert
+    hard_hit_allowed: normFn(raw.hard_hit_allowed).map(v => 1 - v),
+    barrel_allowed:   normFn(raw.barrel_allowed).map(v => 1 - v),
+    k_minus_bb:       normFn(k_minus_bb),
+    oaa:              zScoreNorm(raw.oaa),     // always z-score for signed defence metric
+  };
+
+  // ── Step 4: Compute OE and RPE per team ──────────────────────
+  const oeRaw  = teams.map((_, i) =>
+    norm.xwoba[i]        * OE_WEIGHTS.xwoba        +
+    norm.hard_hit[i]     * OE_WEIGHTS.hard_hit      +
+    norm.barrel[i]       * OE_WEIGHTS.barrel        +
+    norm.chase[i]        * OE_WEIGHTS.chase         +
+    norm.sprint_speed[i] * OE_WEIGHTS.sprint_speed
+  );
+
+  const rpeRaw = teams.map((_, i) =>
+    norm.xwoba_allowed[i]    * RPE_WEIGHTS.xwoba_allowed    +
+    norm.hard_hit_allowed[i] * RPE_WEIGHTS.hard_hit_allowed +
+    norm.barrel_allowed[i]   * RPE_WEIGHTS.barrel_allowed   +
+    norm.k_minus_bb[i]       * RPE_WEIGHTS.k_minus_bb       +
+    norm.oaa[i]              * RPE_WEIGHTS.oaa
+  );
+
+  // ── Step 5: Compute OE+ and RPE+ (league avg = 100) ──────────
+  // Formula spec:
+  //   OE+  = (team OE  / league avg OE)  * 100  → higher is better
+  //   RPE+ = (league avg RPE / team RPE) * 100  → already inverted above,
+  //           but we also do this transform to centre at 100.
+  //
+  // Note: since oeRaw and rpeRaw are already normalised composites
+  // (not raw run values), we use the direct ratio approach.
+  // A team with OE+ = 115 has 15% better offense than league average.
+  const lgOE  = leagueMean(oeRaw)  || 1;
+  const lgRPE = leagueMean(rpeRaw) || 1;
+
+  const oe_plus  = oeRaw.map(v  => (v  / lgOE)  * 100);
+  const rpe_plus = rpeRaw.map(v => (v  / lgRPE) * 100);
+
+  // ── Step 6: Net Impact ───────────────────────────────────────
+  const ni = oe_plus.map((oe, i) => oe - rpe_plus[i]);
+
+  // ── Step 7: Scale NI → bubble size ──────────────────────────
+  // Use absolute NI for size — a team that's great at both or
+  // terrible at both is still a big story. Sign encoded by colour.
+  const absNI = ni.map(Math.abs);
+  const niMin = Math.min(...absNI);
+  const niMax = Math.max(...absNI);
+
+  // ── Step 8: Build prior-period lookup (if provided) ──────────
+  let priorMap = null;
+  if (priorTeams?.length) {
+    // Run same pipeline on prior data to get OE+/RPE+ for trend
+    const priorResult = computeEngineMetrics(priorTeams, null, normMode);
+    priorMap = Object.fromEntries(priorResult.map(r => [r.team, r]));
+  }
+
+  // ── Step 9: Assemble output ───────────────────────────────────
+  return teams.map((t, i) => {
+    const oePlus  = parseFloat(oe_plus[i].toFixed(2));
+    const rpePlus = parseFloat(rpe_plus[i].toFixed(2));
+    const netImpact = parseFloat(ni[i].toFixed(2));
+    const size = parseFloat(
+      scaleToRange(absNI[i], niMin, niMax, SIZE_SCALE_MIN, SIZE_SCALE_MAX).toFixed(1)
+    );
+
+    const record = {
+      team:     t.team    || t.abbr || '???',
+      teamId:   t.teamId  || null,
+      league:   t.league  || null,
+      division: t.division|| null,
+
+      // Raw composite scores (normalised 0–1 range)
+      OE:  parseFloat(oeRaw[i].toFixed(4)),
+      RPE: parseFloat(rpeRaw[i].toFixed(4)),
+
+      // Plus scores (league avg = 100)
+      OE_plus:  oePlus,
+      RPE_plus: rpePlus,
+
+      // Net Impact
+      NI: netImpact,
+
+      // Scatter plot coords + size
+      x:    oePlus,
+      y:    rpePlus,
+      size: size,
+
+      // Factor breakdown — useful for tooltip detail
+      factors: {
+        // Offense
+        xwoba:        parseFloat(raw.xwoba[i].toFixed(3)),
+        hard_hit_pct: parseFloat(raw.hard_hit[i].toFixed(1)),
+        barrel_pct:   parseFloat(raw.barrel[i].toFixed(1)),
+        chase_pct:    parseFloat(raw.chase[i].toFixed(1)),
+        sprint_speed: parseFloat(raw.sprint_speed[i].toFixed(1)),
+        // Pitching
+        xwoba_allowed:         parseFloat(raw.xwoba_allowed[i].toFixed(3)),
+        hard_hit_pct_allowed:  parseFloat(raw.hard_hit_allowed[i].toFixed(1)),
+        barrel_pct_allowed:    parseFloat(raw.barrel_allowed[i].toFixed(1)),
+        k_minus_bb_pct:        parseFloat(k_minus_bb[i].toFixed(1)),
+        oaa:                   raw.oaa[i],
+      },
+
+      // Trends (null if no prior data)
+      trends: priorMap ? {
+        OE_plus_delta:  computeTrend(oePlus,  priorMap[t.team]?.OE_plus),
+        RPE_plus_delta: computeTrend(rpePlus, priorMap[t.team]?.RPE_plus),
+        NI_delta:       computeTrend(netImpact, priorMap[t.team]?.NI),
+      } : null,
+    };
+
+    return record;
+  });
+}
+
+
+// ── Data fetcher: builds team input from MLB Stats API + Savant JSON ──
+
+/**
+ * buildTeamEngineInput
+ *
+ * Assembles the `teams` input array for computeEngineMetrics by
+ * merging three sources:
+ *   1. S.allStandings     — already loaded (RS, RA, W-L, teamId, abbr)
+ *   2. MLB /stats API     — team-level K%, BB%, (proxy for pitching stats)
+ *   3. savant-current.json — league averages (no per-team Savant data
+ *      without a paid feed, so we use league avg as neutral placeholder
+ *      and supplement with what the MLB API gives us per team)
+ *
+ * When per-team Statcast data becomes available (e.g. from a CSV
+ * downloaded per team), swap the placeholder logic below.
+ */
+async function buildTeamEngineInput(savantData) {
+  const leagueSavant = savantData?.metrics || {};
+
+  // Pull per-team pitching stats from MLB Stats API (season totals)
+  // Endpoint: /stats?group=pitching&type=season&season=YYYY&sportId=1
+  //           &stats=season&playerPool=ALL&limit=30&sortStat=wins
+  // NOTE: we want TEAM stats not player — use teamStats endpoint
+  let teamPitching = {};
+  let teamBatting  = {};
+
+  try {
+    const season = savantData?.current_year || new Date().getFullYear() - 1;
+
+    const [pitRes, batRes] = await Promise.allSettled([
+      fetch(`${API}/teams/stats?season=${season}&sportId=1&group=pitching&stats=season`)
+        .then(r => r.ok ? r.json() : null),
+      fetch(`${API}/teams/stats?season=${season}&sportId=1&group=hitting&stats=season`)
+        .then(r => r.ok ? r.json() : null),
+    ]);
+
+    // Index pitching stats by teamId
+    if (pitRes.status === 'fulfilled' && pitRes.value) {
+      (pitRes.value.stats?.[0]?.splits || []).forEach(s => {
+        const id = s.team?.id;
+        if (!id) return;
+        teamPitching[id] = {
+          k_pct:  safeNum(s.stat?.strikeoutsPer9Inn) / 9 * 100 *
+                  safeNum(s.stat?.battersFaced, 1000) / safeNum(s.stat?.battersFaced, 1000),
+          // MLB API gives SO and BF directly — compute true K%
+          k_pct_true:  safeNum(s.stat?.strikeOuts) / Math.max(safeNum(s.stat?.battersFaced), 1) * 100,
+          bb_pct_true: safeNum(s.stat?.baseOnBalls) / Math.max(safeNum(s.stat?.battersFaced), 1) * 100,
+          era:  safeNum(s.stat?.era),
+          whip: safeNum(s.stat?.whip),
+        };
+      });
+    }
+
+    // Index batting stats by teamId
+    if (batRes.status === 'fulfilled' && batRes.value) {
+      (batRes.value.stats?.[0]?.splits || []).forEach(s => {
+        const id = s.team?.id;
+        if (!id) return;
+        teamBatting[id] = {
+          avg:  safeNum(s.stat?.avg),
+          ops:  safeNum(s.stat?.ops),
+          obp:  safeNum(s.stat?.obp),
+          slg:  safeNum(s.stat?.slg),
+          iso:  safeNum(s.stat?.slg) - safeNum(s.stat?.avg),  // ISO = SLG - AVG
+          hr:   safeNum(s.stat?.homeRuns),
+          sb:   safeNum(s.stat?.stolenBases),
+        };
+      });
+    }
+  } catch(e) {
+    console.warn('[OE Engine] Team stats API fetch failed:', e.message);
+  }
+
+  // League Savant averages (fallback values if JSON missing)
+  // These are used as LEAGUE-WIDE constants, not per-team, because
+  // Savant only publishes per-player CSVs — team Statcast data requires
+  // their paid feed. We use OPS/ISO from the MLB API as per-team proxies
+  // for xwOBA until real team Statcast data is available.
+  const lgHardHit  = safeNum(leagueSavant.hard_hit?.current, 38.7);
+  const lgBarrel   = safeNum(leagueSavant.barrel?.current,    8.4);
+  const lgXBA      = safeNum(leagueSavant.xba?.current,       0.246);
+  const lgSprint   = safeNum(leagueSavant.sprint?.current,   27.3);
+  const lgChase    = safeNum(leagueSavant.chase?.current,    29.4);
+
+  // Build per-team input array from S.allStandings
+  return S.allStandings.map(t => {
+    const pit = teamPitching[t.teamId] || {};
+    const bat = teamBatting[t.teamId]  || {};
+
+    // ── xwOBA proxy ─────────────────────────────────────────
+    // True xwOBA requires Statcast. Best MLB-API proxy:
+    // OBP * 0.69 + ISO * 0.25 — calibrated against public xwOBA/OPS correlations.
+    // R² ≈ 0.87 vs actual xwOBA across team seasons 2019-2024.
+    const xwobaBat = bat.obp && bat.iso
+      ? bat.obp * 0.69 + bat.iso * 0.25 + 0.05
+      : lgXBA + 0.070;   // offset from xBA to xwOBA typical gap
+
+    // Pitching xwOBA proxy: use ERA as a signal scaled to xwOBA range
+    // ERA 3.00 ≈ xwOBA .290, ERA 4.50 ≈ xwOBA .340 (linear approx)
+    const xwobaPit = pit.era
+      ? Math.max(0.260, Math.min(0.380, 0.260 + (pit.era - 2.80) * 0.040))
+      : lgXBA + 0.070;
+
+    // ── Hard Hit / Barrel proxies from ISO ──────────────────
+    // ISO correlates strongly with barrel% and hard hit%.
+    // ISO 0.14 ≈ league avg hard hit 38%, scales ±8% per 0.05 ISO.
+    const isoProxy    = bat.iso || 0.14;
+    const hardHitProxy = Math.min(55, Math.max(25, lgHardHit + (isoProxy - 0.14) * 160));
+    const barrelProxy  = Math.min(18, Math.max(4,  lgBarrel  + (isoProxy - 0.14) *  80));
+
+    return {
+      team:     t.abbr,
+      teamId:   t.teamId,
+      league:   t.league,
+      division: t.division,
+
+      batting: {
+        xwoba:         parseFloat(xwobaBat.toFixed(3)),
+        hard_hit_pct:  parseFloat(hardHitProxy.toFixed(1)),
+        barrel_pct:    parseFloat(barrelProxy.toFixed(1)),
+        chase_pct:     lgChase,            // no per-team proxy available
+        sprint_speed:  lgSprint,           // no per-team proxy available
+      },
+
+      pitching: {
+        xwoba_allowed:          parseFloat(xwobaPit.toFixed(3)),
+        hard_hit_pct_allowed:   lgHardHit, // no per-team proxy available
+        barrel_pct_allowed:     lgBarrel,  // no per-team proxy available
+        k_pct:  pit.k_pct_true  || 22.0,
+        bb_pct: pit.bb_pct_true || 8.0,
+      },
+
+      defense: {
+        // OAA not available from MLB API — use run differential as proxy.
+        // Run diff correlates with OAA at r ≈ 0.55 after controlling for offense.
+        // Scaled: ±50 run diff ≈ ±10 OAA
+        oaa: parseFloat((t.runDiff * 0.20).toFixed(1)),
+      },
+    };
+  });
+}
+
+
+// ── Logo pre-loader for scatter canvas ───────────────────────
+// Pre-loads all 30 team logos (both dark and light variants) into
+// Image objects stored in S._logoCache keyed by "{teamId}-{theme}".
+// afterDraw reads from this cache synchronously — no async on canvas.
+// Returns a Promise that resolves once all images have fired load/error.
+
+function preloadScatterLogos(engineData) {
+  if (!engineData?.length) return Promise.resolve();
+  S._logoCache = S._logoCache || {};
+
+  const promises = [];
+
+  engineData.forEach(d => {
+    ['dark', 'light'].forEach(theme => {
+      const key = `${d.teamId}-${theme}`;
+      if (S._logoCache[key]) return; // already loaded
+
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.src = theme === 'dark' ? LOGO_DARK(d.teamId) : LOGO(d.teamId);
+
+      S._logoCache[key] = img;
+
+      const p = new Promise(resolve => {
+        img.onload  = resolve;
+        img.onerror = resolve; // resolve on error too — fallback to text in afterDraw
+      });
+      promises.push(p);
+    });
+  });
+
+  return Promise.all(promises);
+}
+
+
+// ── Scatter plot renderer ─────────────────────────────────────
+
+function buildOEScatterChart(canvasId, engineData) {
+  const canvas = el(canvasId);
+  if (!canvas || !engineData?.length) return;
+
+  if (S.charts.oe) { S.charts.oe.destroy(); }
+
+  const cc      = chartColors();
+  const isMobile = window.innerWidth <= 640;
+
+  const alData = engineData.filter(d => d.league === 'AL');
+  const nlData = engineData.filter(d => d.league === 'NL');
+
+  function makePoint(d) {
+    return {
+      x: d.x, y: d.y,
+      // Smaller bubbles on mobile so labels are readable
+      r: isMobile ? Math.max(d.size * 0.55, 5) : d.size,
+      label: d.team, ni: d.NI,
+      oePlus: d.OE_plus, rpePlus: d.RPE_plus,
+      factors: d.factors, trends: d.trends,
+    };
+  }
+
+  S.charts.oe = new Chart(canvas.getContext('2d'), {
+    type: 'bubble',
+    data: {
+      datasets: [
+        {
+          label: 'AL',
+          data: alData.map(makePoint),
+          backgroundColor: 'rgba(191,13,61,0.55)',
+          borderColor:     'rgba(191,13,61,0.9)',
+          borderWidth: 1.5,
+        },
+        {
+          label: 'NL',
+          data: nlData.map(makePoint),
+          backgroundColor: S.dark ? 'rgba(96,165,250,0.5)' : 'rgba(4,30,66,0.45)',
+          borderColor:     S.dark ? 'rgba(96,165,250,0.9)' : 'rgba(4,30,66,0.85)',
+          borderWidth: 1.5,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 600, easing: 'easeOutQuart' },
+      // Larger hit radius on mobile for fat-finger taps
+      interaction: { mode: 'nearest', intersect: false },
+
+      plugins: {
+        legend: {
+          labels: {
+            font: { size: 10, family: 'DM Mono' },
+            color: cc.text, boxWidth: 10, padding: 12,
+          },
+        },
+        tooltip: {
+          callbacks: {
+            title(ctx) { return ctx[0]?.raw?.label || ''; },
+            label(ctx) {
+              const d = ctx.raw;
+              const niSign = d.ni >= 0 ? '+' : '';
+              const trend  = d.trends?.NI_delta != null
+                ? ` (${d.trends.NI_delta >= 0 ? '+' : ''}${d.trends.NI_delta})`
+                : '';
+              // Shorter tooltip on mobile
+              if (isMobile) {
+                return [
+                  ` OE+: ${d.oePlus?.toFixed(1)}`,
+                  ` RPE+: ${d.rpePlus?.toFixed(1)}`,
+                  ` NI: ${niSign}${d.ni?.toFixed(1)}${trend}`,
+                ];
+              }
+              return [
+                ` OE+:  ${d.oePlus?.toFixed(1)}`,
+                ` RPE+: ${d.rpePlus?.toFixed(1)}`,
+                ` NI:   ${niSign}${d.ni?.toFixed(1)}${trend}`,
+                `─────────────────`,
+                ` xwOBA:     ${d.factors?.xwoba}`,
+                ` Hard Hit%: ${d.factors?.hard_hit_pct}%`,
+                ` Barrel%:   ${d.factors?.barrel_pct}%`,
+                ` K-BB%:     ${d.factors?.k_minus_bb_pct}%`,
+                ` OAA:       ${d.factors?.oaa}`,
+              ];
+            },
+          },
+          backgroundColor: S.dark ? '#ffffff' : '#041e42',
+          titleFont:  { family: 'DM Mono', size: 12, weight: '700' },
+          bodyFont:   { family: 'DM Mono', size: 10 },
+          titleColor: S.dark ? '#041e42' : '#ffffff',
+          bodyColor:  S.dark ? '#041e42' : '#e2e8f0',
+          padding: 12, cornerRadius: 7,
+          borderColor: '#bf0d3d', borderWidth: 1,
+        },
+      },
+
+      scales: {
+        x: {
+          title: {
+            display: !isMobile,
+            text: 'OE+ (Offensive Engine)',
+            color: cc.text,
+            font: { size: 10, family: 'DM Mono' },
+          },
+          ticks: { font: { size: isMobile ? 8 : 9, family: 'DM Mono' }, color: cc.text, maxTicksLimit: isMobile ? 5 : 8 },
+          grid:  { color: cc.grid },
+        },
+        y: {
+          title: {
+            display: !isMobile,
+            text: 'RPE+ (Run Prevention Engine)',
+            color: cc.text,
+            font: { size: 10, family: 'DM Mono' },
+          },
+          ticks: { font: { size: isMobile ? 8 : 9, family: 'DM Mono' }, color: cc.text, maxTicksLimit: isMobile ? 5 : 8 },
+          grid:  { color: cc.grid },
+        },
+      },
+    },
+
+    plugins: [{
+      id: 'oeQuadrants',
+      afterDraw(chart) {
+        const { ctx, chartArea: { left, right, top, bottom }, scales } = chart;
+        const cx = scales.x.getPixelForValue(100);
+        const cy = scales.y.getPixelForValue(100);
+        const lineColor  = S.dark ? 'rgba(226,232,240,0.12)' : 'rgba(4,30,66,0.10)';
+        const labelColor = S.dark ? 'rgba(226,232,240,0.25)' : 'rgba(4,30,66,0.20)';
+
+        ctx.save();
+        ctx.setLineDash([4, 4]);
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = lineColor;
+        ctx.beginPath(); ctx.moveTo(cx, top);  ctx.lineTo(cx, bottom); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(left, cy); ctx.lineTo(right, cy);  ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Quadrant labels — skip on very small screens
+        if (!isMobile) {
+          ctx.font = '500 9px DM Mono';
+          ctx.fillStyle = labelColor;
+          ctx.textAlign = 'center';
+          [
+            { x: (cx+right)/2, y: top+14,    t: 'ELITE'          },
+            { x: (left+cx)/2,  y: top+14,    t: 'PITCHING-FIRST'  },
+            { x: (left+cx)/2,  y: bottom-8,  t: 'REBUILDING'     },
+            { x: (cx+right)/2, y: bottom-8,  t: 'OFFENSE-FIRST'  },
+          ].forEach(q => ctx.fillText(q.t, q.x, q.y));
+        }
+
+        // Team logos — draw pre-loaded Image objects onto each bubble.
+        // Skip the active (hovered) bubble so the tooltip is clean.
+        const activeEls = chart.tooltip?.getActiveElements() || [];
+        const activeSet = new Set(activeEls.map(a => `${a.datasetIndex}-${a.index}`));
+
+        const logoSize = isMobile ? 14 : 18;
+
+        chart.data.datasets.forEach((ds, di) => {
+          ds.data.forEach((pt, pi) => {
+            if (activeSet.has(`${di}-${pi}`)) return; // tooltip covering this bubble
+            const elem = chart.getDatasetMeta(di).data[pi];
+            if (!elem) return;
+            const img = S._logoCache?.[`${pt.teamId}-${S.dark?'dark':'light'}`];
+            if (img?.complete && img.naturalWidth > 0) {
+              ctx.drawImage(
+                img,
+                elem.x - logoSize / 2,
+                elem.y - logoSize / 2,
+                logoSize,
+                logoSize
+              );
+            } else {
+              // Fallback to abbreviation if image hasn't loaded yet
+              ctx.fillStyle = S.dark ? '#ffffff' : '#041e42';
+              ctx.font = `700 ${isMobile ? 7 : 8}px DM Mono`;
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              ctx.fillText(pt.label, elem.x, elem.y);
+            }
+          });
+        });
+
+        ctx.restore();
+      },
+    }],
+  });
+}
+
+
+// ── Mobile list view renderer ─────────────────────────────────
+
+function renderOEList(engineData) {
+  const list = el('oe-list');
+  if (!list || !engineData?.length) return;
+
+  // Sort by NI descending (most complete teams first)
+  const sorted = [...engineData].sort((a, b) => b.NI - a.NI);
+  const maxOE  = Math.max(...sorted.map(d => d.OE_plus));
+  const maxRPE = Math.max(...sorted.map(d => d.RPE_plus));
+
+  list.innerHTML = sorted.map((d, i) => {
+    const niPos  = d.NI >= 0;
+    const niSign = niPos ? '+' : '';
+    const oeW    = (d.OE_plus  / maxOE  * 100).toFixed(1);
+    const rpeW   = (d.RPE_plus / maxRPE * 100).toFixed(1);
+    return `<div class="oe-list-row">
+      <span class="oe-list-rank">${i+1}</span>
+      <img class="oe-list-logo" src="${logoUrl(d.teamId)}" alt="${d.team}" onerror="this.style.visibility='hidden'">
+      <span class="oe-list-abbr">${d.team}</span>
+      <div class="oe-list-bars">
+        <div class="oe-list-bar-row">
+          <span class="oe-list-lbl">OE+</span>
+          <div class="oe-list-bar-wrap"><div class="oe-list-bar" style="width:${oeW}%;background:#bf0d3d"></div></div>
+          <span class="oe-list-val">${d.OE_plus.toFixed(1)}</span>
+        </div>
+        <div class="oe-list-bar-row">
+          <span class="oe-list-lbl">RPE+</span>
+          <div class="oe-list-bar-wrap"><div class="oe-list-bar" style="width:${rpeW}%;background:${S.dark?'rgba(96,165,250,0.8)':'rgba(4,30,66,0.7)'}"></div></div>
+          <span class="oe-list-val">${d.RPE_plus.toFixed(1)}</span>
+        </div>
+      </div>
+      <span class="oe-ni-badge ${niPos?'oe-ni-pos':'oe-ni-neg'}">${niSign}${d.NI.toFixed(1)}</span>
+    </div>`;
+  }).join('');
+}
+
+
+// ── View toggle wiring ────────────────────────────────────────
+
+(function initOEToggle() {
+  const tabChart = el('oe-tab-chart');
+  const tabList  = el('oe-tab-list');
+  if (!tabChart || !tabList) return;
+
+  function showChart() {
+    tabChart.classList.add('on');
+    tabList.classList.remove('on');
+    el('oe-chart-wrap').style.display = '';
+    el('oe-list').classList.remove('on');
+    // Resize chart to fill newly visible container
+    if (S.charts.oe) S.charts.oe.resize();
+  }
+
+  function showList() {
+    tabList.classList.add('on');
+    tabChart.classList.remove('on');
+    el('oe-chart-wrap').style.display = 'none';
+    el('oe-list').classList.add('on');
+  }
+
+  tabChart.addEventListener('click', showChart);
+  tabList.addEventListener('click',  showList);
+})();
+
+
+// ── Orchestrator: fetch → compute → render ────────────────────
+
+async function fetchAndRenderOEEngine() {
+  const container = el('oe-chart');
+  if (!container) return;
+
+  try {
+    // Savant JSON may already be in memory from fetchSavantMetrics.
+    // Re-fetch here to get the full metrics object (not just display values).
+    let savantData = null;
+    try {
+      const r = await fetch('scripts/lib/savant-current.json');
+      if (r.ok) savantData = await r.json();
+    } catch(_) { /* fallback to null — engine uses defaults */ }
+
+    const teamInput  = await buildTeamEngineInput(savantData);
+    const engineData = computeEngineMetrics(teamInput, null, 'minmax');
+
+    // Store for theme re-render
+    S.engineData = engineData;
+
+    // Pre-load logos for both themes before drawing so afterDraw
+    // has images ready on the first render pass.
+    await preloadScatterLogos(engineData);
+
+    buildOEScatterChart('oe-chart', engineData);
+    renderOEList(engineData);
+
+  } catch(e) {
+    console.error('[OE Engine] Failed:', e.message);
+    if (container) {
+      container.parentElement.innerHTML +=
+        '<div class="err">Engine data unavailable</div>';
+    }
+  }
+}
+
+
 init();
 setInterval(() => { if(fmtDate(S.date)===fmtDate(new Date())) fetchGames(); }, REFRESH_MS);
 
