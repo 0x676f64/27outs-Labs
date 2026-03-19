@@ -1,771 +1,845 @@
-// Copy this complete JavaScript file to replace your game-box.js
-
 (() => {
-  // ===========================
-  // CONSTANTS & CONFIG
-  // ===========================
-  const API_BASE = 'https://statsapi.mlb.com/api/v1.1';
+  // ─────────────────────────────────────────────────────────
+  //  CONSTANTS
+  // ─────────────────────────────────────────────────────────
+  const API_BASE  = 'https://statsapi.mlb.com/api/v1.1';
+  const API_V1    = 'https://statsapi.mlb.com/api/v1';
   const LOGO_BASE = 'https://www.mlbstatic.com/team-logos';
-  const PLAYER_IMAGE_BASE = 'https://midfield.mlbstatic.com/v1/people';
-  
-  const FINAL_STATUSES = ['Final', 'Game Over', 'Final: Tied', 'Completed Early', 'Suspended: Rain'];
-  const PREGAME_STATUSES = ['Pre-Game', 'Scheduled', 'Warmup', 'Delayed', 'Postponed'];
+  const IMG_BASE  = 'https://midfield.mlbstatic.com/v1/people';
 
-  // ===========================
-  // STATE
-  // ===========================
+  const FINAL_STATUSES   = ['Final','Game Over','Final: Tied','Completed Early','Suspended: Rain','Suspended','Cancelled'];
+  const PREGAME_STATUSES = ['Pre-Game','Scheduled','Warmup','Delayed','Postponed'];
+  const POLL_INTERVAL_MS = 8000;
+
+  // ─────────────────────────────────────────────────────────
+  //  PITCH TYPE CONFIG — color, full name, abbreviation
+  // ─────────────────────────────────────────────────────────
+  const PITCH_MAP = {
+    FF: { label:'4-Seam',   abbr:'FF', color:'#e63946' },
+    FA: { label:'4-Seam',   abbr:'FF', color:'#e63946' },
+    FT: { label:'2-Seam',   abbr:'FT', color:'#c1121f' },
+    SI: { label:'Sinker',   abbr:'SI', color:'#c1121f' },
+    FC: { label:'Cutter',   abbr:'FC', color:'#f4a261' },
+    SL: { label:'Slider',   abbr:'SL', color:'#2a9d8f' },
+    ST: { label:'Sweeper',  abbr:'ST', color:'#fb8500' },
+    SV: { label:'Slurve',   abbr:'SV', color:'#3a86ff' },
+    CU: { label:'Curveball',abbr:'CU', color:'#457b9d' },
+    KC: { label:'Knuck-Cur',abbr:'KC', color:'#457b9d' },
+    CS: { label:'Slow Cur', abbr:'CS', color:'#457b9d' },
+    CH: { label:'Changeup', abbr:'CH', color:'#8338ec' },
+    FS: { label:'Splitter', abbr:'FS', color:'#06d6a0' },
+    FO: { label:'Forkball', abbr:'FO', color:'#06d6a0' },
+    SC: { label:'Screwball',abbr:'SC', color:'#06d6a0' },
+    KN: { label:'Knuckle',  abbr:'KN', color:'#adb5bd' },
+    EP: { label:'Eephus',   abbr:'EP', color:'#adb5bd' },
+    PO: { label:'Pitchout', abbr:'PO', color:'#6c757d' },
+    IN: { label:'Int. Ball', abbr:'IN', color:'#6c757d' },
+  };
+
+  const pitchInfo = (code) => PITCH_MAP[code] || { label: code || '?', abbr: code || '?', color:'#94a3b8' };
+
+  // ─────────────────────────────────────────────────────────
+  //  LEAGUE-AVG BY COUNT (2024 actuals — fallback)
+  //  Source: Stathead/Baseball Savant public leaderboard data
+  // ─────────────────────────────────────────────────────────
+  const LEAGUE_AVG_BY_COUNT = {
+    '0-0': .248, '0-1': .215, '0-2': .141,
+    '1-0': .273, '1-1': .234, '1-2': .158,
+    '2-0': .299, '2-1': .262, '2-2': .178,
+    '3-0': .330, '3-1': .303, '3-2': .216,
+  };
+
+  // ─────────────────────────────────────────────────────────
+  //  STATE
+  // ─────────────────────────────────────────────────────────
   let awayTeamId, homeTeamId;
-  let videoMatcher = null;
-  
-  // ===========================
-  // UTILITY FUNCTIONS
-  // ===========================
-  const getUrlParam = (name) => new URLSearchParams(window.location.search).get(name);
-  
-  const isDarkMode = () => document.body.classList.contains('dark');
-  
-  const getGamePhase = (status) => {
-    if (FINAL_STATUSES.includes(status)) return 'FINAL';
-    if (PREGAME_STATUSES.includes(status)) return 'PREGAME';
-    return 'LIVE';
-  };
+  let videoMatcher    = null;
+  let pollTimer       = null;
+  let lastPlayIndex   = -1;   // detect new pitches without full re-render
+  let lastGameState   = '';   // detect inning/score changes
+  let batterCountCache = {};  // { playerId: { '0-0': .248, ... } }
 
-  // ===========================
-  // EVENT ICON MAPPING
-  // ===========================
+  // ─────────────────────────────────────────────────────────
+  //  UTILS
+  // ─────────────────────────────────────────────────────────
+  const getUrlParam  = (n) => new URLSearchParams(window.location.search).get(n);
+  const isDark       = ()  => document.body.classList.contains('dark');
+  const getPhase     = (s) => FINAL_STATUSES.includes(s) ? 'FINAL' : PREGAME_STATUSES.includes(s) ? 'PREGAME' : 'LIVE';
+  const logoUrl      = (id, dark) => dark ? `${LOGO_BASE}/team-cap-on-dark/${id}.svg` : `${LOGO_BASE}/${id}.svg`;
+  const fmtAvg       = (n) => n != null ? (n < 1 ? '.'+String(Math.round(n*1000)).padStart(3,'0') : n.toFixed(3)) : '---';
+
+  // ─────────────────────────────────────────────────────────
+  //  EVENT ICON MAP
+  // ─────────────────────────────────────────────────────────
   const EVENT_ICON_MAP = {
-    'home run': 'HR',
-    'home_run': 'HR',
-    'triple': '3B',
-    'double': '2B',
-    'single': '1B',
-    'walk': 'BB',
-    'hit by pitch': 'HBP',
-    'hit_by_pitch': 'HBP',
-    'sac fly': 'SAC',
-    'sac_fly': 'SAC',
-    'sac bunt': 'SH',
-    'sac_bunt': 'SH',
-    'grounded into dp': 'GIDP',
-    'grounded_into_dp': 'GIDP',
-    'double play': 'DP',
-    'field error': 'E',
-    'field_error': 'E',
-    'fielders choice': 'FC',
-    'fielders_choice': 'FC',
-    'catcher interference': 'CI',
-    'strikeout': 'K',
-    'forceout': 'FO',
-    'force_out': 'FO',
-    'groundout': 'OUT',
-    'field_out': 'OUT',
-    'flyout': 'OUT',
-    'lineout': 'OUT',
-    'pop out': 'OUT'
+    'home run':'HR','home_run':'HR','triple':'3B','double':'2B','single':'1B',
+    'walk':'BB','hit by pitch':'HBP','hit_by_pitch':'HBP',
+    'sac fly':'SAC','sac_fly':'SAC','sac bunt':'SH','sac_bunt':'SH',
+    'grounded into dp':'GIDP','grounded_into_dp':'GIDP',
+    'field error':'E','field_error':'E','fielders choice':'FC','fielders_choice':'FC',
+    'catcher interference':'CI','strikeout':'K','forceout':'FO','force_out':'FO',
+    'groundout':'OUT','field_out':'OUT','flyout':'OUT','lineout':'OUT','pop out':'OUT',
+  };
+  const getEventIcon = (t) => {
+    if (!t) return '?';
+    const l = t.toLowerCase();
+    for (const [k, v] of Object.entries(EVENT_ICON_MAP)) if (l.includes(k)) return v;
+    return t.substring(0,3).toUpperCase();
   };
 
-  const getEventIcon = (eventType) => {
-    if (!eventType) return '';
-    
-    const type = eventType.toLowerCase();
-    
-    for (const [key, icon] of Object.entries(EVENT_ICON_MAP)) {
-      if (type.includes(key)) return icon;
+  // ─────────────────────────────────────────────────────────
+  //  BATTER SVG SILHOUETTES  (restyled to navy/red palette)
+  //  Paths from provided document; .f = bat/detail, .e = body
+  // ─────────────────────────────────────────────────────────
+  const BATTER_RIGHT_SVG = `<svg class="batter-svg" width="72" height="160" viewBox="0 0 200 430" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+    <g transform="scale(1.18) translate(-5, 0)">
+      <path fill="#bf0d3d" stroke="#bf0d3d" stroke-width="1" d="M146.94,96.6c23.31,13.83,19.38,9.82,19.38,9.82,0,0,2.54-.65,1.58,1.98-.99,2.7-1.91,4.41-3.22,5.85-.96,1.05-2.31-1.11-2.31-2.3s-17.4-10.71-17.4-10.71"/>
+      <path fill="#041e42" stroke="#1e293b" stroke-width="1.2" d="M163.54,107.7c.79-3.56-5.93-7.9-11.85-11.46-1.97-1.18-3.8-1.23-5.38-.76l-9.64-5.56v-5.93c-.4-18.18-21.73-17.39-25.69-16.99-3.91,.39-28.75,8.15-20.4,28.64-11.95,2.93-27.14,10.42-34.13,14.83-7.51,4.74-9.09,30.43-9.88,52.16-.79,21.73-8.3,45.05-9.09,47.02-.79,1.98,.4,6.32,1.58,8.3s-1.19,3.56-1.19,3.56c0,0-7.9,1.98-13.44,18.57-5.53,16.6-.57,29.5,1.98,33.98,2.12,3.73,12.19,17.34,16.2,22.13,1.3,1.55,17.78,30.03,20.15,35.17s1.19,17.39,.79,17.78-3.52,3.97-6.33,8.52c-2.82,4.58-8.69,18.74-14.22,32.57s-15.02,51.77-15.02,51.77c0,0-6.72,23.31-3.56,28.85,3.16,5.53,23.71,3.16,31.61,2.37s20.15,4.35,29.24,3.56,16.2-2.77,17.78-9.09-18.33-8.4-28.85-16.11c-6.86-5.03-11.87-7.79-13.84-10.16-1.98-2.37,2.1-7.88,4.38-10.69,1.25-1.53,4.32-8.09,5.12-9.27,.79-1.19,18.97-45.05,19.76-46.63,.22-.43,1.43-2.47,3.14-5.41-3.56,21.65-9.46,32.68-9.46,32.68,0,0-6.72,13.83-2.37,19.36s15.41,2.77,24.5,2.77,16.99,3.16,23.31,1.98,15.02-6.72,15.81-9.88-8.96-5.24-13.44-6.32c-6.27-1.52-7.34,.87-16.43-10.98s-.18-38.72-.18-38.72c0,0,7.47-18.94,8.23-27.16,.68-7.25-4.27-23.12-10.6-46.82s-15.41-28.06-16.99-30.82-.79-10.67-.79-10.67c0,0,3.16,1.58,5.93,1.98s5.53-4.74,11.46-17.39c5.93-12.65,8.3-35.56,8.69-38.73,.4-3.16,4.35-13.04,4.35-13.04,0,0,17.78,4.74,21.73,5.14s11.85,1.98,14.23-1.98c2.37-3.95,2.37-16.2,2.37-24.1s-6.32-28.06-6.72-30.03,1.19-5.93,1.98-7.11c.79-1.19,4.35-8.3,5.14-11.85Z"/>
+      <path fill="#bf0d3d" stroke="#bf0d3d" stroke-width="1" d="M144.1,101.73s-34.4-21.36-34.76-21.3c0,0-40.7-24.5-48.21-28.06C53.62,48.82,9.59,19.08,1.86,14.44c-3.95-2.37,1.98-9.88,1.98-9.88C8.37-.06,8.97-.57,12.92,2.19c2.07,1.45,42.68,26.48,59.67,39.52s41.72,35.8,63.49,48.72"/>
+    </g>
+  </svg>`;
+
+  const BATTER_LEFT_SVG = `<svg class="batter-svg" width="72" height="160" viewBox="0 0 200 430" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+    <g transform="scale(1.18) translate(5, 0)">
+      <path fill="#bf0d3d" stroke="#bf0d3d" stroke-width="1" d="M21.68,96.6C-1.64,110.43,2.3,106.42,2.3,106.42c0,0-2.54-.65-1.58,1.98,.99,2.7,1.91,4.41,3.22,5.85,.96,1.05,2.31-1.11,2.31-2.3s17.4-10.71,17.4-10.71"/>
+      <path fill="#041e42" stroke="#1e293b" stroke-width="1.2" d="M10.22,119.55c.79,1.19,2.37,5.14,1.98,7.11s-6.72,22.13-6.72,30.03c0,7.9,0,20.15,2.37,24.1s10.27,2.37,14.23,1.98,21.73-5.14,21.73-5.14c0,0,3.95,9.88,4.35,13.04,.4,3.16,2.77,26.08,8.69,38.73,5.93,12.65,8.69,17.78,11.46,17.39s5.93-1.98,5.93-1.98c0,0,.79,7.9-.79,10.67s-10.67,7.11-16.99,30.82c-6.32,23.71-11.28,39.57-10.6,46.82,.77,8.21,8.23,27.16,8.23,27.16,0,0,8.91,26.87-.18,38.72s-10.16,9.46-16.43,10.98c-4.48,1.09-14.23,3.16-13.44,6.32,.79,3.16,9.48,8.69,15.81,9.88s14.23-1.98,23.31-1.98,20.15,2.77,24.5-2.77c4.35-5.53-2.37-19.36-2.37-19.36,0,0-5.9-11.02-9.46-32.68,1.71,2.94,2.93,4.98,3.14,5.41,.79,1.58,18.97,45.44,19.76,46.63s3.87,7.74,5.12,9.27c2.28,2.8,6.36,8.32,4.38,10.69s-6.98,5.13-13.84,10.16c-10.51,7.71-30.43,9.79-28.85,16.11,1.58,6.32,8.69,8.3,17.78,9.09,9.09,.79,21.34-4.35,29.24-3.56s28.45,3.16,31.61-2.37c3.16-5.53-3.56-28.85-3.56-28.85,0,0-9.48-37.94-15.02-51.77-5.53-13.83-11.4-28-14.22-32.57-2.8-4.56-5.93-8.13-6.33-8.52s-1.58-12.65,.79-17.78,18.85-33.62,20.15-35.17c4.01-4.79,14.08-18.4,16.2-22.13,2.55-4.48,7.51-17.39,1.98-33.98-5.53-16.6-13.44-18.57-13.44-18.57,0,0-2.37-1.58-1.19-3.56,1.19-1.98,2.37-6.32,1.58-8.3s-8.3-25.29-9.09-47.02-2.37-47.42-9.88-52.16c-6.99-4.41-22.18-11.9-34.13-14.83,8.34-20.49-16.49-28.24-20.4-28.64-3.95-.4-25.29-1.19-25.69,16.99v5.93l-9.64,5.56c-1.58-.46-3.41-.42-5.38,.76-5.93,3.56-12.65,7.9-11.85,11.46s4.35,10.67,5.14,11.85Z"/>
+      <path fill="#bf0d3d" stroke="#bf0d3d" stroke-width="1" d="M24.52,101.73s34.4-21.36,34.76-21.3c0,0,40.7-24.5,48.21-28.06,7.51-3.56,51.55-33.3,59.27-37.94,3.95-2.37-1.98-9.88-1.98-9.88-4.54-4.62-5.14-5.14-9.09-2.37-2.07,1.45-42.68,26.48-59.67,39.52-16.99,13.04-41.72,35.8-63.49,48.72"/>
+    </g>
+  </svg>`;
+
+  // ─────────────────────────────────────────────────────────
+  //  STRIKE ZONE SVG builder
+  //  pX: horizontal (-1.5 to +1.5 ft, 0 = plate center)
+  //  pZ: vertical (roughly 1.5 to 4.5 ft from ground)
+  //  Positive pX = catcher's right (away from RHB)
+  // ─────────────────────────────────────────────────────────
+  const ZONE_W = 220;   // px — viewBox width
+  const ZONE_H = 230;   // px — viewBox height
+  const SZ_LEFT  = 55;  // px
+  const SZ_RIGHT = 165; // px
+  const SZ_TOP   = 30;  // px  (top of zone)
+  const SZ_BOT   = 180; // px  (bottom of zone)
+
+  // Map real coordinates to SVG pixels
+  const mapPx = (pX) => {
+    // pX range roughly -1.5 to +1.5; positive = away from RHB = right in catcher view
+    const clamp = Math.max(-1.6, Math.min(1.6, pX));
+    return SZ_LEFT + (clamp + 1.6) / 3.2 * (SZ_RIGHT - SZ_LEFT);
+  };
+  const mapPz = (pZ) => {
+    // pZ range roughly 1.0 to 4.5
+    const clamp = Math.max(0.8, Math.min(4.8, pZ));
+    return SZ_BOT - (clamp - 0.8) / 4.0 * (SZ_BOT - SZ_TOP);
+  };
+
+  const buildStrikeZoneSVG = (pitches = [], currentCount = {}) => {
+    const zW = SZ_RIGHT - SZ_LEFT;
+    const zH = SZ_BOT   - SZ_TOP;
+    const z3 = zW / 3, z3h = zH / 3;
+
+    // Build pitch dots
+    const dots = pitches.map((p, i) => {
+      const px = p.pitchData?.coordinates?.pX;
+      const pz = p.pitchData?.coordinates?.pZ;
+      if (px == null || pz == null) return '';
+      const cx = mapPx(px);
+      const cy = mapPz(pz);
+      const info = pitchInfo(p.details?.type?.code);
+      const isLast = i === pitches.length - 1;
+      const num = i + 1;
+      return `
+        <circle cx="${cx}" cy="${cy}" r="${isLast ? 8 : 6}"
+          fill="${info.color}"
+          stroke="${isLast ? '#fff' : 'rgba(255,255,255,0.4)'}"
+          stroke-width="${isLast ? 2 : 1}"
+          opacity="${isLast ? 1 : 0.72}"
+          class="pitch-dot${isLast ? ' pitch-dot-latest' : ''}"
+          data-num="${num}" data-type="${info.label}" data-velo="${p.pitchData?.startSpeed?.toFixed(1) ?? '?'}"/>
+        <text x="${cx}" y="${cy + 0.5}" text-anchor="middle" dominant-baseline="middle"
+          font-size="${isLast ? 8 : 7}" font-weight="700" fill="white"
+          font-family="DM Mono, monospace" pointer-events="none">${num}</text>`;
+    }).join('');
+
+    return `<svg class="sz-svg" viewBox="0 0 ${ZONE_W} ${ZONE_H}"
+      xmlns="http://www.w3.org/2000/svg" style="width:260px;height:auto;display:block;margin:0 auto;">
+
+      <!-- Dirt / field background -->
+      <rect width="${ZONE_W}" height="${ZONE_H}" fill="var(--sz-bg, #0a0e1a)" rx="8"/>
+
+      <!-- Home plate -->
+      <polygon points="${ZONE_W/2-9},${ZONE_H-14} ${ZONE_W/2+9},${ZONE_H-14} ${ZONE_W/2+12},${ZONE_H-9} ${ZONE_W/2},${ZONE_H-4} ${ZONE_W/2-12},${ZONE_H-9}"
+        fill="white" stroke="rgba(255,255,255,.3)" stroke-width="1"/>
+
+      <!-- Zone outer box -->
+      <rect x="${SZ_LEFT}" y="${SZ_TOP}" width="${zW}" height="${zH}"
+        fill="rgba(191,13,61,0.06)" stroke="rgba(191,13,61,0.6)" stroke-width="1.5" rx="2"/>
+
+      <!-- 3×3 grid inner lines -->
+      <line x1="${SZ_LEFT+z3}"   y1="${SZ_TOP}" x2="${SZ_LEFT+z3}"   y2="${SZ_BOT}" stroke="rgba(191,13,61,0.25)" stroke-width="1" stroke-dasharray="3,3"/>
+      <line x1="${SZ_LEFT+z3*2}" y1="${SZ_TOP}" x2="${SZ_LEFT+z3*2}" y2="${SZ_BOT}" stroke="rgba(191,13,61,0.25)" stroke-width="1" stroke-dasharray="3,3"/>
+      <line x1="${SZ_LEFT}" y1="${SZ_TOP+z3h}"   x2="${SZ_RIGHT}" y2="${SZ_TOP+z3h}"   stroke="rgba(191,13,61,0.25)" stroke-width="1" stroke-dasharray="3,3"/>
+      <line x1="${SZ_LEFT}" y1="${SZ_TOP+z3h*2}" x2="${SZ_RIGHT}" y2="${SZ_TOP+z3h*2}" stroke="rgba(191,13,61,0.25)" stroke-width="1" stroke-dasharray="3,3"/>
+
+      <!-- Zone labels -->
+      <text x="${SZ_LEFT + zW/2}" y="${SZ_TOP - 10}" text-anchor="middle"
+        font-size="9" fill="rgba(148,163,184,0.6)" font-family="DM Mono,monospace" letter-spacing="1">STRIKE ZONE</text>
+
+      <!-- Ball / Strike indicator at bottom corners -->
+      <text x="10" y="${ZONE_H - 8}" font-size="10" font-weight="700" fill="#10b981" font-family="DM Mono,monospace">${currentCount.balls ?? 0}B</text>
+      <text x="${ZONE_W - 28}" y="${ZONE_H - 8}" font-size="10" font-weight="700" fill="#ef4444" font-family="DM Mono,monospace">${currentCount.strikes ?? 0}S</text>
+
+      <!-- Pitch dots -->
+      ${dots}
+    </svg>`;
+  };
+
+  // ─────────────────────────────────────────────────────────
+  //  COUNT-BASED AVG — fetch batter's split by count
+  // ─────────────────────────────────────────────────────────
+  const fetchBatterCountStats = async (batterId) => {
+    if (batterCountCache[batterId]) return batterCountCache[batterId];
+    try {
+      const url = `${API_V1}/people/${batterId}/stats?stats=byCount&group=hitting&season=2025&gameType=R`;
+      const res = await fetch(url);
+      const d   = await res.json();
+      const splits = d.stats?.[0]?.splits || [];
+      const map = {};
+      splits.forEach(s => {
+        const count = s.split?.description; // e.g. "0-0 count"
+        const key   = count?.replace(' count','').replace(' Count','').trim();
+        if (key && s.stat?.avg) map[key] = parseFloat(s.stat.avg);
+      });
+      // If count stats not available, use season avg as 0-0
+      if (!Object.keys(map).length) {
+        const seasonUrl = `${API_V1}/people/${batterId}/stats?stats=season&group=hitting&season=2025&gameType=R`;
+        const sr = await fetch(seasonUrl);
+        const sd = await sr.json();
+        const avg = parseFloat(sd.stats?.[0]?.splits?.[0]?.stat?.avg || 0);
+        map['0-0'] = avg || null;
+        batterCountCache[batterId] = map;
+        return map;
+      }
+      batterCountCache[batterId] = map;
+      return map;
+    } catch (e) {
+      console.warn('[CountAvg] Failed for', batterId, e.message);
+      return {};
     }
-    
-    return eventType.substring(0, 3).toUpperCase();
   };
 
-  // ===========================
-  // HIT DATA EXTRACTION
-  // ===========================
-  const getHitData = (play) => {
-    if (!play) return null;
-    
-    if (play.playEvents?.length) {
-      const hitEvent = play.playEvents.find(e => e.hitData);
-      if (hitEvent?.hitData) return hitEvent.hitData;
+  const getCountAvg = async (batterId, balls, strikes) => {
+    const key = `${balls}-${strikes}`;
+    try {
+      const stats = await fetchBatterCountStats(batterId);
+      if (stats[key] != null) return { avg: stats[key], source: 'batter' };
+    } catch(e) {}
+    // Fall back to league average
+    const lgAvg = LEAGUE_AVG_BY_COUNT[key];
+    return lgAvg ? { avg: lgAvg, source: 'league' } : null;
+  };
+
+  // ─────────────────────────────────────────────────────────
+  //  LIVE AT-BAT MODULE
+  // ─────────────────────────────────────────────────────────
+  const renderLiveAtBat = async (data) => {
+    const container = document.getElementById('live-at-bat');
+    if (!container) return;
+
+    const status = data.gameData?.status?.detailedState;
+    if (getPhase(status) !== 'LIVE') {
+      container.style.display = 'none';
+      return;
     }
-    
-    return play.hitData || null;
-  };
+    container.style.display = '';
 
-  const formatHitData = (hitData) => {
-    if (!hitData) {
-      return {
-        launchSpeed: '--',
-        launchAngle: '--',
-        totalDistance: '--'
-      };
+    const cp      = data.liveData?.plays?.currentPlay;
+    const ls      = data.liveData?.linescore;
+    const offense = ls?.offense || {};
+    if (!cp) return;
+
+    const batter   = cp.matchup?.batter;
+    const pitcher  = cp.matchup?.pitcher;
+    const batSide  = cp.matchup?.batSide?.code; // 'R' or 'L'
+    const count    = cp.count || { balls:0, strikes:0, outs:0 };
+    const pitches  = cp.playEvents?.filter(e => e.isPitch) || [];
+    const batterId = batter?.id;
+    const pitcherId = pitcher?.id;
+
+    // ── Count-based batting avg ──────────────────────────
+    let countAvgHtml = '';
+    if (batterId) {
+      const ca = await getCountAvg(batterId, count.balls, count.strikes);
+      if (ca) {
+        const src   = ca.source === 'batter' ? 'Batter' : 'Lg Avg';
+        const color = ca.avg >= .280 ? '#10b981' : ca.avg >= .220 ? '#eab308' : '#ef4444';
+        countAvgHtml = `<div class="cab-stat">
+          <span class="cab-lbl">${src} ${count.balls}-${count.strikes} AVG</span>
+          <span class="cab-val" style="color:${color}">${fmtAvg(ca.avg)}</span>
+        </div>`;
+      }
     }
-    
-    return {
-      launchSpeed: hitData.launchSpeed ? `${hitData.launchSpeed.toFixed(1)} MPH` : '--',
-      launchAngle: hitData.launchAngle ? `${Math.round(hitData.launchAngle)}°` : '--',
-      totalDistance: hitData.totalDistance ? `${hitData.totalDistance} ft` : '--'
-    };
+
+    // ── Current pitcher game stats ───────────────────────
+    let pitcherStatHtml = '';
+    if (pitcherId) {
+      const pbp  = data.liveData?.boxscore?.teams;
+      const allP = { ...pbp?.away?.players, ...pbp?.home?.players };
+      const pd   = allP?.[`ID${pitcherId}`];
+      if (pd) {
+        const ps = pd.stats?.pitching || {};
+        const ip = ps.inningsPitched ?? '0.0';
+        const k  = ps.strikeOuts ?? 0;
+        const bb = ps.baseOnBalls ?? 0;
+        const pc = ps.numberOfPitches ?? pitches.length;
+        pitcherStatHtml = `
+          <div class="pitcher-mini">
+            <img src="${IMG_BASE}/${pitcherId}/spots/60" class="pitcher-mini-photo"
+              onerror="this.style.display='none'" alt="${pitcher?.fullName}">
+            <div class="pitcher-mini-info">
+              <div class="pitcher-mini-name">${pitcher?.fullName ?? 'Pitcher'}</div>
+              <div class="pitcher-mini-stats">
+                <span class="pms-item"><span class="pms-lbl">IP</span>${ip}</span>
+                <span class="pms-item"><span class="pms-lbl">K</span>${k}</span>
+                <span class="pms-item"><span class="pms-lbl">BB</span>${bb}</span>
+                <span class="pms-item"><span class="pms-lbl">PC</span>${pc}</span>
+              </div>
+            </div>
+          </div>`;
+      }
+    }
+
+    // ── Pitch log ────────────────────────────────────────
+    const pitchRows = pitches.map((p, i) => {
+      const info   = pitchInfo(p.details?.type?.code);
+      const velo   = p.pitchData?.startSpeed?.toFixed(1) ?? '--';
+      const spin   = p.pitchData?.breaks?.spinRate ? Math.round(p.pitchData.breaks.spinRate) : '--';
+      const desc   = p.details?.description ?? '';
+      const isStr  = p.details?.isStrike;
+      const isBall = p.details?.isInPlay ? false : !isStr;
+      const resultCls = p.details?.isInPlay ? 'pr-contact' : isStr ? 'pr-strike' : 'pr-ball';
+      const resultLbl = p.details?.isInPlay ? 'IN PLAY' : isStr ? 'STRIKE' : 'BALL';
+      const px = p.pitchData?.coordinates?.pX;
+      const pz = p.pitchData?.coordinates?.pZ;
+      const inZone = px != null && pz != null &&
+        Math.abs(px) < 0.85 && pz > 1.6 && pz < 3.5;
+      return `<div class="pitch-row" data-idx="${i}">
+        <div class="pr-num">${i+1}</div>
+        <div class="pr-badge" style="background:${info.color}">${info.abbr}</div>
+        <div class="pr-meta">
+          <div class="pr-type">${info.label}</div>
+          <div class="pr-velo">${velo} mph · ${spin} rpm</div>
+        </div>
+        <div class="pr-result ${resultCls}">${resultLbl}</div>
+      </div>`;
+    }).reverse().join(''); // newest pitch first
+
+    // ── Last pitch description ───────────────────────────
+    const lastPitch = pitches[pitches.length - 1];
+    const lastDesc  = lastPitch?.details?.description || cp.result?.description || '';
+    const resultEvt = cp.result?.event || '';
+
+    // ── Half-inning / outs display ───────────────────────
+    const half    = ls?.inningHalf === 'Top' ? '▲' : '▼';
+    const inning  = ls?.currentInningOrdinal || '';
+    const outs    = count.outs ?? 0;
+
+    // ── Render ───────────────────────────────────────────
+    container.innerHTML = `
+    <div class="lab-header">
+      <div class="lab-context">
+        <span class="lab-inning">${half} ${inning}</span>
+        <div class="lab-outs">
+          ${[0,1,2].map(i => `<div class="lab-out-dot ${i < outs ? 'on' : ''}"></div>`).join('')}
+          <span class="lab-outs-lbl">${outs} out${outs !== 1 ? 's' : ''}</span>
+        </div>
+      </div>
+      <div class="lab-players">
+        <div class="lab-batter-info">
+          <img src="${IMG_BASE}/${batterId}/spots/60" class="lab-headshot"
+            onerror="this.src='https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_60,q_auto:best/v1/people/generic/headshot/67/current.png'"
+            alt="${batter?.fullName}">
+          <div>
+            <div class="lab-batter-name">${batter?.fullName ?? 'Batter'}</div>
+            <div class="lab-batter-meta">
+              <span class="lab-hand-badge">${batSide === 'L' ? 'LHB' : 'RHB'}</span>
+              ${countAvgHtml}
+            </div>
+          </div>
+        </div>
+        <div class="lab-vs">vs</div>
+        <div class="lab-pitcher-mini">${pitcher?.fullName ?? ''}</div>
+      </div>
+    </div>
+
+    <div class="lab-body">
+
+      <!-- LEFT: strike zone + batter silhouette -->
+      <div class="lab-zone-col">
+        <div class="lab-zone-wrap">
+          <!-- Batter silhouettes — show only the correct side -->
+          <div class="lab-batter-silhouette ${batSide === 'L' ? 'lhb' : 'rhb'}">
+            ${batSide === 'L' ? BATTER_LEFT_SVG : BATTER_RIGHT_SVG}
+          </div>
+          <div class="lab-zone-svg">
+            ${buildStrikeZoneSVG(pitches, count)}
+          </div>
+        </div>
+
+        <!-- Count pills -->
+        <div class="lab-count">
+          <div class="count-group">
+            ${[0,1,2,3].map(i => `<div class="count-dot ball-dot ${i < count.balls ? 'on' : ''}"></div>`).join('')}
+            <span class="count-lbl">B</span>
+          </div>
+          <div class="count-divider"></div>
+          <div class="count-group">
+            ${[0,1,2].map(i => `<div class="count-dot strike-dot ${i < count.strikes ? 'on' : ''}"></div>`).join('')}
+            <span class="count-lbl">S</span>
+          </div>
+        </div>
+
+        <!-- Last pitch description -->
+        ${lastDesc ? `<div class="lab-last-desc">${lastDesc}</div>` : ''}
+        ${resultEvt ? `<div class="lab-result-event">${resultEvt}</div>` : ''}
+      </div>
+
+      <!-- RIGHT: pitch log + pitcher stats -->
+      <div class="lab-right-col">
+
+        <!-- Pitcher stats -->
+        ${pitcherStatHtml}
+
+        <!-- Pitch log header with mobile tab toggle -->
+        <div class="lab-pitchlog-header">
+          <span class="lab-pitchlog-title">THIS AT-BAT</span>
+          <span class="lab-pitch-count">${pitches.length} pitch${pitches.length !== 1 ? 'es' : ''}</span>
+        </div>
+
+        <div class="lab-pitchlog" id="lab-pitchlog">
+          ${pitchRows || '<div class="lab-no-pitches">Waiting for first pitch…</div>'}
+        </div>
+
+      </div>
+
+    </div>`;
   };
 
-  // ===========================
-  // BASE RUNNERS & FIELD
-  // ===========================
+  // ─────────────────────────────────────────────────────────
+  //  BASE RUNNERS
+  // ─────────────────────────────────────────────────────────
   const getBaseRunners = (runners = []) => ({
-    first: runners.some(r => r.movement?.end === '1B' || r.movement?.start === '1B'),
+    first:  runners.some(r => r.movement?.end === '1B' || r.movement?.start === '1B'),
     second: runners.some(r => r.movement?.end === '2B' || r.movement?.start === '2B'),
-    third: runners.some(r => r.movement?.end === '3B' || r.movement?.start === '3B')
+    third:  runners.some(r => r.movement?.end === '3B' || r.movement?.start === '3B'),
   });
 
   const generateSVGField = (count, onBase) => {
-    const outs = count?.outs ?? 0;
-    const fills = {
-      out1: outs >= 1 ? '#bf0d3d' : '#f7fafc',
-      out2: outs >= 2 ? '#bf0d3d' : '#f7fafc',
-      out3: outs >= 3 ? '#bf0d3d' : '#f7fafc',
-      first: onBase?.first ? '#bf0d3d' : '#f7fafc',
-      second: onBase?.second ? '#bf0d3d' : '#f7fafc',
-      third: onBase?.third ? '#bf0d3d' : '#f7fafc'
-    };
-
-    return `
-      <svg width="60" height="60" viewBox="0 0 58 79" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="13" cy="61" r="6" fill="${fills.out1}" stroke="#bf0d3d" stroke-width="1" opacity="0.8"/>
-        <circle cx="30" cy="61" r="6" fill="${fills.out2}" stroke="#bf0d3d" stroke-width="1" opacity="0.8"/>
-        <circle cx="47" cy="61" r="6" fill="${fills.out3}" stroke="#bf0d3d" stroke-width="1" opacity="0.8"/>
-        
-        <rect x="17.6066" y="29.7071" width="14" height="14" transform="rotate(45 17.6066 29.7071)" fill="${fills.third}" stroke="#bf0d3d" stroke-width="1" opacity="0.8"/>
-        <rect x="29.364" y="17.7071" width="14" height="14" transform="rotate(45 29.364 17.7071)" fill="${fills.second}" stroke="#bf0d3d" stroke-width="1" opacity="0.8"/>
-        <rect x="41.6066" y="29.7071" width="14" height="14" transform="rotate(45 41.6066 29.7071)" fill="${fills.first}" stroke="#bf0d3d" stroke-width="1" opacity="0.8"/>
-      </svg>
-    `;
+    const o  = count?.outs ?? 0;
+    const ac = (active) => active ? '#bf0d3d' : 'transparent';
+    return `<svg width="58" height="58" viewBox="0 0 58 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Outs -->
+      <circle cx="10" cy="51" r="5" fill="${ac(o>=1)}" stroke="#bf0d3d" stroke-width="1.2"/>
+      <circle cx="22" cy="51" r="5" fill="${ac(o>=2)}" stroke="#bf0d3d" stroke-width="1.2"/>
+      <circle cx="34" cy="51" r="5" fill="${ac(o>=3)}" stroke="#bf0d3d" stroke-width="1.2"/>
+      <!-- Bases -->
+      <rect x="14" y="30" width="11" height="11" transform="rotate(45 14 30)" fill="${ac(onBase?.third)}"  stroke="#bf0d3d" stroke-width="1.2"/>
+      <rect x="22" y="19" width="11" height="11" transform="rotate(45 22 19)" fill="${ac(onBase?.second)}" stroke="#bf0d3d" stroke-width="1.2"/>
+      <rect x="30" y="30" width="11" height="11" transform="rotate(45 30 30)" fill="${ac(onBase?.first)}"  stroke="#bf0d3d" stroke-width="1.2"/>
+    </svg>`;
   };
 
-  // ===========================
-  // LOGO MANAGEMENT
-  // ===========================
-  const getLogoUrl = (teamId, darkMode) => {
-    const base = darkMode 
-      ? `${LOGO_BASE}/team-cap-on-dark/${teamId}.svg`
-      : `${LOGO_BASE}/${teamId}.svg`;
-    return base;
+  // ─────────────────────────────────────────────────────────
+  //  HIT DATA
+  // ─────────────────────────────────────────────────────────
+  const getHitData = (play) => {
+    if (!play) return null;
+    const e = play.playEvents?.find(e => e.hitData);
+    return e?.hitData || play.hitData || null;
   };
+  const formatHitData = (hd) => !hd
+    ? { launchSpeed:'--', launchAngle:'--', totalDistance:'--' }
+    : {
+        launchSpeed:   hd.launchSpeed   ? `${hd.launchSpeed.toFixed(1)} mph` : '--',
+        launchAngle:   hd.launchAngle   ? `${Math.round(hd.launchAngle)}°`   : '--',
+        totalDistance: hd.totalDistance ? `${hd.totalDistance} ft`           : '--',
+      };
 
-  const updateTeamLogos = (darkMode) => {
+  // ─────────────────────────────────────────────────────────
+  //  LOGO HELPERS
+  // ─────────────────────────────────────────────────────────
+  const updateTeamLogos = (dark) => {
     if (!awayTeamId || !homeTeamId) return;
-    
-    const awayUrl = getLogoUrl(awayTeamId, darkMode);
-    const homeUrl = getLogoUrl(homeTeamId, darkMode);
-    
-    document.querySelectorAll('.away-logo').forEach(logo => {
-      logo.src = awayUrl;
+    document.querySelectorAll('.away-logo').forEach(el => el.src = logoUrl(awayTeamId, dark));
+    document.querySelectorAll('.home-logo').forEach(el => el.src = logoUrl(homeTeamId, dark));
+  };
+
+  // ─────────────────────────────────────────────────────────
+  //  WIN PROB THEME UPDATE
+  // ─────────────────────────────────────────────────────────
+  const updateWinProbTheme = (dark) => {
+    const ic = dark ? '#e2e8f0' : '#041e42';
+    const gc = dark ? 'rgba(226,232,240,0.1)' : 'rgba(4,30,66,0.12)';
+    document.querySelectorAll('#win-prob-container text').forEach(el => {
+      if (el.getAttribute('font-family') === 'DM Mono' && !isNaN(el.textContent.trim()))
+        el.setAttribute('fill', ic);
     });
-    
-    document.querySelectorAll('.home-logo').forEach(logo => {
-      logo.src = homeUrl;
+    document.querySelectorAll('#win-prob-container line').forEach(el => {
+      const dash = el.getAttribute('stroke-dasharray');
+      if (dash?.includes('3,3')) el.setAttribute('stroke', gc);
+      else if (!dash && el.getAttribute('stroke') !== '#bbb') el.setAttribute('stroke', ic);
     });
   };
 
-  // ===========================
-  // THEME TOGGLE
-  // ===========================
+  // ─────────────────────────────────────────────────────────
+  //  THEME TOGGLE
+  // ─────────────────────────────────────────────────────────
   const initThemeToggle = () => {
-    const themeBtn = document.getElementById('themeToggle');
-    const logoImg = document.getElementById('logoImg');
-    
-    if (!themeBtn || !logoImg) return;
-
-    const body = document.body;
-    body.classList.add('dark');
-    body.classList.remove('light');
-    themeBtn.textContent = 'Light';
-    logoImg.src = 'assets/site-logos/logo-light.svg';
-
-    themeBtn.addEventListener('click', () => {
-      const isLight = body.classList.contains('light');
-
-      body.classList.toggle('light', !isLight);
-      body.classList.toggle('dark', isLight);
-
-      themeBtn.textContent = isLight ? 'Light' : 'Dark';
-      logoImg.src = isLight
-        ? 'assets/site-logos/logo-light.svg'
-        : 'assets/site-logos/logo-dark.svg';
-      
-      updateTeamLogos(body.classList.contains('dark'));
+    const btn = document.getElementById('themeToggle');
+    if (!btn) return;
+    const saved = localStorage.getItem('xlabs-theme') || 'dark';
+    const dark  = saved === 'dark';
+    document.body.classList.toggle('dark',  dark);
+    document.body.classList.toggle('light', !dark);
+    const icD = document.getElementById('ic-d');
+    const icL = document.getElementById('ic-l');
+    const tl  = document.getElementById('tl');
+    if (icD) icD.style.display = dark ? ''     : 'none';
+    if (icL) icL.style.display = dark ? 'none' : '';
+    if (tl)  tl.textContent    = dark ? 'Light' : 'Dark';
+    btn.addEventListener('click', () => {
+      const nowDark = document.body.classList.toggle('dark');
+      document.body.classList.toggle('light', !nowDark);
+      if (icD) icD.style.display = nowDark ? ''     : 'none';
+      if (icL) icL.style.display = nowDark ? 'none' : '';
+      if (tl)  tl.textContent    = nowDark ? 'Light' : 'Dark';
+      localStorage.setItem('xlabs-theme', nowDark ? 'dark' : 'light');
+      updateTeamLogos(nowDark);
+      updateWinProbTheme(nowDark);
     });
   };
 
-  // ===========================
-  // SCOREBUG
-  // ===========================
-  const updateScorebug = (data) => {
-    const container = document.getElementById('scorebug-container');
-    const wrapper = document.getElementById('scorebug-wrapper');
-    
-    if (!container || !wrapper) return;
-
-    const status = data.gameData.status.detailedState;
-    
-    if (FINAL_STATUSES.includes(status)) {
-      container.innerHTML = '';
-      wrapper.style.display = 'none';
-      return;
+  // ─────────────────────────────────────────────────────────
+  //  GAME HEADER
+  // ─────────────────────────────────────────────────────────
+  const renderHeader = (gameData, liveData) => {
+    const { away, home } = gameData.teams;
+    awayTeamId = away.id; homeTeamId = home.id;
+    updateTeamLogos(isDark());
+    document.querySelector('.away-record').textContent = away?.record ? `${away.record.wins}-${away.record.losses}` : '';
+    document.querySelector('.home-record').textContent = home?.record ? `${home.record.wins}-${home.record.losses}` : '';
+    document.querySelector('.away-score').textContent  = liveData.linescore?.teams?.away?.runs ?? '0';
+    document.querySelector('.home-score').textContent  = liveData.linescore?.teams?.home?.runs ?? '0';
+    const status = gameData.status.detailedState;
+    const ls     = liveData.linescore;
+    let txt;
+    if      (PREGAME_STATUSES.includes(status)) txt = `${gameData.datetime.time} ${gameData.datetime.ampm}`;
+    else if (status === 'In Progress') {
+      const half    = ls?.inningHalf === 'Top' ? '▲' : ls?.inningHalf === 'Bottom' ? '▼' : '';
+      const ordinal = ls?.currentInningOrdinal || '';
+      txt = `${half} ${ordinal}`.trim() || 'Live';
     }
-
-    const currentPlay = data.liveData?.plays?.currentPlay;
-    if (!currentPlay) {
-      console.log('No live game data available.');
-      return;
+    else if (FINAL_STATUSES.includes(status)) {
+      const innings = ls?.currentInning ?? ls?.innings?.length ?? 9;
+      txt = innings === 9 ? 'Final' : `Final/${innings}`;
     }
-
-    wrapper.style.display = '';
-
-    const count = currentPlay.count || { balls: 0, strikes: 0, outs: 0 };
-    const onBase = data.liveData?.linescore?.offense || {};
-
-    container.innerHTML = `
-      <div class="scorebug">
-        ${generateSVGField(count, onBase)}
-        <div class="balls-strikes" style="color: #2f4858;">
-          ${count.balls} - ${count.strikes}
-        </div>
-      </div>
-    `;
+    else txt = status;
+    document.querySelector('.game-status').textContent = txt;
   };
 
-  // ===========================
-  // PLAY ITEM CREATION
-  // ===========================
+  // ─────────────────────────────────────────────────────────
+  //  LINESCORE TABLE
+  // ─────────────────────────────────────────────────────────
+  const renderBoxscore = (gameData, liveData) => {
+    const ls    = liveData.linescore;
+    const tbody = document.querySelector('.boxscore-table tbody');
+    if (!tbody) return;
+    const dark  = isDark();
+    const aLogo = logoUrl(awayTeamId, dark);
+    const hLogo = logoUrl(homeTeamId, dark);
+    const { away, home } = gameData.teams;
+    if (!ls?.innings?.length) {
+      const blanks = Array(9).fill('<td class="inning-score">-</td>').join('');
+      tbody.innerHTML = `
+        <tr><td class="team-name"><img src="${aLogo}" alt="${away.abbreviation}" class="box-team-logo away-logo"></td>${blanks}<td>-</td><td>-</td><td>-</td></tr>
+        <tr><td class="team-name"><img src="${hLogo}" alt="${home.abbreviation}" class="box-team-logo home-logo"></td>${blanks}<td>-</td><td>-</td><td>-</td></tr>`;
+      return;
+    }
+    const max = Math.max(9, ls.innings.length);
+    let ai = '', hi = '';
+    for (let i = 0; i < max; i++) {
+      const inn = ls.innings[i];
+      ai += inn ? `<td class="inning-score">${inn.away?.runs ?? '-'}</td>` : '<td class="inning-score">-</td>';
+      hi += inn ? `<td class="inning-score">${inn.home?.runs ?? '-'}</td>` : '<td class="inning-score">-</td>';
+    }
+    tbody.innerHTML = `
+      <tr><td class="team-name"><img src="${aLogo}" alt="${away.abbreviation}" class="box-team-logo away-logo"></td>${ai}
+        <td>${ls.teams.away.runs??0}</td><td>${ls.teams.away.hits??0}</td><td>${ls.teams.away.errors??0}</td></tr>
+      <tr><td class="team-name"><img src="${hLogo}" alt="${home.abbreviation}" class="box-team-logo home-logo"></td>${hi}
+        <td>${ls.teams.home.runs??0}</td><td>${ls.teams.home.hits??0}</td><td>${ls.teams.home.errors??0}</td></tr>`;
+  };
+
+  // ─────────────────────────────────────────────────────────
+  //  PITCHING DECISIONS
+  // ─────────────────────────────────────────────────────────
+  const renderPitchingDecisions = (data) => {
+    const wrapper = document.querySelector('.linescore-wrapper');
+    if (!wrapper) return;
+    wrapper.querySelector('.pitching-decisions')?.remove();
+    const d = data.liveData?.decisions;
+    if (!d?.winner && !d?.loser) return;
+    const row = (label, person) => person
+      ? `<div class="decision-item"><span class="decision-label">${label}</span><span class="decision-name">${person.fullName}</span></div>` : '';
+    const div = document.createElement('div');
+    div.className = 'pitching-decisions';
+    div.innerHTML = row('W', d.winner) + row('L', d.loser) + row('SV', d.save);
+    wrapper.appendChild(div);
+  };
+
+  // ─────────────────────────────────────────────────────────
+  //  TOP PERFORMERS
+  // ─────────────────────────────────────────────────────────
+  const renderTopPerformers = (data) => {
+    const c = document.querySelector('.top-performers-case');
+    if (!c) return;
+    const s = data.gameData?.status?.detailedState;
+    if (s !== 'Game Over' && s !== 'Final') { c.style.display = 'none'; return; }
+    c.style.display = 'flex';
+    c.innerHTML = '';
+    const performers = data.liveData?.boxscore?.topPerformers;
+    if (!performers?.length) { c.innerHTML = '<div class="no-data">No top performers available.</div>'; return; }
+    performers.forEach(({ player: p }) => {
+      const div = document.createElement('div');
+      div.className = 'top-performer-player';
+      div.innerHTML = `
+        <div class="performer-image">
+          <img src="https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${p.person.id}/headshot/67/current"
+               alt="${p.person.fullName}">
+        </div>
+        <div class="performer-name">${p.person.fullName}</div>
+        <div class="performer-stats">${p.stats?.batting?.summary || p.stats?.pitching?.summary || 'N/A'}</div>`;
+      c.appendChild(div);
+    });
+  };
+
+  // ─────────────────────────────────────────────────────────
+  //  PLAYS
+  // ─────────────────────────────────────────────────────────
   const createPlayItem = (play, showStatcast = false, showScoringInfo = false) => {
     const batter = play.matchup?.batter;
-    const playerId = batter?.id ?? 'default';
-    const eventIcon = getEventIcon(play.result.eventType);
-    const onBase = getBaseRunners(play.runners);
-    const hitData = formatHitData(getHitData(play));
-
-    const el = document.createElement('div');
+    const pid    = batter?.id ?? 'default';
+    const hd     = formatHitData(getHitData(play));
+    const el     = document.createElement('div');
     el.className = 'play-item';
     el.style.position = 'relative';
-
-    const statcastStats = showStatcast ? `
-      <div class="statcast-stats">
-        <div class="stat-item">
-          <div>Exit Velo</div>
-          <div>${hitData.launchSpeed}</div>
-        </div>
-        <div class="stat-item">
-          <div>Angle</div>
-          <div>${hitData.launchAngle}</div>
-        </div>
-        <div class="stat-item">
-          <div>Distance</div>
-          <div>${hitData.totalDistance}</div>
-       </div>
-      </div>
-    ` : '';
-
-    const scoringInfo = showScoringInfo ? `
-      <div class="score-update">
-        Score: ${play.result.homeScore} - ${play.result.awayScore}
-      </div>
-      <div class="rbi-info">
-        RBI: ${play.result.rbi ?? 0}
-      </div>
-    ` : '';
-
     el.innerHTML = `
-      <div class="inning-indicator">
-        ${play.about.halfInning} ${play.about.inning}
-      </div>
-
+      <div class="inning-indicator">${play.about.halfInning} ${play.about.inning}</div>
       <div class="player-image-container">
-        <img class="player-image"
-          src="${PLAYER_IMAGE_BASE}/${playerId}/spots/60"
-          alt="${batter?.fullName ?? ''}">
-        <div class="event-icon">${eventIcon}</div>
+        <img class="player-image" src="${IMG_BASE}/${pid}/spots/60" alt="${batter?.fullName ?? ''}">
+        <div class="event-icon">${getEventIcon(play.result.eventType)}</div>
       </div>
-
       <div class="content-wrapper">
         <div class="play-details">
           <div class="event-name">${play.result.event}</div>
           <p class="play-description">${play.result.description}</p>
-          ${scoringInfo}
-          ${statcastStats}
+          ${showScoringInfo ? `
+            <div class="score-update">Score: ${play.result.homeScore} - ${play.result.awayScore}</div>
+            <div class="rbi-info">RBI: ${play.result.rbi ?? 0}</div>` : ''}
+          ${showStatcast ? `
+            <div class="statcast-stats">
+              <div class="stat-item"><div>Exit Velo</div><div>${hd.launchSpeed}</div></div>
+              <div class="stat-item"><div>Angle</div><div>${hd.launchAngle}</div></div>
+              <div class="stat-item"><div>Distance</div><div>${hd.totalDistance}</div></div>
+            </div>` : ''}
         </div>
-
         <div class="game-situation">
-          <div class="count-info">
-            ${play.count.balls}-${play.count.strikes}
-          </div>
-          <div class="field-display">
-            ${generateSVGField(play.count, onBase)}
-          </div>
+          <div class="count-info">${play.count.balls}-${play.count.strikes}</div>
+          <div class="field-display">${generateSVGField(play.count, getBaseRunners(play.runners))}</div>
         </div>
-      </div>
-    `;
-
+      </div>`;
     return el;
   };
 
-  // ===========================
-  // TOP PERFORMERS
-  // ===========================
-  const renderTopPerformers = (data) => {
-    const container = document.querySelector('.top-performers-case');
-    if (!container) return;
-
-    // Check game status
-    const detailedState = data.gameData?.status?.detailedState;
-    const isGameOver = detailedState === 'Game Over' || detailedState === 'Final';
-
-    // Hide container if game is not over
-    if (!isGameOver) {
-      container.style.display = 'none';
+  const renderScoringPlays = (plays, gamePkId, vm) => {
+    const c = document.getElementById('scoring-plays-container');
+    if (!c) return;
+    c.querySelectorAll('.play-item, .no-scoring-msg').forEach(p => p.remove());
+    c.style.display = '';
+    if (!plays?.scoringPlays?.length) {
+      const msg = document.createElement('div');
+      msg.className = 'no-scoring-msg';
+      msg.style.cssText = 'text-align:center;padding:28px 12px;font-family:var(--font-mono);font-size:11px;color:var(--text-muted);opacity:.7;';
+      msg.textContent = 'No runs scored yet';
+      c.appendChild(msg);
       return;
     }
-
-    // Show container if game is over
-    container.style.display = 'flex';
-    container.innerHTML = '';
-
-    const topPerformers = data.liveData?.boxscore?.topPerformers;
-
-    if (!topPerformers || topPerformers.length === 0) {
-      container.innerHTML = '<div class="no-data">No top performers available</div>';
-      return;
-    }
-
-    topPerformers.forEach(performer => {
-      const player = performer.player;
-      const playerId = player.person.id;
-      const playerName = player.person.fullName;
-
-      const battingSummary = player.stats?.batting?.summary;
-      const pitchingSummary = player.stats?.pitching?.summary;
-      const statSummary = battingSummary || pitchingSummary || 'No stats available';
-
-      const playerDiv = document.createElement('div');
-      playerDiv.className = 'top-performer-player';
-
-      playerDiv.innerHTML = `
-        <div class="performer-image">
-          <img src="https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${playerId}/headshot/67/current" 
-               alt="${playerName}"
-               onerror="this.src='https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/generic/headshot/67/current.png'">
-        </div>
-        <div class="performer-name">${playerName}</div>
-        <div class="performer-stats">${statSummary}</div>
-      `;
-
-      container.appendChild(playerDiv);
+    plays.scoringPlays.forEach(idx => {
+      const el = createPlayItem(plays.allPlays[idx], true, true);
+      c.appendChild(el);
+      vm?.addVideoButtonToPlay(el, gamePkId, plays.allPlays[idx]);
     });
   };
 
-    // ===========================
-    // PITCHING DECISIONS
-    // ===========================
-    const renderPitchingDecisions = (data) => {
-    const wrapper = document.querySelector('.linescore-wrapper');
-    if (!wrapper) return;
-
-    const existingDecisions = wrapper.querySelector('.pitching-decisions');
-    if (existingDecisions) {
-      existingDecisions.remove();
-    }
-
-    const decisions = data.liveData?.decisions;
-    if (!decisions) return;
-
-    const winner = decisions.winner;
-    const loser = decisions.loser;
-    const save = decisions.save;
-
-    if (!winner && !loser) return;
-
-    const decisionsDiv = document.createElement('div');
-    decisionsDiv.className = 'pitching-decisions';
-
-    let decisionsHTML = '';
-
-    if (winner) {
-      decisionsHTML += `
-        <div class="decision-item">
-          <div class="decision-info">
-            <span class="decision-label">W:</span>
-            <span class="decision-name">${winner.fullName}</span>
-          </div>
-        </div>
-      `;
-    }
-
-    if (loser) {
-      decisionsHTML += `
-        <div class="decision-item">
-          <div class="decision-info">
-            <span class="decision-label">L:</span>
-            <span class="decision-name">${loser.fullName}</span>
-          </div>
-        </div>
-      `;
-    }
-
-    if (save) {
-      decisionsHTML += `
-        <div class="decision-item">
-          <div class="decision-info">
-            <span class="decision-label">SV:</span>
-            <span class="decision-name">${save.fullName}</span>
-          </div>
-        </div>
-      `;
-    }
-
-    decisionsDiv.innerHTML = decisionsHTML;
-    wrapper.appendChild(decisionsDiv);
-  };
-
-  // ===========================
-  // RENDER FUNCTIONS
-  // ===========================
-  const renderHeader = (gameData, liveData) => {
-    const { away, home } = gameData.teams;
-    const datetime = gameData.datetime;
-    const linescore = liveData.linescore;
-    const status = gameData.status.detailedState;
-
-    awayTeamId = away.id;
-    homeTeamId = home.id;
-
-    const awayRecord = away?.record ? `${away.record.wins}-${away.record.losses}` : '';
-    const homeRecord = home?.record ? `${home.record.wins}-${home.record.losses}` : '';
-    
-    updateTeamLogos(isDarkMode());
-
-    document.querySelector('.away-record').textContent = awayRecord;
-    document.querySelector('.home-record').textContent = homeRecord;
-    document.querySelector('.away-score').textContent = linescore?.teams?.away?.runs ?? '0';
-    document.querySelector('.home-score').textContent = linescore?.teams?.home?.runs ?? '0';
-    
-    // Fix game status with AM/PM
-    let statusText = '';
-    if (PREGAME_STATUSES.includes(status)) {
-      // For pregame games, show time with AM/PM
-      statusText = `${datetime.time} ${datetime.ampm}`;
-    } else {
-      // For live/final games, show the status
-      statusText = status;
-    }
-    
-    document.querySelector('.game-status').textContent = statusText;
-  };
-
-  const renderBoxscore = (gameData, liveData) => {
-    const linescore = liveData.linescore;
-    const { away, home } = gameData.teams;
-    const tbody = document.querySelector('.boxscore-table tbody');
-    
-    if (!tbody) return;
-    
-    tbody.innerHTML = '';
-
-    const darkMode = isDarkMode();
-    const awayLogoUrl = getLogoUrl(awayTeamId, darkMode);
-    const homeLogoUrl = getLogoUrl(homeTeamId, darkMode);
-
-    // Check if game has started (has innings data)
-    if (!linescore?.innings?.length) {
-      // Pregame - show team info with dashes for 9 innings plus R/H/E
-      const emptyInnings = Array(9).fill('<td class="inning-score">-</td>').join('');
-      
-      tbody.innerHTML = `
-        <tr>
-          <td class="team-name">
-            <img src="${awayLogoUrl}" alt="${away.abbreviation}" class="box-team-logo away-logo">
-          </td>
-          ${emptyInnings}
-          <td>-</td>
-          <td>-</td>
-          <td>-</td>
-        </tr>
-        <tr>
-          <td class="team-name">
-            <img src="${homeLogoUrl}" alt="${home.abbreviation}" class="box-team-logo home-logo">
-          </td>
-          ${emptyInnings}
-          <td>-</td>
-          <td>-</td>
-          <td>-</td>
-        </tr>
-      `;
+  const renderAllPlays = (plays) => {
+    const c = document.getElementById('all-plays-container');
+    if (!c) return;
+    c.querySelectorAll('.play-item, .no-plays-msg').forEach(p => p.remove());
+    c.style.display = '';
+    if (!plays?.allPlays?.length) {
+      const msg = document.createElement('div');
+      msg.className = 'no-plays-msg';
+      msg.style.cssText = 'text-align:center;padding:28px 12px;font-family:var(--font-mono);font-size:11px;color:var(--text-muted);opacity:.7;';
+      msg.textContent = 'No plays yet';
+      c.appendChild(msg);
       return;
     }
-
-    // Game has started - show actual innings and fill remaining with dashes
-    const maxInnings = Math.max(9, linescore.innings.length);
-    
-    let awayInnings = '';
-    let homeInnings = '';
-    
-    for (let i = 0; i < maxInnings; i++) {
-      const inning = linescore.innings[i];
-      if (inning) {
-        awayInnings += `<td class="inning-score">${inning.away?.runs ?? '-'}</td>`;
-        homeInnings += `<td class="inning-score">${inning.home?.runs ?? '-'}</td>`;
-      } else {
-        awayInnings += `<td class="inning-score">-</td>`;
-        homeInnings += `<td class="inning-score">-</td>`;
-      }
-    }
-
-    tbody.innerHTML = `
-      <tr>
-        <td class="team-name">
-          <img src="${awayLogoUrl}" alt="${away.abbreviation}" class="box-team-logo away-logo">
-        </td>
-        ${awayInnings}
-        <td>${linescore.teams.away.runs ?? 0}</td>
-        <td>${linescore.teams.away.hits ?? 0}</td>
-        <td>${linescore.teams.away.errors ?? 0}</td>
-      </tr>
-      <tr>
-        <td class="team-name">
-          <img src="${homeLogoUrl}" alt="${home.abbreviation}" class="box-team-logo home-logo">
-        </td>
-        ${homeInnings}
-        <td>${linescore.teams.home.runs ?? 0}</td>
-        <td>${linescore.teams.home.hits ?? 0}</td>
-        <td>${linescore.teams.home.errors ?? 0}</td>
-      </tr>
-    `;
+    [...plays.allPlays].reverse().forEach(play => c.appendChild(createPlayItem(play, true, false)));
   };
 
-  const renderScoringPlays = (plays, gamePk, videoMatcher) => {
-  const container = document.getElementById('scoring-plays-container');
-  if (!container) return;
-
-  container.querySelectorAll('.play-item').forEach(p => p.remove());
-
-  // Hide container if no scoring plays exist
-  if (!plays?.scoringPlays?.length) {
-    container.style.display = 'none';
-    return;
-  }
-  
-  // Show container if plays exist
-  container.style.display = '';
-
-  plays.scoringPlays.forEach(idx => {
-    const play = plays.allPlays[idx];
-    const el = createPlayItem(play, true, true);
-    container.appendChild(el);
-    
-    if (videoMatcher) {
-      videoMatcher.addVideoButtonToPlay(el, gamePk, play);
-    }
-  });
-};
-
-const renderAllPlays = (plays) => {
-  const container = document.getElementById('all-plays-container');
-  if (!container) return;
-
-  container.querySelectorAll('.play-item').forEach(p => p.remove());
-
-  // Hide container if no plays exist
-  if (!plays?.allPlays?.length) {
-    container.style.display = 'none';
-    return;
-  }
-  
-  // Show container if plays exist
-  container.style.display = '';
-
-  plays.allPlays.forEach(play => {
-    const el = createPlayItem(play, true, false);
-    container.appendChild(el);
-  });
-};
-
-  // ===========================
-  // VIDEO BUTTONS
-  // ===========================
-  const initVideoButtons = async (gamePk) => {
+  // ─────────────────────────────────────────────────────────
+  //  VIDEO BUTTONS
+  // ─────────────────────────────────────────────────────────
+  const initVideoButtons = async (gamePkId) => {
     if (!videoMatcher) return;
-
-    const condensedBtn = document.querySelector('[data-video-type="condensed"]');
-    const recapBtn = document.querySelector('[data-video-type="recap"]');
-
-    if (!condensedBtn && !recapBtn) return;
-
+    const cBtn = document.querySelector('[data-video-type="condensed"]');
+    const rBtn = document.querySelector('[data-video-type="recap"]');
+    if (!cBtn && !rBtn) return;
     try {
-      const gameContent = await videoMatcher.fetchGameContent(gamePk);
-      if (!gameContent) return;
-
-      const highlights = gameContent?.highlights?.highlights?.items || [];
-      
-      if (highlights.length === 0) {
-        if (condensedBtn) condensedBtn.style.display = 'none';
-        if (recapBtn) recapBtn.style.display = 'none';
-        return;
-      }
-
-      const getBestPlaybackUrl = (playbacks) => {
-        if (!playbacks || playbacks.length === 0) return null;
-        
-        const mp4Playbacks = playbacks.filter(p => {
-          const name = (p.name || '').toLowerCase();
-          const url = (p.url || '').toLowerCase();
-          const isMP4 = name.includes('mp4avc') || url.includes('.mp4');
-          const isNotM3U8 = !name.includes('m3u8') && !url.includes('.m3u8');
-          return isMP4 && isNotM3U8;
+      const content    = await videoMatcher.fetchGameContent(gamePkId);
+      const highlights = content?.highlights?.highlights?.items || [];
+      if (!highlights.length) { cBtn && (cBtn.style.display='none'); rBtn && (rBtn.style.display='none'); return; }
+      const bestUrl = (pbs) => {
+        if (!pbs?.length) return null;
+        const mp4 = pbs.filter(p => {
+          const n = (p.name||'').toLowerCase(), u = (p.url||'').toLowerCase();
+          return (n.includes('mp4avc') || u.includes('.mp4')) && !n.includes('m3u8') && !u.includes('.m3u8');
         });
-
-        if (mp4Playbacks.length === 0) return null;
-
-        const preferredQualities = ['2500K', '1800K', '1200K', '800K'];
-        for (const quality of preferredQualities) {
-          const qualityPlayback = mp4Playbacks.find(p => p.name && p.name.includes(quality));
-          if (qualityPlayback) return qualityPlayback.url;
-        }
-
-        return mp4Playbacks[0].url;
+        if (!mp4.length) return null;
+        for (const q of ['2500K','1800K','1200K','800K']) { const m = mp4.find(p => p.name?.includes(q)); if (m) return m.url; }
+        return mp4[0].url;
       };
-
-      if (condensedBtn && highlights[1]) {
-        const condensedUrl = getBestPlaybackUrl(highlights[1].playbacks);
-        
-        if (condensedUrl) {
-          condensedBtn.addEventListener('click', async () => {
-            const originalText = condensedBtn.textContent;
-            condensedBtn.disabled = true;
-            condensedBtn.textContent = 'Loading...';
-
-            try { 
-              const video = {
-                id: highlights[1].guid || 'condensed_0',
-                guid: highlights[1].guid,
-                title: highlights[1].title || 'Condensed Game',
-                description: highlights[1].description || '',
-                url: condensedUrl,
-                duration: highlights[1].duration || 0
-              };
-
-              videoMatcher.createVideoPlayer(video, document.body, condensedBtn);
-              
-              setTimeout(() => {
-                condensedBtn.textContent = originalText;
-                condensedBtn.disabled = false;
-              }, 500);
-              
-            } catch (error) {
-              console.error('Error playing condensed game:', error);
-              condensedBtn.textContent = originalText;
-              condensedBtn.disabled = false;
-            }
-          });
-        }
-      }
-
-      if (recapBtn && highlights[0]) {
-        const recapUrl = getBestPlaybackUrl(highlights[0].playbacks);
-        
-        if (recapUrl) {
-          recapBtn.addEventListener('click', async () => {
-            const originalText = recapBtn.textContent;
-            recapBtn.disabled = true;
-            recapBtn.textContent = 'Loading...';
-
-            try {
-              const video = {
-                id: highlights[0].guid || 'recap_1',
-                guid: highlights[0].guid,
-                title: highlights[0].title || 'Game Recap',
-                description: highlights[0].description || '',
-                url: recapUrl,
-                duration: highlights[0].duration || 0
-              };
-
-              videoMatcher.createVideoPlayer(video, document.body, recapBtn);
-              
-              setTimeout(() => {
-                recapBtn.textContent = originalText;
-                recapBtn.disabled = false;
-              }, 500);
-              
-            } catch (error) {
-              console.error('Error playing game recap:', error);
-              recapBtn.textContent = originalText;
-              recapBtn.disabled = false;
-            }
-          });
-        }
-      }
-
-    } catch (error) {
-      console.error('Error initializing video buttons:', error);
-    }
+      const attach = (btn, hl, label) => {
+        if (!btn || !hl) return;
+        const url = bestUrl(hl.playbacks);
+        if (!url) return;
+        btn.addEventListener('click', async () => {
+          const orig = btn.innerHTML; btn.disabled = true; btn.textContent = 'Loading…';
+          try {
+            videoMatcher.createVideoPlayer({ id: hl.guid||label, guid: hl.guid, title: hl.title||label, description: hl.description||'', url, duration: hl.duration||0 }, document.body, btn);
+            setTimeout(() => { btn.innerHTML = orig; btn.disabled = false; }, 500);
+          } catch { btn.innerHTML = orig; btn.disabled = false; }
+        });
+      };
+      attach(cBtn, highlights[1], 'condensed');
+      attach(rBtn, highlights[0], 'recap');
+    } catch (e) { console.error('Video buttons:', e); }
   };
 
-  // ===========================
-  // API
-  // ===========================
-  const fetchGameData = async (gamePk) => {
-    const url = `${API_BASE}/game/${gamePk}/feed/live`;
-    const res = await fetch(url);
-    return res.json();
+  // ─────────────────────────────────────────────────────────
+  //  LIVE POLL — smart diff, only re-renders changed parts
+  // ─────────────────────────────────────────────────────────
+  const startPolling = (gamePk) => {
+    if (pollTimer) clearInterval(pollTimer);
+    pollTimer = setInterval(async () => {
+      try {
+        const data   = await fetch(`${API_BASE}/game/${gamePk}/feed/live`).then(r => r.json());
+        const { gameData, liveData } = data;
+        const status = gameData.status.detailedState;
+        const phase  = getPhase(status);
+
+        // Always update header (score/inning changes frequently)
+        renderHeader(gameData, liveData);
+        renderBoxscore(gameData, liveData);
+
+        if (phase === 'LIVE') {
+          // Check if current play index changed (new pitch or new AB)
+          const cp       = liveData.plays?.currentPlay;
+          const pitches  = cp?.playEvents?.filter(e => e.isPitch) || [];
+          const newState = `${cp?.about?.atBatIndex}-${pitches.length}-${cp?.count?.balls}-${cp?.count?.strikes}`;
+          if (newState !== lastGameState) {
+            lastGameState = newState;
+            window._gameDataCache = data;
+            renderLiveAtBat(data);
+          }
+
+          // Update plays only when there's a new completed play
+          const allPlays = liveData.plays?.allPlays || [];
+          if (allPlays.length !== lastPlayIndex) {
+            lastPlayIndex = allPlays.length;
+            renderScoringPlays(liveData.plays, gamePk, videoMatcher);
+            renderAllPlays(liveData.plays);
+          }
+        } else if (phase === 'FINAL') {
+          // Game ended — stop polling, show final state
+          clearInterval(pollTimer);
+          const lab = document.getElementById('live-at-bat');
+          if (lab) lab.style.display = 'none';
+          renderPitchingDecisions(data);
+          renderTopPerformers(data);
+          const vb = document.querySelector('.video-buttons');
+          if (vb) vb.style.display = 'flex';
+          if (videoMatcher) await initVideoButtons(gamePk);
+          renderScoringPlays(liveData.plays, gamePk, videoMatcher);
+          renderAllPlays(liveData.plays);
+          window.renderGameTabs?.('FINAL');
+        }
+      } catch(e) {
+        console.warn('[Poll] Error:', e.message);
+      }
+    }, POLL_INTERVAL_MS);
   };
 
-  // ===========================
-  // INITIALIZATION
-  // ===========================
+  // ─────────────────────────────────────────────────────────
+  //  INIT
+  // ─────────────────────────────────────────────────────────
   const init = async () => {
     const gamePk = getUrlParam('gamePk');
-    
-    if (!gamePk) {
-      console.error('Missing gamePk in URL');
-      return;
-    }
+    if (!gamePk) { console.error('No gamePk'); return; }
 
-    if (window.MLBVideoMatcher) {
-      videoMatcher = new window.MLBVideoMatcher();
-    }
-
+    window._gamePkCache = gamePk;
+    if (window.MLBVideoMatcher) videoMatcher = new window.MLBVideoMatcher();
     initThemeToggle();
 
     try {
-      const data = await fetchGameData(gamePk);
+      const data = await fetch(`${API_BASE}/game/${gamePk}/feed/live`).then(r => r.json());
       const { gameData, liveData } = data;
-      const status = gameData.status.detailedState;
-      const phase = getGamePhase(status);
+      const phase  = getPhase(gameData.status.detailedState);
+      window._gameDataCache = data;
 
       renderHeader(gameData, liveData);
       renderBoxscore(gameData, liveData);
       renderPitchingDecisions(data);
       renderTopPerformers(data);
-      
+
+      window.renderGameTabs?.(phase);
+
       if (phase === 'LIVE') {
-        updateScorebug(data);
+        await renderLiveAtBat(data);
+        lastPlayIndex = liveData.plays?.allPlays?.length ?? 0;
+        const cp = liveData.plays?.currentPlay;
+        const pitches = cp?.playEvents?.filter(e => e.isPitch) || [];
+        lastGameState = `${cp?.about?.atBatIndex}-${pitches.length}-${cp?.count?.balls}-${cp?.count?.strikes}`;
+        startPolling(gamePk);
+      } else {
+        const lab = document.getElementById('live-at-bat');
+        if (lab) lab.style.display = 'none';
       }
 
-      const videoButtons = document.querySelector('.video-buttons');
-      if (videoButtons) {
-        videoButtons.style.display = phase === 'FINAL' ? 'flex' : 'none';
+      if (phase !== 'PREGAME') {
+        renderScoringPlays(liveData.plays, gamePk, videoMatcher);
+        renderAllPlays(liveData.plays);
       }
 
-      renderScoringPlays(liveData.plays, gamePk, videoMatcher);
-      renderAllPlays(liveData.plays);
+      if (typeof loadBoxScore === 'function') await loadBoxScore(data);
+      if (phase === 'FINAL' && videoMatcher) await initVideoButtons(gamePk);
 
-      if (typeof loadBoxScore === 'function') {
-        await loadBoxScore(data);
-      }
-
-      if (phase === 'FINAL' && videoMatcher) {
-        await initVideoButtons(gamePk);
-      }
-
-    } catch (error) {
-      console.error('Error loading game data:', error);
+    } catch(err) {
+      console.error('Init error:', err);
     }
   };
 
+  // Expose for tab re-render
+  window.renderLiveAtBat = renderLiveAtBat;
+
   init();
+  window.addEventListener('beforeunload', () => { if (pollTimer) clearInterval(pollTimer); });
 })();
