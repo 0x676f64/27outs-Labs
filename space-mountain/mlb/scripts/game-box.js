@@ -88,24 +88,59 @@
   };
 
   // ─────────────────────────────────────────────────────────
+  //  BASE RUNNER DIAMOND SVG
+  //  Palette: occupied = #bf0d3d (red), empty = transparent with
+  //  navy border in light mode / slate border in dark mode.
+  //  Diamond oriented like a real field — 2B at top, 1B right, 3B left.
+  // ─────────────────────────────────────────────────────────
+  const buildRunnerSVG = (offense = {}) => {
+    const on1   = !!offense.first;
+    const on2   = !!offense.second;
+    const on3   = !!offense.third;
+    const dark  = isDark();
+
+    // Occupied: red fill, bright red stroke
+    // Empty: transparent fill, theme-aware outline so it reads on both backgrounds
+    const fill   = (on) => on ? '#bf0d3d' : 'transparent';
+    const stroke = (on) => on
+      ? '#e63946'
+      : dark ? 'rgba(226,232,240,0.35)' : 'rgba(4,30,66,0.35)';
+    const sw  = 1.8;
+    const bs  = 7;   // half-size of each base diamond (smaller = more space)
+
+    // Each base is a square rotated 45° around its own center (cx,cy)
+    const base = (cx, cy, active) =>
+      `<rect x="${cx - bs}" y="${cy - bs}" width="${bs * 2}" height="${bs * 2}"
+        transform="rotate(45 ${cx} ${cy})"
+        fill="${fill(active)}" stroke="${stroke(active)}" stroke-width="${sw}" rx="1"/>`;
+
+    // ViewBox: 64×58 — wider to give bases more breathing room
+    // Centers: 2B(32,8) 3B(10,30) 1B(54,30)
+    return `<svg class="lab-runners-svg" width="64" height="58"
+      viewBox="0 0 64 58" fill="none" xmlns="http://www.w3.org/2000/svg">
+      ${base(32,  8, on2)}
+      ${base(10, 30, on3)}
+      ${base(54, 30, on1)}
+    </svg>`;
+  };
+
+  // ─────────────────────────────────────────────────────────
   //  BATTER SVG SILHOUETTES  (restyled to navy/red palette)
   //  Paths from provided document; .f = bat/detail, .e = body
   // ─────────────────────────────────────────────────────────
-  const BATTER_RIGHT_SVG = `<svg class="batter-svg" width="72" height="160" viewBox="0 0 200 430" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
-    <g transform="scale(1.18) translate(-5, 0)">
-      <path fill="#bf0d3d" stroke="#bf0d3d" stroke-width="1" d="M146.94,96.6c23.31,13.83,19.38,9.82,19.38,9.82,0,0,2.54-.65,1.58,1.98-.99,2.7-1.91,4.41-3.22,5.85-.96,1.05-2.31-1.11-2.31-2.3s-17.4-10.71-17.4-10.71"/>
-      <path fill="#041e42" stroke="#1e293b" stroke-width="1.2" d="M163.54,107.7c.79-3.56-5.93-7.9-11.85-11.46-1.97-1.18-3.8-1.23-5.38-.76l-9.64-5.56v-5.93c-.4-18.18-21.73-17.39-25.69-16.99-3.91,.39-28.75,8.15-20.4,28.64-11.95,2.93-27.14,10.42-34.13,14.83-7.51,4.74-9.09,30.43-9.88,52.16-.79,21.73-8.3,45.05-9.09,47.02-.79,1.98,.4,6.32,1.58,8.3s-1.19,3.56-1.19,3.56c0,0-7.9,1.98-13.44,18.57-5.53,16.6-.57,29.5,1.98,33.98,2.12,3.73,12.19,17.34,16.2,22.13,1.3,1.55,17.78,30.03,20.15,35.17s1.19,17.39,.79,17.78-3.52,3.97-6.33,8.52c-2.82,4.58-8.69,18.74-14.22,32.57s-15.02,51.77-15.02,51.77c0,0-6.72,23.31-3.56,28.85,3.16,5.53,23.71,3.16,31.61,2.37s20.15,4.35,29.24,3.56,16.2-2.77,17.78-9.09-18.33-8.4-28.85-16.11c-6.86-5.03-11.87-7.79-13.84-10.16-1.98-2.37,2.1-7.88,4.38-10.69,1.25-1.53,4.32-8.09,5.12-9.27,.79-1.19,18.97-45.05,19.76-46.63,.22-.43,1.43-2.47,3.14-5.41-3.56,21.65-9.46,32.68-9.46,32.68,0,0-6.72,13.83-2.37,19.36s15.41,2.77,24.5,2.77,16.99,3.16,23.31,1.98,15.02-6.72,15.81-9.88-8.96-5.24-13.44-6.32c-6.27-1.52-7.34,.87-16.43-10.98s-.18-38.72-.18-38.72c0,0,7.47-18.94,8.23-27.16,.68-7.25-4.27-23.12-10.6-46.82s-15.41-28.06-16.99-30.82-.79-10.67-.79-10.67c0,0,3.16,1.58,5.93,1.98s5.53-4.74,11.46-17.39c5.93-12.65,8.3-35.56,8.69-38.73,.4-3.16,4.35-13.04,4.35-13.04,0,0,17.78,4.74,21.73,5.14s11.85,1.98,14.23-1.98c2.37-3.95,2.37-16.2,2.37-24.1s-6.32-28.06-6.72-30.03,1.19-5.93,1.98-7.11c.79-1.19,4.35-8.3,5.14-11.85Z"/>
-      <path fill="#bf0d3d" stroke="#bf0d3d" stroke-width="1" d="M144.1,101.73s-34.4-21.36-34.76-21.3c0,0-40.7-24.5-48.21-28.06C53.62,48.82,9.59,19.08,1.86,14.44c-3.95-2.37,1.98-9.88,1.98-9.88C8.37-.06,8.97-.57,12.92,2.19c2.07,1.45,42.68,26.48,59.67,39.52s41.72,35.8,63.49,48.72"/>
-    </g>
-  </svg>`;
+  const BATTER_RIGHT_SVG = `<svg class="batter-svg" width="52" height="150" viewBox="0 4 170 486" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path fill="#bf0d3d" d="M146.94,96.6c23.31,13.83,19.38,9.82,19.38,9.82,0,0,2.54-.65,1.58,1.98-.99,2.7-1.91,4.41-3.22,5.85-.96,1.05-2.31-1.11-2.31-2.3s-17.4-10.71-17.4-10.71"/>
+  <path fill="#041e42" stroke="#2d3f5e" stroke-width="1" d="M163.54,107.7c.79-3.56-5.93-7.9-11.85-11.46-1.97-1.18-3.8-1.23-5.38-.76l-9.64-5.56v-5.93c-.4-18.18-21.73-17.39-25.69-16.99-3.91,.39-28.75,8.15-20.4,28.64-11.95,2.93-27.14,10.42-34.13,14.83-7.51,4.74-9.09,30.43-9.88,52.16-.79,21.73-8.3,45.05-9.09,47.02-.79,1.98,.4,6.32,1.58,8.3s-1.19,3.56-1.19,3.56c0,0-7.9,1.98-13.44,18.57-5.53,16.6-.57,29.5,1.98,33.98,2.12,3.73,12.19,17.34,16.2,22.13,1.3,1.55,17.78,30.03,20.15,35.17s1.19,17.39,.79,17.78-3.52,3.97-6.33,8.52c-2.82,4.58-8.69,18.74-14.22,32.57s-15.02,51.77-15.02,51.77c0,0-6.72,23.31-3.56,28.85,3.16,5.53,23.71,3.16,31.61,2.37s20.15,4.35,29.24,3.56,16.2-2.77,17.78-9.09-18.33-8.4-28.85-16.11c-6.86-5.03-11.87-7.79-13.84-10.16-1.98-2.37,2.1-7.88,4.38-10.69,1.25-1.53,4.32-8.09,5.12-9.27,.79-1.19,18.97-45.05,19.76-46.63,.22-.43,1.43-2.47,3.14-5.41-3.56,21.65-9.46,32.68-9.46,32.68,0,0-6.72,13.83-2.37,19.36s15.41,2.77,24.5,2.77,16.99,3.16,23.31,1.98,15.02-6.72,15.81-9.88-8.96-5.24-13.44-6.32c-6.27-1.52-7.34,.87-16.43-10.98s-.18-38.72-.18-38.72c0,0,7.47-18.94,8.23-27.16,.68-7.25-4.27-23.12-10.6-46.82s-15.41-28.06-16.99-30.82-.79-10.67-.79-10.67c0,0,3.16,1.58,5.93,1.98s5.53-4.74,11.46-17.39c5.93-12.65,8.3-35.56,8.69-38.73,.4-3.16,4.35-13.04,4.35-13.04,0,0,17.78,4.74,21.73,5.14s11.85,1.98,14.23-1.98c2.37-3.95,2.37-16.2,2.37-24.1s-6.32-28.06-6.72-30.03,1.19-5.93,1.98-7.11c.79-1.19,4.35-8.3,5.14-11.85Z"/>
+  <path fill="#bf0d3d" d="M144.1,101.73s-34.4-21.36-34.76-21.3c0,0-40.7-24.5-48.21-28.06C53.62,48.82,9.59,19.08,1.86,14.44c-3.95-2.37,1.98-9.88,1.98-9.88C8.37-.06,8.97-.57,12.92,2.19c2.07,1.45,42.68,26.48,59.67,39.52s41.72,35.8,63.49,48.72"/>
+</svg>`;
 
-  const BATTER_LEFT_SVG = `<svg class="batter-svg" width="72" height="160" viewBox="0 0 200 430" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
-    <g transform="scale(1.18) translate(5, 0)">
-      <path fill="#bf0d3d" stroke="#bf0d3d" stroke-width="1" d="M21.68,96.6C-1.64,110.43,2.3,106.42,2.3,106.42c0,0-2.54-.65-1.58,1.98,.99,2.7,1.91,4.41,3.22,5.85,.96,1.05,2.31-1.11,2.31-2.3s17.4-10.71,17.4-10.71"/>
-      <path fill="#041e42" stroke="#1e293b" stroke-width="1.2" d="M10.22,119.55c.79,1.19,2.37,5.14,1.98,7.11s-6.72,22.13-6.72,30.03c0,7.9,0,20.15,2.37,24.1s10.27,2.37,14.23,1.98,21.73-5.14,21.73-5.14c0,0,3.95,9.88,4.35,13.04,.4,3.16,2.77,26.08,8.69,38.73,5.93,12.65,8.69,17.78,11.46,17.39s5.93-1.98,5.93-1.98c0,0,.79,7.9-.79,10.67s-10.67,7.11-16.99,30.82c-6.32,23.71-11.28,39.57-10.6,46.82,.77,8.21,8.23,27.16,8.23,27.16,0,0,8.91,26.87-.18,38.72s-10.16,9.46-16.43,10.98c-4.48,1.09-14.23,3.16-13.44,6.32,.79,3.16,9.48,8.69,15.81,9.88s14.23-1.98,23.31-1.98,20.15,2.77,24.5-2.77c4.35-5.53-2.37-19.36-2.37-19.36,0,0-5.9-11.02-9.46-32.68,1.71,2.94,2.93,4.98,3.14,5.41,.79,1.58,18.97,45.44,19.76,46.63s3.87,7.74,5.12,9.27c2.28,2.8,6.36,8.32,4.38,10.69s-6.98,5.13-13.84,10.16c-10.51,7.71-30.43,9.79-28.85,16.11,1.58,6.32,8.69,8.3,17.78,9.09,9.09,.79,21.34-4.35,29.24-3.56s28.45,3.16,31.61-2.37c3.16-5.53-3.56-28.85-3.56-28.85,0,0-9.48-37.94-15.02-51.77-5.53-13.83-11.4-28-14.22-32.57-2.8-4.56-5.93-8.13-6.33-8.52s-1.58-12.65,.79-17.78,18.85-33.62,20.15-35.17c4.01-4.79,14.08-18.4,16.2-22.13,2.55-4.48,7.51-17.39,1.98-33.98-5.53-16.6-13.44-18.57-13.44-18.57,0,0-2.37-1.58-1.19-3.56,1.19-1.98,2.37-6.32,1.58-8.3s-8.3-25.29-9.09-47.02-2.37-47.42-9.88-52.16c-6.99-4.41-22.18-11.9-34.13-14.83,8.34-20.49-16.49-28.24-20.4-28.64-3.95-.4-25.29-1.19-25.69,16.99v5.93l-9.64,5.56c-1.58-.46-3.41-.42-5.38,.76-5.93,3.56-12.65,7.9-11.85,11.46s4.35,10.67,5.14,11.85Z"/>
-      <path fill="#bf0d3d" stroke="#bf0d3d" stroke-width="1" d="M24.52,101.73s34.4-21.36,34.76-21.3c0,0,40.7-24.5,48.21-28.06,7.51-3.56,51.55-33.3,59.27-37.94,3.95-2.37-1.98-9.88-1.98-9.88-4.54-4.62-5.14-5.14-9.09-2.37-2.07,1.45-42.68,26.48-59.67,39.52-16.99,13.04-41.72,35.8-63.49,48.72"/>
-    </g>
-  </svg>`;
+  const BATTER_LEFT_SVG  = `<svg class="batter-svg" width="52" height="150" viewBox="0 4 170 486" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <g transform="translate(170,0) scale(-1,1)">
+  <path fill="#bf0d3d" d="M146.94,96.6c23.31,13.83,19.38,9.82,19.38,9.82,0,0,2.54-.65,1.58,1.98-.99,2.7-1.91,4.41-3.22,5.85-.96,1.05-2.31-1.11-2.31-2.3s-17.4-10.71-17.4-10.71"/>
+  <path fill="#041e42" stroke="#2d3f5e" stroke-width="1" d="M163.54,107.7c.79-3.56-5.93-7.9-11.85-11.46-1.97-1.18-3.8-1.23-5.38-.76l-9.64-5.56v-5.93c-.4-18.18-21.73-17.39-25.69-16.99-3.91,.39-28.75,8.15-20.4,28.64-11.95,2.93-27.14,10.42-34.13,14.83-7.51,4.74-9.09,30.43-9.88,52.16-.79,21.73-8.3,45.05-9.09,47.02-.79,1.98,.4,6.32,1.58,8.3s-1.19,3.56-1.19,3.56c0,0-7.9,1.98-13.44,18.57-5.53,16.6-.57,29.5,1.98,33.98,2.12,3.73,12.19,17.34,16.2,22.13,1.3,1.55,17.78,30.03,20.15,35.17s1.19,17.39,.79,17.78-3.52,3.97-6.33,8.52c-2.82,4.58-8.69,18.74-14.22,32.57s-15.02,51.77-15.02,51.77c0,0-6.72,23.31-3.56,28.85,3.16,5.53,23.71,3.16,31.61,2.37s20.15,4.35,29.24,3.56,16.2-2.77,17.78-9.09-18.33-8.4-28.85-16.11c-6.86-5.03-11.87-7.79-13.84-10.16-1.98-2.37,2.1-7.88,4.38-10.69,1.25-1.53,4.32-8.09,5.12-9.27,.79-1.19,18.97-45.05,19.76-46.63,.22-.43,1.43-2.47,3.14-5.41-3.56,21.65-9.46,32.68-9.46,32.68,0,0-6.72,13.83-2.37,19.36s15.41,2.77,24.5,2.77,16.99,3.16,23.31,1.98,15.02-6.72,15.81-9.88-8.96-5.24-13.44-6.32c-6.27-1.52-7.34,.87-16.43-10.98s-.18-38.72-.18-38.72c0,0,7.47-18.94,8.23-27.16,.68-7.25-4.27-23.12-10.6-46.82s-15.41-28.06-16.99-30.82-.79-10.67-.79-10.67c0,0,3.16,1.58,5.93,1.98s5.53-4.74,11.46-17.39c5.93-12.65,8.3-35.56,8.69-38.73,.4-3.16,4.35-13.04,4.35-13.04,0,0,17.78,4.74,21.73,5.14s11.85,1.98,14.23-1.98c2.37-3.95,2.37-16.2,2.37-24.1s-6.32-28.06-6.72-30.03,1.19-5.93,1.98-7.11c.79-1.19,4.35-8.3,5.14-11.85Z"/>
+  <path fill="#bf0d3d" d="M144.1,101.73s-34.4-21.36-34.76-21.3c0,0-40.7-24.5-48.21-28.06C53.62,48.82,9.59,19.08,1.86,14.44c-3.95-2.37,1.98-9.88,1.98-9.88C8.37-.06,8.97-.57,12.92,2.19c2.07,1.45,42.68,26.48,59.67,39.52s41.72,35.8,63.49,48.72"/>
+  </g>
+</svg>`;
 
   // ─────────────────────────────────────────────────────────
   //  STRIKE ZONE SVG builder
@@ -113,24 +148,11 @@
   //  pZ: vertical (roughly 1.5 to 4.5 ft from ground)
   //  Positive pX = catcher's right (away from RHB)
   // ─────────────────────────────────────────────────────────
-  const ZONE_W = 220;   // px — viewBox width
-  const ZONE_H = 230;   // px — viewBox height
-  const SZ_LEFT  = 55;  // px
-  const SZ_RIGHT = 165; // px
-  const SZ_TOP   = 30;  // px  (top of zone)
-  const SZ_BOT   = 180; // px  (bottom of zone)
+  const ZONE_W=92,ZONE_H=122,SZ_LEFT=12,SZ_RIGHT=80,SZ_TOP=10,SZ_BOT=106,SZ_CX=46,PX_PER_FT=48,PZ_BOT_FT=1.5,PZ_TOP_FT=3.5;
 
   // Map real coordinates to SVG pixels
-  const mapPx = (pX) => {
-    // pX range roughly -1.5 to +1.5; positive = away from RHB = right in catcher view
-    const clamp = Math.max(-1.6, Math.min(1.6, pX));
-    return SZ_LEFT + (clamp + 1.6) / 3.2 * (SZ_RIGHT - SZ_LEFT);
-  };
-  const mapPz = (pZ) => {
-    // pZ range roughly 1.0 to 4.5
-    const clamp = Math.max(0.8, Math.min(4.8, pZ));
-    return SZ_BOT - (clamp - 0.8) / 4.0 * (SZ_BOT - SZ_TOP);
-  };
+  mapPx = (pX) => SZ_CX + pX * PX_PER_FT;
+  const mapPz = (pZ) => SZ_BOT - (pZ - PZ_BOT_FT) / (PZ_TOP_FT - PZ_BOT_FT) * (SZ_BOT - SZ_TOP);
 
   const buildStrikeZoneSVG = (pitches = [], currentCount = {}) => {
     const zW = SZ_RIGHT - SZ_LEFT;
@@ -160,35 +182,17 @@
           font-family="DM Mono, monospace" pointer-events="none">${num}</text>`;
     }).join('');
 
-    return `<svg class="sz-svg" viewBox="0 0 ${ZONE_W} ${ZONE_H}"
-      xmlns="http://www.w3.org/2000/svg" style="width:260px;height:auto;display:block;margin:0 auto;">
+    return `<svg class="sz-svg" width="113" height="150" viewBox="0 0 ${ZONE_W} ${ZONE_H}"
+      xmlns="http://www.w3.org/2000/svg" style="display:block;overflow:visible;">
 
-      <!-- Dirt / field background -->
-      <rect width="${ZONE_W}" height="${ZONE_H}" fill="var(--sz-bg, #0a0e1a)" rx="8"/>
-
-      <!-- Home plate -->
-      <polygon points="${ZONE_W/2-9},${ZONE_H-14} ${ZONE_W/2+9},${ZONE_H-14} ${ZONE_W/2+12},${ZONE_H-9} ${ZONE_W/2},${ZONE_H-4} ${ZONE_W/2-12},${ZONE_H-9}"
-        fill="white" stroke="rgba(255,255,255,.3)" stroke-width="1"/>
-
-      <!-- Zone outer box -->
       <rect x="${SZ_LEFT}" y="${SZ_TOP}" width="${zW}" height="${zH}"
-        fill="rgba(191,13,61,0.06)" stroke="rgba(191,13,61,0.6)" stroke-width="1.5" rx="2"/>
-
-      <!-- 3×3 grid inner lines -->
-      <line x1="${SZ_LEFT+z3}"   y1="${SZ_TOP}" x2="${SZ_LEFT+z3}"   y2="${SZ_BOT}" stroke="rgba(191,13,61,0.25)" stroke-width="1" stroke-dasharray="3,3"/>
-      <line x1="${SZ_LEFT+z3*2}" y1="${SZ_TOP}" x2="${SZ_LEFT+z3*2}" y2="${SZ_BOT}" stroke="rgba(191,13,61,0.25)" stroke-width="1" stroke-dasharray="3,3"/>
-      <line x1="${SZ_LEFT}" y1="${SZ_TOP+z3h}"   x2="${SZ_RIGHT}" y2="${SZ_TOP+z3h}"   stroke="rgba(191,13,61,0.25)" stroke-width="1" stroke-dasharray="3,3"/>
-      <line x1="${SZ_LEFT}" y1="${SZ_TOP+z3h*2}" x2="${SZ_RIGHT}" y2="${SZ_TOP+z3h*2}" stroke="rgba(191,13,61,0.25)" stroke-width="1" stroke-dasharray="3,3"/>
-
-      <!-- Zone labels -->
-      <text x="${SZ_LEFT + zW/2}" y="${SZ_TOP - 10}" text-anchor="middle"
-        font-size="9" fill="rgba(148,163,184,0.6)" font-family="DM Mono,monospace" letter-spacing="1">STRIKE ZONE</text>
-
-      <!-- Ball / Strike indicator at bottom corners -->
-      <text x="10" y="${ZONE_H - 8}" font-size="10" font-weight="700" fill="#10b981" font-family="DM Mono,monospace">${currentCount.balls ?? 0}B</text>
-      <text x="${ZONE_W - 28}" y="${ZONE_H - 8}" font-size="10" font-weight="700" fill="#ef4444" font-family="DM Mono,monospace">${currentCount.strikes ?? 0}S</text>
-
-      <!-- Pitch dots -->
+        fill="rgba(191,13,61,0.05)" stroke="#bf0d3d" stroke-width="1.5"/>
+      <line x1="${SZ_LEFT+z3}"   y1="${SZ_TOP}" x2="${SZ_LEFT+z3}"   y2="${SZ_BOT}" stroke="rgba(191,13,61,0.28)" stroke-width="0.8" stroke-dasharray="3,2"/>
+      <line x1="${SZ_LEFT+z3*2}" y1="${SZ_TOP}" x2="${SZ_LEFT+z3*2}" y2="${SZ_BOT}" stroke="rgba(191,13,61,0.28)" stroke-width="0.8" stroke-dasharray="3,2"/>
+      <line x1="${SZ_LEFT}" y1="${SZ_TOP+z3h}"   x2="${SZ_RIGHT}" y2="${SZ_TOP+z3h}"   stroke="rgba(191,13,61,0.28)" stroke-width="0.8" stroke-dasharray="3,2"/>
+      <line x1="${SZ_LEFT}" y1="${SZ_TOP+z3h*2}" x2="${SZ_RIGHT}" y2="${SZ_TOP+z3h*2}" stroke="rgba(191,13,61,0.28)" stroke-width="0.8" stroke-dasharray="3,2"/>
+      <polygon points="${SZ_LEFT},${SZ_BOT+8} ${SZ_RIGHT},${SZ_BOT+8} ${SZ_RIGHT},${SZ_BOT+16} ${SZ_CX},${SZ_BOT+26} ${SZ_LEFT},${SZ_BOT+16}"
+        fill="white" stroke="rgba(148,163,184,0.55)" stroke-width="1.4"/>
       ${dots}
     </svg>`;
   };
@@ -369,6 +373,10 @@
         <div class="lab-vs">vs</div>
         <div class="lab-pitcher-mini">${pitcher?.fullName ?? ''}</div>
       </div>
+      <!-- Base runners — right side of header -->
+      <div class="lab-runners">
+        ${buildRunnerSVG(offense)}
+      </div>
     </div>
 
     <div class="lab-body">
@@ -434,17 +442,28 @@
   });
 
   const generateSVGField = (count, onBase) => {
-    const o  = count?.outs ?? 0;
-    const ac = (active) => active ? '#bf0d3d' : 'transparent';
-    return `<svg width="58" height="58" viewBox="0 0 58 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <!-- Outs -->
-      <circle cx="10" cy="51" r="5" fill="${ac(o>=1)}" stroke="#bf0d3d" stroke-width="1.2"/>
-      <circle cx="22" cy="51" r="5" fill="${ac(o>=2)}" stroke="#bf0d3d" stroke-width="1.2"/>
-      <circle cx="34" cy="51" r="5" fill="${ac(o>=3)}" stroke="#bf0d3d" stroke-width="1.2"/>
-      <!-- Bases -->
-      <rect x="14" y="30" width="11" height="11" transform="rotate(45 14 30)" fill="${ac(onBase?.third)}"  stroke="#bf0d3d" stroke-width="1.2"/>
-      <rect x="22" y="19" width="11" height="11" transform="rotate(45 22 19)" fill="${ac(onBase?.second)}" stroke="#bf0d3d" stroke-width="1.2"/>
-      <rect x="30" y="30" width="11" height="11" transform="rotate(45 30 30)" fill="${ac(onBase?.first)}"  stroke="#bf0d3d" stroke-width="1.2"/>
+    const o   = count?.outs ?? 0;
+    const on  = (active) => active ? '#bf0d3d' : 'transparent';
+    const str = (active) => active ? '#e63946' : 'rgba(148,163,184,0.4)';
+    const sw  = 1.5;
+    const bs  = 6; // base half-size (smaller diamonds)
+
+    const base = (cx, cy, active) =>
+      `<rect x="${cx-bs}" y="${cy-bs}" width="${bs*2}" height="${bs*2}"
+        transform="rotate(45 ${cx} ${cy})"
+        fill="${on(active)}" stroke="${str(active)}" stroke-width="${sw}"/>`;
+
+    return `<svg width="58" height="52" viewBox="0 0 58 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- 2B top -->
+      ${base(29, 9,  onBase?.second)}
+      <!-- 3B left -->
+      ${base(12, 24, onBase?.third)}
+      <!-- 1B right -->
+      ${base(46, 24, onBase?.first)}
+      <!-- Outs — 3 dots centered below bases -->
+      <circle cx="17" cy="44" r="4.5" fill="${on(o>=1)}" stroke="${str(o>=1)}" stroke-width="1.3"/>
+      <circle cx="29" cy="44" r="4.5" fill="${on(o>=2)}" stroke="${str(o>=2)}" stroke-width="1.3"/>
+      <circle cx="41" cy="44" r="4.5" fill="${on(o>=3)}" stroke="${str(o>=3)}" stroke-width="1.3"/>
     </svg>`;
   };
 
@@ -479,6 +498,8 @@
   const updateWinProbTheme = (dark) => {
     const ic = dark ? '#e2e8f0' : '#041e42';
     const gc = dark ? 'rgba(226,232,240,0.1)' : 'rgba(4,30,66,0.12)';
+    const lc = dark ? 'rgba(226,232,240,1)' : 'rgba(4,30,66,1)';
+
     document.querySelectorAll('#win-prob-container text').forEach(el => {
       if (el.getAttribute('font-family') === 'DM Mono' && !isNaN(el.textContent.trim()))
         el.setAttribute('fill', ic);
@@ -487,6 +508,13 @@
       const dash = el.getAttribute('stroke-dasharray');
       if (dash?.includes('3,3')) el.setAttribute('stroke', gc);
       else if (!dash && el.getAttribute('stroke') !== '#bbb') el.setAttribute('stroke', ic);
+    });
+    // Update the probability line and hover dot dynamically
+    document.querySelectorAll('#win-prob-container polyline').forEach(el => {
+      el.setAttribute('stroke', lc);
+    });
+    document.querySelectorAll('#win-prob-container circle[id^="wp-dot-"]').forEach(el => {
+      el.setAttribute('stroke', lc);
     });
   };
 
@@ -836,9 +864,6 @@
       console.error('Init error:', err);
     }
   };
-
-  // Expose for tab re-render
-  window.renderLiveAtBat = renderLiveAtBat;
 
   init();
   window.addEventListener('beforeunload', () => { if (pollTimer) clearInterval(pollTimer); });

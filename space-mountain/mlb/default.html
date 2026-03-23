@@ -597,7 +597,7 @@ async function fetchGames(){
   S.slide = 0;
   const ds = fmtDate(S.date);
   try{
-    const r = await fetch(`${API}/schedule?sportId=1&date=${ds}&hydrate=linescore,team`);
+    const r = await fetch(`${API}/schedule?sportId=1,51&date=${ds}&hydrate=linescore,team`);
     const d = await r.json();
     const games = d.dates?.[0]?.games || [];
     el('game-count-lbl').textContent = games.length ? `${games.length} game${games.length>1?'s':''} scheduled` : '';
