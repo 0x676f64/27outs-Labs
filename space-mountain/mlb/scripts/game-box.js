@@ -128,13 +128,13 @@
   //  BATTER SVG SILHOUETTES  (restyled to navy/red palette)
   //  Paths from provided document; .f = bat/detail, .e = body
   // ─────────────────────────────────────────────────────────
-  const BATTER_RIGHT_SVG = `<svg class="batter-svg" width="52" height="150" viewBox="0 4 170 486" fill="none" xmlns="http://www.w3.org/2000/svg">
+  const BATTER_RIGHT_SVG = `<svg class="batter-svg" width="56" height="165" viewBox="0 4 170 486" fill="none" xmlns="http://www.w3.org/2000/svg">
   <path fill="#bf0d3d" d="M146.94,96.6c23.31,13.83,19.38,9.82,19.38,9.82,0,0,2.54-.65,1.58,1.98-.99,2.7-1.91,4.41-3.22,5.85-.96,1.05-2.31-1.11-2.31-2.3s-17.4-10.71-17.4-10.71"/>
   <path fill="#041e42" stroke="#2d3f5e" stroke-width="1" d="M163.54,107.7c.79-3.56-5.93-7.9-11.85-11.46-1.97-1.18-3.8-1.23-5.38-.76l-9.64-5.56v-5.93c-.4-18.18-21.73-17.39-25.69-16.99-3.91,.39-28.75,8.15-20.4,28.64-11.95,2.93-27.14,10.42-34.13,14.83-7.51,4.74-9.09,30.43-9.88,52.16-.79,21.73-8.3,45.05-9.09,47.02-.79,1.98,.4,6.32,1.58,8.3s-1.19,3.56-1.19,3.56c0,0-7.9,1.98-13.44,18.57-5.53,16.6-.57,29.5,1.98,33.98,2.12,3.73,12.19,17.34,16.2,22.13,1.3,1.55,17.78,30.03,20.15,35.17s1.19,17.39,.79,17.78-3.52,3.97-6.33,8.52c-2.82,4.58-8.69,18.74-14.22,32.57s-15.02,51.77-15.02,51.77c0,0-6.72,23.31-3.56,28.85,3.16,5.53,23.71,3.16,31.61,2.37s20.15,4.35,29.24,3.56,16.2-2.77,17.78-9.09-18.33-8.4-28.85-16.11c-6.86-5.03-11.87-7.79-13.84-10.16-1.98-2.37,2.1-7.88,4.38-10.69,1.25-1.53,4.32-8.09,5.12-9.27,.79-1.19,18.97-45.05,19.76-46.63,.22-.43,1.43-2.47,3.14-5.41-3.56,21.65-9.46,32.68-9.46,32.68,0,0-6.72,13.83-2.37,19.36s15.41,2.77,24.5,2.77,16.99,3.16,23.31,1.98,15.02-6.72,15.81-9.88-8.96-5.24-13.44-6.32c-6.27-1.52-7.34,.87-16.43-10.98s-.18-38.72-.18-38.72c0,0,7.47-18.94,8.23-27.16,.68-7.25-4.27-23.12-10.6-46.82s-15.41-28.06-16.99-30.82-.79-10.67-.79-10.67c0,0,3.16,1.58,5.93,1.98s5.53-4.74,11.46-17.39c5.93-12.65,8.3-35.56,8.69-38.73,.4-3.16,4.35-13.04,4.35-13.04,0,0,17.78,4.74,21.73,5.14s11.85,1.98,14.23-1.98c2.37-3.95,2.37-16.2,2.37-24.1s-6.32-28.06-6.72-30.03,1.19-5.93,1.98-7.11c.79-1.19,4.35-8.3,5.14-11.85Z"/>
   <path fill="#bf0d3d" d="M144.1,101.73s-34.4-21.36-34.76-21.3c0,0-40.7-24.5-48.21-28.06C53.62,48.82,9.59,19.08,1.86,14.44c-3.95-2.37,1.98-9.88,1.98-9.88C8.37-.06,8.97-.57,12.92,2.19c2.07,1.45,42.68,26.48,59.67,39.52s41.72,35.8,63.49,48.72"/>
 </svg>`;
 
-  const BATTER_LEFT_SVG  = `<svg class="batter-svg" width="52" height="150" viewBox="0 4 170 486" fill="none" xmlns="http://www.w3.org/2000/svg">
+  const BATTER_LEFT_SVG  = `<svg class="batter-svg" width="56" height="165" viewBox="0 4 170 486" fill="none" xmlns="http://www.w3.org/2000/svg">
   <g transform="translate(170,0) scale(-1,1)">
   <path fill="#bf0d3d" d="M146.94,96.6c23.31,13.83,19.38,9.82,19.38,9.82,0,0,2.54-.65,1.58,1.98-.99,2.7-1.91,4.41-3.22,5.85-.96,1.05-2.31-1.11-2.31-2.3s-17.4-10.71-17.4-10.71"/>
   <path fill="#041e42" stroke="#2d3f5e" stroke-width="1" d="M163.54,107.7c.79-3.56-5.93-7.9-11.85-11.46-1.97-1.18-3.8-1.23-5.38-.76l-9.64-5.56v-5.93c-.4-18.18-21.73-17.39-25.69-16.99-3.91,.39-28.75,8.15-20.4,28.64-11.95,2.93-27.14,10.42-34.13,14.83-7.51,4.74-9.09,30.43-9.88,52.16-.79,21.73-8.3,45.05-9.09,47.02-.79,1.98,.4,6.32,1.58,8.3s-1.19,3.56-1.19,3.56c0,0-7.9,1.98-13.44,18.57-5.53,16.6-.57,29.5,1.98,33.98,2.12,3.73,12.19,17.34,16.2,22.13,1.3,1.55,17.78,30.03,20.15,35.17s1.19,17.39,.79,17.78-3.52,3.97-6.33,8.52c-2.82,4.58-8.69,18.74-14.22,32.57s-15.02,51.77-15.02,51.77c0,0-6.72,23.31-3.56,28.85,3.16,5.53,23.71,3.16,31.61,2.37s20.15,4.35,29.24,3.56,16.2-2.77,17.78-9.09-18.33-8.4-28.85-16.11c-6.86-5.03-11.87-7.79-13.84-10.16-1.98-2.37,2.1-7.88,4.38-10.69,1.25-1.53,4.32-8.09,5.12-9.27,.79-1.19,18.97-45.05,19.76-46.63,.22-.43,1.43-2.47,3.14-5.41-3.56,21.65-9.46,32.68-9.46,32.68,0,0-6.72,13.83-2.37,19.36s15.41,2.77,24.5,2.77,16.99,3.16,23.31,1.98,15.02-6.72,15.81-9.88-8.96-5.24-13.44-6.32c-6.27-1.52-7.34,.87-16.43-10.98s-.18-38.72-.18-38.72c0,0,7.47-18.94,8.23-27.16,.68-7.25-4.27-23.12-10.6-46.82s-15.41-28.06-16.99-30.82-.79-10.67-.79-10.67c0,0,3.16,1.58,5.93,1.98s5.53-4.74,11.46-17.39c5.93-12.65,8.3-35.56,8.69-38.73,.4-3.16,4.35-13.04,4.35-13.04,0,0,17.78,4.74,21.73,5.14s11.85,1.98,14.23-1.98c2.37-3.95,2.37-16.2,2.37-24.1s-6.32-28.06-6.72-30.03,1.19-5.93,1.98-7.11c.79-1.19,4.35-8.3,5.14-11.85Z"/>
@@ -148,16 +148,17 @@
   //  pZ: vertical (roughly 1.5 to 4.5 ft from ground)
   //  Positive pX = catcher's right (away from RHB)
   // ─────────────────────────────────────────────────────────
-  const ZONE_W=92,ZONE_H=122,SZ_LEFT=12,SZ_RIGHT=80,SZ_TOP=10,SZ_BOT=106,SZ_CX=46,PX_PER_FT=48,PZ_BOT_FT=1.5,PZ_TOP_FT=3.5;
+  const ZONE_W=92,ZONE_H=122,SZ_LEFT=12,SZ_RIGHT=80,SZ_TOP=10,SZ_BOT=100,SZ_CX=46,PX_PER_FT=48,PZ_BOT_FT=1.5,PZ_TOP_FT=3.5;
 
   // Map real coordinates to SVG pixels
   mapPx = (pX) => SZ_CX + pX * PX_PER_FT;
   const mapPz = (pZ) => SZ_BOT - (pZ - PZ_BOT_FT) / (PZ_TOP_FT - PZ_BOT_FT) * (SZ_BOT - SZ_TOP);
 
   const buildStrikeZoneSVG = (pitches = [], currentCount = {}) => {
-    const zW = SZ_RIGHT - SZ_LEFT;
-    const zH = SZ_BOT   - SZ_TOP;
-    const z3 = zW / 3, z3h = zH / 3;
+    const zW  = SZ_RIGHT - SZ_LEFT;
+    const zH  = SZ_BOT   - SZ_TOP;
+    const zH_vis = zH - 6;   // visual height — bottom trimmed 6px, pitch mapping unchanged
+    const z3  = zW / 3, z3h = zH_vis / 3;
 
     // Build pitch dots
     const dots = pitches.map((p, i) => {
@@ -182,13 +183,13 @@
           font-family="DM Mono, monospace" pointer-events="none">${num}</text>`;
     }).join('');
 
-    return `<svg class="sz-svg" width="113" height="150" viewBox="0 0 ${ZONE_W} ${ZONE_H}"
+    return `<svg class="sz-svg" width="68" height="90" viewBox="0 0 ${ZONE_W} ${ZONE_H}"
       xmlns="http://www.w3.org/2000/svg" style="display:block;overflow:visible;">
 
-      <rect x="${SZ_LEFT}" y="${SZ_TOP}" width="${zW}" height="${zH}"
+      <rect x="${SZ_LEFT}" y="${SZ_TOP}" width="${zW}" height="${zH_vis}"
         fill="rgba(191,13,61,0.05)" stroke="#bf0d3d" stroke-width="1.5"/>
-      <line x1="${SZ_LEFT+z3}"   y1="${SZ_TOP}" x2="${SZ_LEFT+z3}"   y2="${SZ_BOT}" stroke="rgba(191,13,61,0.28)" stroke-width="0.8" stroke-dasharray="3,2"/>
-      <line x1="${SZ_LEFT+z3*2}" y1="${SZ_TOP}" x2="${SZ_LEFT+z3*2}" y2="${SZ_BOT}" stroke="rgba(191,13,61,0.28)" stroke-width="0.8" stroke-dasharray="3,2"/>
+      <line x1="${SZ_LEFT+z3}"   y1="${SZ_TOP}" x2="${SZ_LEFT+z3}"   y2="${SZ_TOP+zH_vis}" stroke="rgba(191,13,61,0.28)" stroke-width="0.8" stroke-dasharray="3,2"/>
+      <line x1="${SZ_LEFT+z3*2}" y1="${SZ_TOP}" x2="${SZ_LEFT+z3*2}" y2="${SZ_TOP+zH_vis}" stroke="rgba(191,13,61,0.28)" stroke-width="0.8" stroke-dasharray="3,2"/>
       <line x1="${SZ_LEFT}" y1="${SZ_TOP+z3h}"   x2="${SZ_RIGHT}" y2="${SZ_TOP+z3h}"   stroke="rgba(191,13,61,0.28)" stroke-width="0.8" stroke-dasharray="3,2"/>
       <line x1="${SZ_LEFT}" y1="${SZ_TOP+z3h*2}" x2="${SZ_RIGHT}" y2="${SZ_TOP+z3h*2}" stroke="rgba(191,13,61,0.28)" stroke-width="0.8" stroke-dasharray="3,2"/>
       <polygon points="${SZ_LEFT},${SZ_BOT+8} ${SZ_RIGHT},${SZ_BOT+8} ${SZ_RIGHT},${SZ_BOT+16} ${SZ_CX},${SZ_BOT+26} ${SZ_LEFT},${SZ_BOT+16}"
@@ -263,7 +264,8 @@
 
     const batter   = cp.matchup?.batter;
     const pitcher  = cp.matchup?.pitcher;
-    const batSide  = cp.matchup?.batSide?.code; // 'R' or 'L'
+    const batSide  = cp.matchup?.batSide?.code;   // 'R' or 'L'
+    const pitSide  = cp.matchup?.pitchHand?.code; // 'R' or 'L'
     const count    = cp.count || { balls:0, strikes:0, outs:0 };
     const pitches  = cp.playEvents?.filter(e => e.isPitch) || [];
     const batterId = batter?.id;
@@ -300,7 +302,7 @@
             <img src="${IMG_BASE}/${pitcherId}/spots/60" class="pitcher-mini-photo"
               onerror="this.style.display='none'" alt="${pitcher?.fullName}">
             <div class="pitcher-mini-info">
-              <div class="pitcher-mini-name">${pitcher?.fullName ?? 'Pitcher'}</div>
+              <div class="pitcher-mini-name">${pitcher?.fullName ?? 'Pitcher'} ${pitSide ? `<span class="lab-hand-badge">${pitSide}HP</span>` : ''}</div>
               <div class="pitcher-mini-stats">
                 <span class="pms-item"><span class="pms-lbl">IP</span>${ip}</span>
                 <span class="pms-item"><span class="pms-lbl">K</span>${k}</span>

@@ -1302,7 +1302,7 @@
 
     .lab-runners-svg {
         display: block;
-        width: 64px;
+        width: 58px;
         height: 58px;
         /* Occupied bases glow slightly */
         filter: drop-shadow(0 0 3px rgba(191,13,61,0.3));
@@ -1321,47 +1321,50 @@
 
     /* ── Zone column ── */
     .lab-zone-col {
-        padding: 16px 20px;
+        padding: 16px 12px;
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 12px;
+        gap: 14px;
         border-right: 1px solid var(--border);
-        /* Fixed width so it never stretches regardless of layout state */
-        width: 210px;
+        /* Fixed width — never stretches regardless of layout state */
+        width: 230px;
         flex-shrink: 0;
         box-sizing: border-box;
     }
 
     @media (max-width: 820px) {
-        .lab-zone-col { width: 100%; border-right: none; border-bottom: 1px solid var(--border); }
+        .lab-zone-col { width: 100%; border-right: none; border-bottom: 1px solid var(--border); padding: 16px; }
+        .lab-zone-wrap { margin: 0 auto; }
     }
 
     /* Zone wrap: fixed px — never percentage, renders correctly on first paint */
     /* Zone wrap: fixed px — batter sits outside, overlapping slightly */
     .lab-zone-wrap {
         position: relative;
-        width: 113px;
-        height: 150px;
+        width: 68px;
+        height: 165px;
         flex-shrink: 0;
-        display: block;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         margin: 0 auto;
     }
 
     /* Batter silhouette — positioned OUTSIDE the zone box, no overflow issues */
     .lab-batter-silhouette {
         position: absolute;
-        top: 0;
-        width: 52px;
-        height: 150px;
+        top: -12px;
+        width: 56px;
+        height: 165px;
         pointer-events: none;
         opacity: 0.82;
-        overflow: hidden;
+        overflow: visible;
     }
 
     /* Catcher/ump POV: RHB on LEFT (3B side), LHB on RIGHT (1B side) */
-    .lab-batter-silhouette.rhb { right: 100%; margin-right: 4px; }
-    .lab-batter-silhouette.lhb { left: 100%; margin-left: 4px; }
+    .lab-batter-silhouette.rhb { right: 100%; margin-right: 6px; }
+    .lab-batter-silhouette.lhb { left: 100%; margin-left: 6px; }
 
     .batter-svg {
         display: block;
@@ -1371,16 +1374,16 @@
 
     /* Zone SVG container — exactly matches SVG attributes */
     .lab-zone-svg {
-        width: 113px;
-        height: 150px;
+        width: 68px;
+        height: 90px;
         flex-shrink: 0;
         display: block;
     }
 
     .lab-zone-svg .sz-svg {
         display: block;
-        width: 113px !important;
-        height: 150px !important;
+        width: 68px !important;
+        height: 90px !important;
     }
 
     /* ── Count pills ── */
