@@ -9,8 +9,6 @@
 
   const FINAL_STATUSES   = ['Final','Game Over','Final: Tied','Completed Early','Suspended: Rain','Suspended','Cancelled'];
   const PREGAME_STATUSES = ['Pre-Game','Scheduled','Warmup','Delayed','Postponed'];
-  const POLL_INTERVAL_MS = 8000;
-
   // ─────────────────────────────────────────────────────────
   //  PITCH TYPE CONFIG — color, full name, abbreviation
   // ─────────────────────────────────────────────────────────
@@ -94,29 +92,22 @@
   //  Diamond oriented like a real field — 2B at top, 1B right, 3B left.
   // ─────────────────────────────────────────────────────────
   const buildRunnerSVG = (offense = {}) => {
-    const on1   = !!offense.first;
-    const on2   = !!offense.second;
-    const on3   = !!offense.third;
-    const dark  = isDark();
-
-    // Occupied: red fill, bright red stroke
-    // Empty: transparent fill, theme-aware outline so it reads on both backgrounds
-    const fill   = (on) => on ? '#bf0d3d' : 'transparent';
-    const stroke = (on) => on
-      ? '#e63946'
-      : dark ? 'rgba(226,232,240,0.35)' : 'rgba(4,30,66,0.35)';
+    const on1 = !!offense.first;
+    const on2 = !!offense.second;
+    const on3 = !!offense.third;
     const sw  = 1.8;
-    const bs  = 7;   // half-size of each base diamond (smaller = more space)
+    const bs  = 7;
 
-    // Each base is a square rotated 45° around its own center (cx,cy)
+    // Use CSS variables for theme-aware colors — updates instantly on theme toggle
+    const fill   = (on) => on ? '#bf0d3d' : 'transparent';
+    const stroke = (on) => on ? '#e63946' : 'var(--runner-empty)';
+
     const base = (cx, cy, active) =>
       `<rect x="${cx - bs}" y="${cy - bs}" width="${bs * 2}" height="${bs * 2}"
         transform="rotate(45 ${cx} ${cy})"
         fill="${fill(active)}" stroke="${stroke(active)}" stroke-width="${sw}" rx="1"/>`;
 
-    // ViewBox: 64×58 — wider to give bases more breathing room
-    // Centers: 2B(32,8) 3B(10,30) 1B(54,30)
-    return `<svg class="lab-runners-svg" width="64" height="58"
+    return `<svg class="lab-runners-svg" width="58" height="58"
       viewBox="0 0 64 58" fill="none" xmlns="http://www.w3.org/2000/svg">
       ${base(32,  8, on2)}
       ${base(10, 30, on3)}
@@ -130,14 +121,14 @@
   // ─────────────────────────────────────────────────────────
   const BATTER_RIGHT_SVG = `<svg class="batter-svg" width="56" height="165" viewBox="0 4 170 486" fill="none" xmlns="http://www.w3.org/2000/svg">
   <path fill="#bf0d3d" d="M146.94,96.6c23.31,13.83,19.38,9.82,19.38,9.82,0,0,2.54-.65,1.58,1.98-.99,2.7-1.91,4.41-3.22,5.85-.96,1.05-2.31-1.11-2.31-2.3s-17.4-10.71-17.4-10.71"/>
-  <path fill="#041e42" stroke="#2d3f5e" stroke-width="1" d="M163.54,107.7c.79-3.56-5.93-7.9-11.85-11.46-1.97-1.18-3.8-1.23-5.38-.76l-9.64-5.56v-5.93c-.4-18.18-21.73-17.39-25.69-16.99-3.91,.39-28.75,8.15-20.4,28.64-11.95,2.93-27.14,10.42-34.13,14.83-7.51,4.74-9.09,30.43-9.88,52.16-.79,21.73-8.3,45.05-9.09,47.02-.79,1.98,.4,6.32,1.58,8.3s-1.19,3.56-1.19,3.56c0,0-7.9,1.98-13.44,18.57-5.53,16.6-.57,29.5,1.98,33.98,2.12,3.73,12.19,17.34,16.2,22.13,1.3,1.55,17.78,30.03,20.15,35.17s1.19,17.39,.79,17.78-3.52,3.97-6.33,8.52c-2.82,4.58-8.69,18.74-14.22,32.57s-15.02,51.77-15.02,51.77c0,0-6.72,23.31-3.56,28.85,3.16,5.53,23.71,3.16,31.61,2.37s20.15,4.35,29.24,3.56,16.2-2.77,17.78-9.09-18.33-8.4-28.85-16.11c-6.86-5.03-11.87-7.79-13.84-10.16-1.98-2.37,2.1-7.88,4.38-10.69,1.25-1.53,4.32-8.09,5.12-9.27,.79-1.19,18.97-45.05,19.76-46.63,.22-.43,1.43-2.47,3.14-5.41-3.56,21.65-9.46,32.68-9.46,32.68,0,0-6.72,13.83-2.37,19.36s15.41,2.77,24.5,2.77,16.99,3.16,23.31,1.98,15.02-6.72,15.81-9.88-8.96-5.24-13.44-6.32c-6.27-1.52-7.34,.87-16.43-10.98s-.18-38.72-.18-38.72c0,0,7.47-18.94,8.23-27.16,.68-7.25-4.27-23.12-10.6-46.82s-15.41-28.06-16.99-30.82-.79-10.67-.79-10.67c0,0,3.16,1.58,5.93,1.98s5.53-4.74,11.46-17.39c5.93-12.65,8.3-35.56,8.69-38.73,.4-3.16,4.35-13.04,4.35-13.04,0,0,17.78,4.74,21.73,5.14s11.85,1.98,14.23-1.98c2.37-3.95,2.37-16.2,2.37-24.1s-6.32-28.06-6.72-30.03,1.19-5.93,1.98-7.11c.79-1.19,4.35-8.3,5.14-11.85Z"/>
+  <path fill="var(--batter-body)" stroke="var(--batter-stroke)" stroke-width="1" d="M163.54,107.7c.79-3.56-5.93-7.9-11.85-11.46-1.97-1.18-3.8-1.23-5.38-.76l-9.64-5.56v-5.93c-.4-18.18-21.73-17.39-25.69-16.99-3.91,.39-28.75,8.15-20.4,28.64-11.95,2.93-27.14,10.42-34.13,14.83-7.51,4.74-9.09,30.43-9.88,52.16-.79,21.73-8.3,45.05-9.09,47.02-.79,1.98,.4,6.32,1.58,8.3s-1.19,3.56-1.19,3.56c0,0-7.9,1.98-13.44,18.57-5.53,16.6-.57,29.5,1.98,33.98,2.12,3.73,12.19,17.34,16.2,22.13,1.3,1.55,17.78,30.03,20.15,35.17s1.19,17.39,.79,17.78-3.52,3.97-6.33,8.52c-2.82,4.58-8.69,18.74-14.22,32.57s-15.02,51.77-15.02,51.77c0,0-6.72,23.31-3.56,28.85,3.16,5.53,23.71,3.16,31.61,2.37s20.15,4.35,29.24,3.56,16.2-2.77,17.78-9.09-18.33-8.4-28.85-16.11c-6.86-5.03-11.87-7.79-13.84-10.16-1.98-2.37,2.1-7.88,4.38-10.69,1.25-1.53,4.32-8.09,5.12-9.27,.79-1.19,18.97-45.05,19.76-46.63,.22-.43,1.43-2.47,3.14-5.41-3.56,21.65-9.46,32.68-9.46,32.68,0,0-6.72,13.83-2.37,19.36s15.41,2.77,24.5,2.77,16.99,3.16,23.31,1.98,15.02-6.72,15.81-9.88-8.96-5.24-13.44-6.32c-6.27-1.52-7.34,.87-16.43-10.98s-.18-38.72-.18-38.72c0,0,7.47-18.94,8.23-27.16,.68-7.25-4.27-23.12-10.6-46.82s-15.41-28.06-16.99-30.82-.79-10.67-.79-10.67c0,0,3.16,1.58,5.93,1.98s5.53-4.74,11.46-17.39c5.93-12.65,8.3-35.56,8.69-38.73,.4-3.16,4.35-13.04,4.35-13.04,0,0,17.78,4.74,21.73,5.14s11.85,1.98,14.23-1.98c2.37-3.95,2.37-16.2,2.37-24.1s-6.32-28.06-6.72-30.03,1.19-5.93,1.98-7.11c.79-1.19,4.35-8.3,5.14-11.85Z"/>
   <path fill="#bf0d3d" d="M144.1,101.73s-34.4-21.36-34.76-21.3c0,0-40.7-24.5-48.21-28.06C53.62,48.82,9.59,19.08,1.86,14.44c-3.95-2.37,1.98-9.88,1.98-9.88C8.37-.06,8.97-.57,12.92,2.19c2.07,1.45,42.68,26.48,59.67,39.52s41.72,35.8,63.49,48.72"/>
 </svg>`;
 
   const BATTER_LEFT_SVG  = `<svg class="batter-svg" width="56" height="165" viewBox="0 4 170 486" fill="none" xmlns="http://www.w3.org/2000/svg">
   <g transform="translate(170,0) scale(-1,1)">
   <path fill="#bf0d3d" d="M146.94,96.6c23.31,13.83,19.38,9.82,19.38,9.82,0,0,2.54-.65,1.58,1.98-.99,2.7-1.91,4.41-3.22,5.85-.96,1.05-2.31-1.11-2.31-2.3s-17.4-10.71-17.4-10.71"/>
-  <path fill="#041e42" stroke="#2d3f5e" stroke-width="1" d="M163.54,107.7c.79-3.56-5.93-7.9-11.85-11.46-1.97-1.18-3.8-1.23-5.38-.76l-9.64-5.56v-5.93c-.4-18.18-21.73-17.39-25.69-16.99-3.91,.39-28.75,8.15-20.4,28.64-11.95,2.93-27.14,10.42-34.13,14.83-7.51,4.74-9.09,30.43-9.88,52.16-.79,21.73-8.3,45.05-9.09,47.02-.79,1.98,.4,6.32,1.58,8.3s-1.19,3.56-1.19,3.56c0,0-7.9,1.98-13.44,18.57-5.53,16.6-.57,29.5,1.98,33.98,2.12,3.73,12.19,17.34,16.2,22.13,1.3,1.55,17.78,30.03,20.15,35.17s1.19,17.39,.79,17.78-3.52,3.97-6.33,8.52c-2.82,4.58-8.69,18.74-14.22,32.57s-15.02,51.77-15.02,51.77c0,0-6.72,23.31-3.56,28.85,3.16,5.53,23.71,3.16,31.61,2.37s20.15,4.35,29.24,3.56,16.2-2.77,17.78-9.09-18.33-8.4-28.85-16.11c-6.86-5.03-11.87-7.79-13.84-10.16-1.98-2.37,2.1-7.88,4.38-10.69,1.25-1.53,4.32-8.09,5.12-9.27,.79-1.19,18.97-45.05,19.76-46.63,.22-.43,1.43-2.47,3.14-5.41-3.56,21.65-9.46,32.68-9.46,32.68,0,0-6.72,13.83-2.37,19.36s15.41,2.77,24.5,2.77,16.99,3.16,23.31,1.98,15.02-6.72,15.81-9.88-8.96-5.24-13.44-6.32c-6.27-1.52-7.34,.87-16.43-10.98s-.18-38.72-.18-38.72c0,0,7.47-18.94,8.23-27.16,.68-7.25-4.27-23.12-10.6-46.82s-15.41-28.06-16.99-30.82-.79-10.67-.79-10.67c0,0,3.16,1.58,5.93,1.98s5.53-4.74,11.46-17.39c5.93-12.65,8.3-35.56,8.69-38.73,.4-3.16,4.35-13.04,4.35-13.04,0,0,17.78,4.74,21.73,5.14s11.85,1.98,14.23-1.98c2.37-3.95,2.37-16.2,2.37-24.1s-6.32-28.06-6.72-30.03,1.19-5.93,1.98-7.11c.79-1.19,4.35-8.3,5.14-11.85Z"/>
+  <path fill="var(--batter-body)" stroke="var(--batter-stroke)" stroke-width="1" d="M163.54,107.7c.79-3.56-5.93-7.9-11.85-11.46-1.97-1.18-3.8-1.23-5.38-.76l-9.64-5.56v-5.93c-.4-18.18-21.73-17.39-25.69-16.99-3.91,.39-28.75,8.15-20.4,28.64-11.95,2.93-27.14,10.42-34.13,14.83-7.51,4.74-9.09,30.43-9.88,52.16-.79,21.73-8.3,45.05-9.09,47.02-.79,1.98,.4,6.32,1.58,8.3s-1.19,3.56-1.19,3.56c0,0-7.9,1.98-13.44,18.57-5.53,16.6-.57,29.5,1.98,33.98,2.12,3.73,12.19,17.34,16.2,22.13,1.3,1.55,17.78,30.03,20.15,35.17s1.19,17.39,.79,17.78-3.52,3.97-6.33,8.52c-2.82,4.58-8.69,18.74-14.22,32.57s-15.02,51.77-15.02,51.77c0,0-6.72,23.31-3.56,28.85,3.16,5.53,23.71,3.16,31.61,2.37s20.15,4.35,29.24,3.56,16.2-2.77,17.78-9.09-18.33-8.4-28.85-16.11c-6.86-5.03-11.87-7.79-13.84-10.16-1.98-2.37,2.1-7.88,4.38-10.69,1.25-1.53,4.32-8.09,5.12-9.27,.79-1.19,18.97-45.05,19.76-46.63,.22-.43,1.43-2.47,3.14-5.41-3.56,21.65-9.46,32.68-9.46,32.68,0,0-6.72,13.83-2.37,19.36s15.41,2.77,24.5,2.77,16.99,3.16,23.31,1.98,15.02-6.72,15.81-9.88-8.96-5.24-13.44-6.32c-6.27-1.52-7.34,.87-16.43-10.98s-.18-38.72-.18-38.72c0,0,7.47-18.94,8.23-27.16,.68-7.25-4.27-23.12-10.6-46.82s-15.41-28.06-16.99-30.82-.79-10.67-.79-10.67c0,0,3.16,1.58,5.93,1.98s5.53-4.74,11.46-17.39c5.93-12.65,8.3-35.56,8.69-38.73,.4-3.16,4.35-13.04,4.35-13.04,0,0,17.78,4.74,21.73,5.14s11.85,1.98,14.23-1.98c2.37-3.95,2.37-16.2,2.37-24.1s-6.32-28.06-6.72-30.03,1.19-5.93,1.98-7.11c.79-1.19,4.35-8.3,5.14-11.85Z"/>
   <path fill="#bf0d3d" d="M144.1,101.73s-34.4-21.36-34.76-21.3c0,0-40.7-24.5-48.21-28.06C53.62,48.82,9.59,19.08,1.86,14.44c-3.95-2.37,1.98-9.88,1.98-9.88C8.37-.06,8.97-.57,12.92,2.19c2.07,1.45,42.68,26.48,59.67,39.52s41.72,35.8,63.49,48.72"/>
   </g>
 </svg>`;
@@ -765,57 +756,97 @@
   };
 
   // ─────────────────────────────────────────────────────────
-  //  LIVE POLL — smart diff, only re-renders changed parts
+  //  ADAPTIVE POLLING
+  //  Active pitch   →  2.5s
+  //  Between AB     →  5s
+  //  Live normal    →  7s
+  //  Pregame        →  30s  (lineups / weather / status)
+  //  Final          →  stop
   // ─────────────────────────────────────────────────────────
-  const startPolling = (gamePk) => {
-    if (pollTimer) clearInterval(pollTimer);
-    pollTimer = setInterval(async () => {
-      try {
-        const data   = await fetch(`${API_BASE}/game/${gamePk}/feed/live`).then(r => r.json());
-        const { gameData, liveData } = data;
-        const status = gameData.status.detailedState;
-        const phase  = getPhase(status);
+  const POLL = { PITCH: 2500, BETWEEN_AB: 5000, LIVE: 7000, PREGAME: 30000 };
+  let currentPollMs = POLL.LIVE;
 
-        // Always update header (score/inning changes frequently)
-        renderHeader(gameData, liveData);
-        renderBoxscore(gameData, liveData);
+  const reschedule = (gamePk, ms) => {
+    if (ms === currentPollMs) return;
+    currentPollMs = ms;
+    clearInterval(pollTimer);
+    pollTimer = setInterval(() => pollOnce(gamePk), ms);
+  };
 
-        if (phase === 'LIVE') {
-          // Check if current play index changed (new pitch or new AB)
-          const cp       = liveData.plays?.currentPlay;
-          const pitches  = cp?.playEvents?.filter(e => e.isPitch) || [];
-          const newState = `${cp?.about?.atBatIndex}-${pitches.length}-${cp?.count?.balls}-${cp?.count?.strikes}`;
-          if (newState !== lastGameState) {
-            lastGameState = newState;
-            window._gameDataCache = data;
-            renderLiveAtBat(data);
-          }
+  const flashLatestPitch = () => {
+    const dot = document.querySelector('.pitch-dot-latest');
+    if (!dot) return;
+    dot.setAttribute('r', '11');
+    setTimeout(() => dot.setAttribute('r', '8'), 200);
+  };
 
-          // Update plays only when there's a new completed play
-          const allPlays = liveData.plays?.allPlays || [];
-          if (allPlays.length !== lastPlayIndex) {
-            lastPlayIndex = allPlays.length;
-            renderScoringPlays(liveData.plays, gamePk, videoMatcher);
-            renderAllPlays(liveData.plays);
-          }
-        } else if (phase === 'FINAL') {
-          // Game ended — stop polling, show final state
-          clearInterval(pollTimer);
-          const lab = document.getElementById('live-at-bat');
-          if (lab) lab.style.display = 'none';
-          renderPitchingDecisions(data);
-          renderTopPerformers(data);
-          const vb = document.querySelector('.video-buttons');
-          if (vb) vb.style.display = 'flex';
-          if (videoMatcher) await initVideoButtons(gamePk);
+  const pollOnce = async (gamePk) => {
+    try {
+      const data  = await fetch(`${API_BASE}/game/${gamePk}/feed/live`).then(r => r.json());
+      const { gameData, liveData } = data;
+      const phase = getPhase(gameData.status.detailedState);
+
+      renderHeader(gameData, liveData);
+      renderBoxscore(gameData, liveData);
+
+      if (phase === 'LIVE') {
+        const cp      = liveData.plays?.currentPlay;
+        const pitches = cp?.playEvents?.filter(e => e.isPitch) || [];
+        const state   = `${cp?.about?.atBatIndex}-${pitches.length}-${cp?.count?.balls}-${cp?.count?.strikes}`;
+
+        if (state !== lastGameState) {
+          const abChanged = lastGameState !== '' && state.split('-')[0] !== lastGameState.split('-')[0];
+          lastGameState        = state;
+          window._gameDataCache = data;
+          if (pitches.length) flashLatestPitch();
+          renderLiveAtBat(data);
+          reschedule(gamePk, abChanged ? POLL.BETWEEN_AB : POLL.PITCH);
+        } else {
+          reschedule(gamePk, POLL.LIVE);
+        }
+
+        const plays = liveData.plays?.allPlays || [];
+        if (plays.length !== lastPlayIndex) {
+          lastPlayIndex = plays.length;
           renderScoringPlays(liveData.plays, gamePk, videoMatcher);
           renderAllPlays(liveData.plays);
-          window.renderGameTabs?.('FINAL');
         }
-      } catch(e) {
-        console.warn('[Poll] Error:', e.message);
+
+        if (typeof loadBoxScore === 'function') await loadBoxScore(data);
+
+      } else if (phase === 'PREGAME') {
+        const statusNow = gameData.status.detailedState;
+        if (statusNow !== lastGameState) {
+          lastGameState = statusNow;
+          window.renderGameTabs?.('PREGAME');
+        }
+        if (typeof loadBoxScore === 'function') await loadBoxScore(data);
+        reschedule(gamePk, POLL.PREGAME);
+
+      } else if (phase === 'FINAL') {
+        clearInterval(pollTimer);
+        pollTimer = null;
+        const lab = document.getElementById('live-at-bat');
+        if (lab) lab.style.display = 'none';
+        renderPitchingDecisions(data);
+        renderTopPerformers(data);
+        const vb = document.querySelector('.video-buttons');
+        if (vb) vb.style.display = 'flex';
+        if (videoMatcher) await initVideoButtons(gamePk);
+        renderScoringPlays(liveData.plays, gamePk, videoMatcher);
+        renderAllPlays(liveData.plays);
+        if (typeof loadBoxScore === 'function') await loadBoxScore(data);
+        window.renderGameTabs?.('FINAL');
       }
-    }, POLL_INTERVAL_MS);
+    } catch(e) {
+      console.warn('[Poll]', e.message);
+    }
+  };
+
+  const startPolling = (gamePk, ms = POLL.LIVE) => {
+    if (pollTimer) clearInterval(pollTimer);
+    currentPollMs = ms;
+    pollTimer = setInterval(() => pollOnce(gamePk), ms);
   };
 
   // ─────────────────────────────────────────────────────────
@@ -832,7 +863,7 @@
     try {
       const data = await fetch(`${API_BASE}/game/${gamePk}/feed/live`).then(r => r.json());
       const { gameData, liveData } = data;
-      const phase  = getPhase(gameData.status.detailedState);
+      const phase = getPhase(gameData.status.detailedState);
       window._gameDataCache = data;
 
       renderHeader(gameData, liveData);
@@ -842,25 +873,34 @@
 
       window.renderGameTabs?.(phase);
 
+      // Boxscore runs for all phases
+      if (typeof loadBoxScore === 'function') await loadBoxScore(data);
+
       if (phase === 'LIVE') {
         await renderLiveAtBat(data);
         lastPlayIndex = liveData.plays?.allPlays?.length ?? 0;
-        const cp = liveData.plays?.currentPlay;
+        const cp      = liveData.plays?.currentPlay;
         const pitches = cp?.playEvents?.filter(e => e.isPitch) || [];
         lastGameState = `${cp?.about?.atBatIndex}-${pitches.length}-${cp?.count?.balls}-${cp?.count?.strikes}`;
-        startPolling(gamePk);
-      } else {
+        renderScoringPlays(liveData.plays, gamePk, videoMatcher);
+        renderAllPlays(liveData.plays);
+        startPolling(gamePk, POLL.LIVE);
+
+      } else if (phase === 'PREGAME') {
+        lastGameState = gameData.status.detailedState;
         const lab = document.getElementById('live-at-bat');
         if (lab) lab.style.display = 'none';
-      }
+        startPolling(gamePk, POLL.PREGAME);
 
-      if (phase !== 'PREGAME') {
+      } else if (phase === 'FINAL') {
+        const lab = document.getElementById('live-at-bat');
+        if (lab) lab.style.display = 'none';
+        const vb = document.querySelector('.video-buttons');
+        if (vb) vb.style.display = 'flex';
+        if (videoMatcher) await initVideoButtons(gamePk);
         renderScoringPlays(liveData.plays, gamePk, videoMatcher);
         renderAllPlays(liveData.plays);
       }
-
-      if (typeof loadBoxScore === 'function') await loadBoxScore(data);
-      if (phase === 'FINAL' && videoMatcher) await initVideoButtons(gamePk);
 
     } catch(err) {
       console.error('Init error:', err);
