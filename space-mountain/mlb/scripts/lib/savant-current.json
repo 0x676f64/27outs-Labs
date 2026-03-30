@@ -1,62 +1,62 @@
 {
-  "generated": "2026-03-17T11:51:14",
-  "current_year": 2025,
-  "prior_year": 2024,
+  "generated": "2026-03-30T02:04:48",
+  "current_year": 2026,
+  "prior_year": 2025,
   "season_status": "in-season",
-  "min_pa_used": 250,
+  "min_pa_used": 10,
   "player_counts": {
-    "batter_current": 309,
-    "batter_prior": 324,
+    "batter_current": 107,
+    "batter_prior": 632,
     "pitcher_current": 0,
     "pitcher_prior": 0
   },
   "metrics": {
     "hard_hit": {
       "label": "Hard Hit%",
-      "val": "41.9%",
-      "delta": "+2.7%",
-      "current": 41.8731,
-      "prior": 39.1586,
+      "val": "37.0%",
+      "delta": "-1.9%",
+      "current": 36.9617,
+      "prior": 38.9068,
       "source": "Baseball Savant"
     },
     "barrel": {
       "label": "Barrel%",
-      "val": "9.1%",
-      "delta": "+1.2%",
-      "current": 9.133,
-      "prior": 7.9731,
+      "val": "8.6%",
+      "delta": "+0.9%",
+      "current": 8.5963,
+      "prior": 7.7411,
       "source": "Baseball Savant"
     },
     "xba": {
       "label": "xBA",
-      "val": ".246",
-      "delta": "+0.004",
-      "current": 0.2465,
-      "prior": 0.2426,
+      "val": ".239",
+      "delta": "+0.012",
+      "current": 0.2394,
+      "prior": 0.2269,
       "source": "Baseball Savant"
     },
     "sprint": {
       "label": "Spd(ft/s)",
-      "val": "27.3",
-      "delta": "-0.001",
-      "current": 27.3162,
-      "prior": 27.3173,
+      "val": "25.9",
+      "delta": "-1.38",
+      "current": 25.9452,
+      "prior": 27.3205,
       "source": "Baseball Savant"
     },
     "chase": {
       "label": "Chase%",
-      "val": "28.3%",
-      "delta": "-0.4%",
-      "current": 28.3126,
-      "prior": 28.6707,
+      "val": "29.6%",
+      "delta": "+0.6%",
+      "current": 29.5533,
+      "prior": 28.9062,
       "source": "Baseball Savant"
     },
     "hr_per_game": {
       "label": "HR/G",
-      "val": "0.125",
-      "delta": "n/a",
-      "current": 0.1253,
-      "prior": null,
+      "val": "0.220",
+      "delta": "+0.13",
+      "current": 0.2196,
+      "prior": 0.0882,
       "source": "Baseball Savant"
     }
   }

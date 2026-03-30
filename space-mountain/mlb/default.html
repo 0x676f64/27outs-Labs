@@ -189,9 +189,9 @@ body.light .std-div-lbl{color:#041e42}
 
 /* ── METRICS ROW ── */
 .metrics-wrap{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:18px;margin-bottom:16px;box-shadow:var(--sh)}
-.met-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:0 0;align-items:stretch}
-@media(max-width:800px){.met-grid{grid-template-columns:repeat(3,1fr)}}
-@media(max-width:500px){.met-grid{grid-template-columns:repeat(2,1fr)}}
+.met-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:0 0;align-items:center;justify-content:center}
+@media(max-width:800px){.met-grid{grid-template-columns:repeat(3,1fr);gap:0 0;align-items:center;justify-content:center}}
+@media(max-width:500px){.met-grid{grid-template-columns:repeat(2,1fr);gap:0 0;align-items:center;justify-content:center}}
 .met-item{padding:6px 16px;border-right:1px solid var(--bd)}
 .met-item:first-child{padding-left:0}
 .met-item:last-child{border-right:none;padding-right:0}
@@ -224,7 +224,7 @@ body.light .met-lbl{color:#041e42;opacity:.7}
   .main{padding:16px 14px 48px}
   .nav-a.hide-sm{display:none}
   .gc{min-width:148px;max-width:148px}
-  .met-grid{grid-template-columns:repeat(3,1fr);justify-content:center;text-align:center}
+  .met-grid{grid-template-columns:repeat(3,1fr);align-items:center;justify-content:center}
   .met-item{border-right:none;border-bottom:1px solid var(--bd);padding:8px 0}
   .met-item:last-child{border-bottom:none}
 }
@@ -317,7 +317,7 @@ body.light ::-webkit-scrollbar-thumb:hover { background: rgba(191,13,61,.65); }
   <!-- Page header -->
   <div class="page-hdr">
     <h1>MLB <em>Performance</em> Dashboard</h1>
-    <p>Advanced metrics &amp; predictive analytics &mdash; 2025 season</p>
+    <p>Advanced metrics &amp; predictive analytics &mdash; <span id="season-lbl"></span> season</p>
   </div>
 
   <!-- Games strip -->
@@ -390,7 +390,7 @@ body.light ::-webkit-scrollbar-thumb:hover { background: rgba(191,13,61,.65); }
     <!-- WS PREDICTIONS -->
     <div class="card">
       <div class="card-hdr">
-        <div class="card-title">2025 World Series Odds</div>
+        <div class="card-title"><span class="ws-season-lbl"></span> World Series Odds</div>
         <div class="card-badge">Model</div>
       </div>
       <div id="ws-list"><div class="ld">Computing…</div></div>
@@ -455,7 +455,14 @@ const API = 'https://statsapi.mlb.com/api/v1';
 const LOGO      = id => `https://www.mlbstatic.com/team-logos/${id}.svg`;
 const LOGO_DARK = id => `https://www.mlbstatic.com/team-logos/team-cap-on-dark/${id}.svg`;
 const REFRESH_MS = 30000;
-const LEAGUE_AVG_ERA = 4.02;   // 2025 estimated league-avg ERA for ERA- calculation
+
+// Dynamic season — MLB regular season starts late March, ends early October.
+// Before March 20 we're in the prior season's off-season; use that year.
+const _now = new Date();
+const SEASON      = _now.getMonth() >= 2 ? _now.getFullYear() : _now.getFullYear() - 1;
+const PREV_SEASON = SEASON - 1;
+
+const LEAGUE_AVG_ERA = 4.05;
 
 // ============================================================
 //  STATE
@@ -597,7 +604,7 @@ async function fetchGames(){
   S.slide = 0;
   const ds = fmtDate(S.date);
   try{
-    const r = await fetch(`${API}/schedule?sportId=1,51&date=${ds}&hydrate=linescore,team`);
+    const r = await fetch(`${API}/schedule?sportId=1&date=${ds}&hydrate=linescore,team`);
     const d = await r.json();
     const games = d.dates?.[0]?.games || [];
     el('game-count-lbl').textContent = games.length ? `${games.length} game${games.length>1?'s':''} scheduled` : '';
@@ -707,7 +714,7 @@ window.addEventListener('resize', () => {
 // ============================================================
 async function fetchStandings(){
   try{
-    const r = await fetch(`${API}/standings?leagueId=103,104&season=2025&standingsTypes=regularSeason&hydrate=team,division,splitRecords,streak`);
+    const r = await fetch(`${API}/standings?leagueId=103,104&season=${SEASON}&standingsTypes=regularSeason&hydrate=team,division,splitRecords,streak`);
     const d = await r.json();
     S.standings = { AL:{East:[],Central:[],West:[]}, NL:{East:[],Central:[],West:[]} };
     S.allStandings = [];
@@ -904,7 +911,7 @@ function computeAndRenderWS(){
 
   el('ws-note').textContent =
     'Pythag W% 40% + Actual W% 20% + Run Diff 15% + ' +
-    'L10 15% + Away W% 10% | chalk exp 2.2 | 2025 full-season data';
+    `L10 15% + Away W% 10% | chalk exp 2.2 | ${SEASON} season data`;
 }
 
 function renderWS(teams){
@@ -930,7 +937,7 @@ function renderWS(teams){
 function renderWSFromState(){ computeAndRenderWS(); }
 
 // ============================================================
-//  ADVANCED METRICS — league averages (2025 estimates)
+//  ADVANCED METRICS — league averages (current season estimates)
 // ============================================================
 // ── Metric state: static fallbacks + live overrides ──────────
 const METRIC_DEFAULTS = [
@@ -1114,36 +1121,38 @@ function renderL10(){
 // ============================================================
 //  CHARTS — K% Trend + Home vs Away
 // ============================================================
-function rebuildCharts(){ buildKpctChart(); buildHvaChart(); }
-
-// ── League-wide K% trend (2025 monthly estimates) ────────────
-function buildKpctChart(){
+function rebuildCharts(){ fetchAndBuildKpctChart(); buildHvaChart(); }
+ 
+// ── League-wide K% trend — fetched live from MLB Stats API ──
+function buildKpctChart(prevData = null, currData = null, labelData = null) {
   const canvas = el('kpct-chart');
-  if(!canvas) return;
-  if(S.charts.kpct) S.charts.kpct.destroy();
+  if (!canvas) return;
+  if (S.charts.kpct) S.charts.kpct.destroy();
   const cc = chartColors();
-
-  // Historical K% by month — 2024 actuals / 2025 season estimates
-  const labels2024 = ['Mar/Apr','May','Jun','Jul','Aug','Sep'];
-  const kpct2024   = [22.4, 22.9, 23.1, 22.8, 23.0, 22.6];
-  const kpct2025   = [22.6, 22.8, 23.2, null, null, null]; // null = future
-
+  const labels = labelData || ['Mar/Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'];
+ 
+  // Prior season — trimmed to visible months if labelData provided
+  // 2025 final monthly actuals (Baseball Reference)
+  const kpctPrev = prevData || [22.5, 22.7, 22.9, 22.6, 22.8, 22.7];
+  // Current season — only elapsed months, no future placeholders
+  const kpctCurr = currData || [null];
+ 
   S.charts.kpct = new Chart(canvas.getContext('2d'), {
     type: 'line',
     data: {
-      labels: labels2024,
+      labels,
       datasets: [
         {
-          label: '2024 K%',
-          data: kpct2024,
+          label: `${PREV_SEASON} K%`,
+          data: kpctPrev,
           borderColor: 'rgba(148,163,184,.5)',
           backgroundColor: 'rgba(148,163,184,.04)',
-          borderDash: [4,3],
+          borderDash: [4, 3],
           tension: .35, pointRadius: 3, fill: false,
         },
         {
-          label: '2025 K%',
-          data: kpct2025,
+          label: `${SEASON} K%`,
+          data: kpctCurr,
           borderColor: '#bf0d3d',
           backgroundColor: 'rgba(191,13,61,.08)',
           tension: .35, pointRadius: 4,
@@ -1155,28 +1164,83 @@ function buildKpctChart(){
     },
     options: {
       responsive: true, maintainAspectRatio: false,
-      interaction: { mode:'index', intersect: false },
+      interaction: { mode: 'index', intersect: false },
       plugins: {
-        legend: { labels: { font:{size:10,family:'DM Mono'}, color:cc.text, boxWidth:10, padding:12 } },
+        legend: { labels: { font: { size: 10, family: 'DM Mono' }, color: cc.text, boxWidth: 10, padding: 12 } },
         tooltip: {
           callbacks: {
-            label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y?.toFixed(1)}%`
+            label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y != null ? ctx.parsed.y.toFixed(1) + '%' : 'Not yet played'}`
           }
         }
       },
       scales: {
-        x: { ticks:{font:{size:9,family:'DM Mono'},color:cc.text}, grid:{color:cc.grid} },
+        x: { ticks: { font: { size: 9, family: 'DM Mono' }, color: cc.text }, grid: { color: cc.grid } },
         y: {
-          ticks: { font:{size:9,family:'DM Mono'}, color:cc.text, callback: v => v+'%' },
-          grid: { color:cc.grid },
-          min: 21.5, max: 24,
-          title: { display:true, text:'K%', color:cc.text, font:{size:9,family:'DM Mono'} }
+          ticks: { font: { size: 9, family: 'DM Mono' }, color: cc.text, callback: v => v + '%' },
+          grid: { color: cc.grid },
+          min: 21.5, max: 24.5,
+          title: { display: true, text: 'K%', color: cc.text, font: { size: 9, family: 'DM Mono' } }
         },
       }
     }
   });
 }
-
+ 
+// Fetch real K% data from MLB Stats API, then build the chart
+async function fetchAndBuildKpctChart() {
+  // Month index → 0=Mar/Apr, 1=May, 2=Jun, 3=Jul, 4=Aug, 5=Sep
+  const monthMap = { 3: 0, 4: 0, 5: 1, 6: 2, 7: 3, 8: 4, 9: 5 };
+ 
+  async function fetchSeasonKpct(season) {
+    try {
+      const r = await fetch(
+        `${API}/teams/stats?season=${season}&sportId=1&group=pitching&stats=season&gameType=R`
+      );
+      if (!r.ok) return null;
+      const d = await r.json();
+      const splits = d.stats?.[0]?.splits || [];
+      if (!splits.length) return null;
+      // Sum K and BF across all teams → league K%
+      let totalK = 0, totalBF = 0;
+      splits.forEach(s => {
+        totalK  += s.stat?.strikeOuts   || 0;
+        totalBF += s.stat?.battersFaced || 0;
+      });
+      return totalBF > 0 ? parseFloat((totalK / totalBF * 100).toFixed(1)) : null;
+    } catch (e) { return null; }
+  }
+ 
+  // Fetch both seasons in parallel
+  // 2025 is hardcoded — only fetch current season
+  const currKpct = await fetchSeasonKpct(SEASON);
+ 
+  // 2025 full-season actuals — one number for whole season, spread across months
+  // If API returned a value use it, else use known 2025 actuals
+  // 2025 final actuals by month (Baseball Reference)
+  const kpctPrev = [22.5, 22.7, 22.9, 22.6, 22.8, 22.7];
+ 
+  // Determine how many months have actually occurred in the current season
+  const now      = new Date();
+  const curMonth = now.getMonth() + 1; // 1-indexed
+  const curSlot  = monthMap[curMonth] ?? (curMonth > 9 ? 5 : 0);
+ 
+  // Only include labels/data up to the current month slot — never show future months
+  const allLabels = ['Mar/Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'];
+  const visibleCount = curSlot + 1;  // e.g. March = slot 0 → 1 label shown
+ 
+  const kpctCurr = Array(visibleCount).fill(null);
+  if (currKpct != null) {
+    for (let i = 0; i < visibleCount; i++) kpctCurr[i] = currKpct;
+  }
+ 
+  // Trim prev season to same length so axes align cleanly
+  const kpctPrevTrimmed = kpctPrev.slice(0, visibleCount);
+  const visibleLabels   = allLabels.slice(0, visibleCount);
+ 
+  buildKpctChart(kpctPrevTrimmed, kpctCurr, visibleLabels);
+}
+ 
+ 
 // ── Home vs Away win% — live from standings ──────────────────
 function buildHvaChart(){
   const canvas = el('hva-chart');
@@ -1184,17 +1248,17 @@ function buildHvaChart(){
   if(S.charts.hva) S.charts.hva.destroy();
   if(!S.allStandings.length) return;
   const cc = chartColors();
-
+ 
   // Sort by home win% descending, take top 15 for readability
   const teams = [...S.allStandings]
     .filter(t => (t.homeW+t.homeL) > 0 && (t.awayW+t.awayL) > 0)
     .sort((a,b) => (b.homeW/(b.homeW+b.homeL)) - (a.homeW/(a.homeW+a.homeL)))
     .slice(0, 15);
-
+ 
   const labels   = teams.map(t => t.abbr);
   const homeWpct = teams.map(t => +(t.homeW/(t.homeW+t.homeL)*100).toFixed(1));
   const awayWpct = teams.map(t => +(t.awayW/(t.awayW+t.awayL)*100).toFixed(1));
-
+ 
   S.charts.hva = new Chart(canvas.getContext('2d'), {
     type: 'bar',
     data: {
@@ -1244,6 +1308,9 @@ function buildHvaChart(){
 //  INIT
 // ============================================================
 async function init(){
+  // Populate all dynamic season labels
+  document.querySelectorAll('#season-lbl, .ws-season-lbl, .kpct-season-lbl')
+    .forEach(el => el.textContent = SEASON);
   updateDateLabel();
   renderCal();
   renderMetrics();
@@ -1755,11 +1822,12 @@ function buildOEScatterChart(canvasId, engineData) {
   function makePoint(d) {
     return {
       x: d.x, y: d.y,
-      // Smaller bubbles on mobile so labels are readable
-      r: isMobile ? Math.max(d.size * 0.55, 5) : d.size,
+      r: isMobile ? Math.max(d.size * 0.6, 7) : Math.max(d.size, 10),
       label: d.team, ni: d.NI,
       oePlus: d.OE_plus, rpePlus: d.RPE_plus,
       factors: d.factors, trends: d.trends,
+      teamId: d.teamId,   // needed for logo lookup in afterDraw
+      league: d.league,
     };
   }
 
@@ -1789,6 +1857,7 @@ function buildOEScatterChart(canvasId, engineData) {
       animation: { duration: 600, easing: 'easeOutQuart' },
       // Larger hit radius on mobile for fat-finger taps
       interaction: { mode: 'nearest', intersect: false },
+      hover: { mode: 'nearest', intersect: false },
 
       plugins: {
         legend: {
@@ -1827,33 +1896,34 @@ function buildOEScatterChart(canvasId, engineData) {
               ];
             },
           },
-          backgroundColor: S.dark ? '#ffffff' : '#041e42',
-          titleFont:  { family: 'DM Mono', size: 12, weight: '700' },
+          backgroundColor: S.dark ? '#0d1223' : '#041e42',
+          titleFont:  { family: 'DM Mono', size: 11, weight: '700' },
           bodyFont:   { family: 'DM Mono', size: 10 },
-          titleColor: S.dark ? '#041e42' : '#ffffff',
-          bodyColor:  S.dark ? '#041e42' : '#e2e8f0',
-          padding: 12, cornerRadius: 7,
-          borderColor: '#bf0d3d', borderWidth: 1,
+          titleColor: '#bf0d3d',
+          bodyColor:  '#e2e8f0',
+          padding: 12, cornerRadius: 8,
+          borderColor: 'rgba(191,13,61,0.5)', borderWidth: 1,
+          displayColors: false,
         },
       },
 
       scales: {
         x: {
           title: {
-            display: !isMobile,
-            text: 'OE+ (Offensive Engine)',
+            display: true,
+            text: isMobile ? 'OE+' : 'OE+ (Offensive Engine)',
             color: cc.text,
-            font: { size: 10, family: 'DM Mono' },
+            font: { size: isMobile ? 8 : 10, family: 'DM Mono' },
           },
           ticks: { font: { size: isMobile ? 8 : 9, family: 'DM Mono' }, color: cc.text, maxTicksLimit: isMobile ? 5 : 8 },
           grid:  { color: cc.grid },
         },
         y: {
           title: {
-            display: !isMobile,
-            text: 'RPE+ (Run Prevention Engine)',
+            display: true,
+            text: isMobile ? 'RPE+' : 'RPE+ (Run Prevention Engine)',
             color: cc.text,
-            font: { size: 10, family: 'DM Mono' },
+            font: { size: isMobile ? 8 : 10, family: 'DM Mono' },
           },
           ticks: { font: { size: isMobile ? 8 : 9, family: 'DM Mono' }, color: cc.text, maxTicksLimit: isMobile ? 5 : 8 },
           grid:  { color: cc.grid },
@@ -1867,10 +1937,12 @@ function buildOEScatterChart(canvasId, engineData) {
         const { ctx, chartArea: { left, right, top, bottom }, scales } = chart;
         const cx = scales.x.getPixelForValue(100);
         const cy = scales.y.getPixelForValue(100);
-        const lineColor  = S.dark ? 'rgba(226,232,240,0.12)' : 'rgba(4,30,66,0.10)';
-        const labelColor = S.dark ? 'rgba(226,232,240,0.25)' : 'rgba(4,30,66,0.20)';
+        const lineColor  = S.dark ? 'rgba(226,232,240,0.10)' : 'rgba(4,30,66,0.08)';
+        const labelColor = S.dark ? 'rgba(226,232,240,0.22)' : 'rgba(4,30,66,0.18)';
 
         ctx.save();
+
+        // ── Quadrant dividers ──────────────────────────────────
         ctx.setLineDash([4, 4]);
         ctx.lineWidth = 1;
         ctx.strokeStyle = lineColor;
@@ -1878,50 +1950,90 @@ function buildOEScatterChart(canvasId, engineData) {
         ctx.beginPath(); ctx.moveTo(left, cy); ctx.lineTo(right, cy);  ctx.stroke();
         ctx.setLineDash([]);
 
-        // Quadrant labels — skip on very small screens
-        if (!isMobile) {
-          ctx.font = '500 9px DM Mono';
-          ctx.fillStyle = labelColor;
-          ctx.textAlign = 'center';
-          [
-            { x: (cx+right)/2, y: top+14,    t: 'ELITE'          },
-            { x: (left+cx)/2,  y: top+14,    t: 'PITCHING-FIRST'  },
-            { x: (left+cx)/2,  y: bottom-8,  t: 'REBUILDING'     },
-            { x: (cx+right)/2, y: bottom-8,  t: 'OFFENSE-FIRST'  },
-          ].forEach(q => ctx.fillText(q.t, q.x, q.y));
-        }
+        // ── Quadrant labels — visible on all screen sizes ──────
+        const qFont    = isMobile ? '500 7px DM Mono' : '500 9px DM Mono';
+        const qPadX    = isMobile ? 6 : 10;
+        const qPadY    = isMobile ? 10 : 14;
+        ctx.font       = qFont;
+        ctx.fillStyle  = labelColor;
+        ctx.textAlign  = 'center';
+        const qW = (right - left) / 2;
+        const qH = (bottom - top) / 2;
+        // Use short labels on mobile to avoid overlap
+        const qLabels = isMobile
+          ? [
+              { x: cx + qW/2, y: top + qPadY,    t: 'ELITE'    },
+              { x: cx - qW/2, y: top + qPadY,    t: 'PITCH 1ST'},
+              { x: cx - qW/2, y: bottom - qPadY, t: 'REBUILD'  },
+              { x: cx + qW/2, y: bottom - qPadY, t: 'OFF 1ST'  },
+            ]
+          : [
+              { x: cx + qW/2, y: top + qPadY,    t: 'ELITE'         },
+              { x: cx - qW/2, y: top + qPadY,    t: 'PITCHING-FIRST' },
+              { x: cx - qW/2, y: bottom - qPadY, t: 'REBUILDING'    },
+              { x: cx + qW/2, y: bottom - qPadY, t: 'OFFENSE-FIRST' },
+            ];
+        qLabels.forEach(q => ctx.fillText(q.t, q.x, q.y));
 
-        // Team logos — draw pre-loaded Image objects onto each bubble.
-        // Skip the active (hovered) bubble so the tooltip is clean.
-        const activeEls = chart.tooltip?.getActiveElements() || [];
-        const activeSet = new Set(activeEls.map(a => `${a.datasetIndex}-${a.index}`));
-
-        const logoSize = isMobile ? 14 : 18;
+        // ── Team logos ─────────────────────────────────────────
+        // When tooltip is active: dim ALL logos so tooltip reads clean.
+        // This prevents the "messy logos showing through tooltip" issue.
+        const activeEls  = chart.tooltip?.getActiveElements() || [];
+        const hasActive  = activeEls.length > 0;
+        const activeSet  = new Set(activeEls.map(a => `${a.datasetIndex}-${a.index}`));
+        const logoSize   = isMobile ? 13 : 17;
+        const logoAlpha  = hasActive ? 0.20 : 1.0; // dim all when hovered
 
         chart.data.datasets.forEach((ds, di) => {
           ds.data.forEach((pt, pi) => {
-            if (activeSet.has(`${di}-${pi}`)) return; // tooltip covering this bubble
+            const isActive = activeSet.has(`${di}-${pi}`);
             const elem = chart.getDatasetMeta(di).data[pi];
             if (!elem) return;
+            const alpha = isActive ? 0 : logoAlpha; // hide hovered bubble's logo entirely
+            if (alpha === 0) return;
+
+            ctx.globalAlpha = alpha;
             const img = S._logoCache?.[`${pt.teamId}-${S.dark?'dark':'light'}`];
             if (img?.complete && img.naturalWidth > 0) {
-              ctx.drawImage(
-                img,
-                elem.x - logoSize / 2,
-                elem.y - logoSize / 2,
-                logoSize,
-                logoSize
-              );
+              ctx.drawImage(img, elem.x - logoSize/2, elem.y - logoSize/2, logoSize, logoSize);
             } else {
-              // Fallback to abbreviation if image hasn't loaded yet
-              ctx.fillStyle = S.dark ? '#ffffff' : '#041e42';
-              ctx.font = `700 ${isMobile ? 7 : 8}px DM Mono`;
-              ctx.textAlign = 'center';
+              ctx.fillStyle  = S.dark ? '#ffffff' : '#041e42';
+              ctx.font       = `700 ${isMobile ? 7 : 8}px DM Mono`;
+              ctx.textAlign  = 'center';
               ctx.textBaseline = 'middle';
               ctx.fillText(pt.label, elem.x, elem.y);
             }
+            ctx.globalAlpha = 1;
           });
         });
+
+        // ── Active bubble: draw team abbr + halo ──────────────
+        // The bubble itself is already drawn by Chart.js with full color.
+        // We just draw the abbreviation on top cleanly.
+        if (hasActive) {
+          activeEls.forEach(({ datasetIndex: di, index: pi }) => {
+            const elem = chart.getDatasetMeta(di).data[pi];
+            const pt   = chart.data.datasets[di].data[pi];
+            if (!elem || !pt) return;
+
+            // Subtle glow ring
+            ctx.beginPath();
+            ctx.arc(elem.x, elem.y, elem.options.radius + 4, 0, Math.PI * 2);
+            ctx.strokeStyle = S.dark ? 'rgba(255,255,255,0.4)' : 'rgba(4,30,66,0.5)';
+            ctx.lineWidth   = 1.5;
+            ctx.stroke();
+
+            // Team abbreviation centered on bubble
+            ctx.fillStyle    = '#ffffff';
+            ctx.font         = `800 ${isMobile ? 7 : 9}px DM Mono`;
+            ctx.textAlign    = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.shadowColor  = 'rgba(0,0,0,0.6)';
+            ctx.shadowBlur   = 3;
+            ctx.fillText(pt.label, elem.x, elem.y);
+            ctx.shadowBlur   = 0;
+          });
+        }
 
         ctx.restore();
       },

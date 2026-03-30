@@ -428,10 +428,13 @@
   // ─────────────────────────────────────────────────────────
   //  BASE RUNNERS
   // ─────────────────────────────────────────────────────────
-  const getBaseRunners = (runners = []) => ({
-    first:  runners.some(r => r.movement?.end === '1B' || r.movement?.start === '1B'),
-    second: runners.some(r => r.movement?.end === '2B' || r.movement?.start === '2B'),
-    third:  runners.some(r => r.movement?.end === '3B' || r.movement?.start === '3B'),
+  // Post-play base state using matchup.postOn* fields.
+  // These are always populated by the API regardless of which runners
+  // moved — no persistence logic needed, no omission issues.
+  const getBaseRunners = (play) => ({
+    first:  !!play.matchup?.postOnFirst,
+    second: !!play.matchup?.postOnSecond,
+    third:  !!play.matchup?.postOnThird,
   });
 
   const generateSVGField = (count, onBase) => {
@@ -439,26 +442,21 @@
     const on  = (active) => active ? '#bf0d3d' : 'transparent';
     const str = (active) => active ? '#e63946' : 'rgba(148,163,184,0.4)';
     const sw  = 1.5;
-    const bs  = 6; // base half-size (smaller diamonds)
-
+    const bs  = 6;
     const base = (cx, cy, active) =>
       `<rect x="${cx-bs}" y="${cy-bs}" width="${bs*2}" height="${bs*2}"
         transform="rotate(45 ${cx} ${cy})"
         fill="${on(active)}" stroke="${str(active)}" stroke-width="${sw}"/>`;
-
     return `<svg width="58" height="52" viewBox="0 0 58 52" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <!-- 2B top -->
       ${base(29, 9,  onBase?.second)}
-      <!-- 3B left -->
       ${base(12, 24, onBase?.third)}
-      <!-- 1B right -->
       ${base(46, 24, onBase?.first)}
-      <!-- Outs — 3 dots centered below bases -->
       <circle cx="17" cy="44" r="4.5" fill="${on(o>=1)}" stroke="${str(o>=1)}" stroke-width="1.3"/>
       <circle cx="29" cy="44" r="4.5" fill="${on(o>=2)}" stroke="${str(o>=2)}" stroke-width="1.3"/>
       <circle cx="41" cy="44" r="4.5" fill="${on(o>=3)}" stroke="${str(o>=3)}" stroke-width="1.3"/>
     </svg>`;
   };
+
 
   // ─────────────────────────────────────────────────────────
   //  HIT DATA
@@ -652,6 +650,7 @@
     const el     = document.createElement('div');
     el.className = 'play-item';
     el.style.position = 'relative';
+    const baseState = getBaseRunners(play);
     el.innerHTML = `
       <div class="inning-indicator">${play.about.halfInning} ${play.about.inning}</div>
       <div class="player-image-container">
@@ -674,7 +673,7 @@
         </div>
         <div class="game-situation">
           <div class="count-info">${play.count.balls}-${play.count.strikes}</div>
-          <div class="field-display">${generateSVGField(play.count, getBaseRunners(play.runners))}</div>
+          <div class="field-display">${generateSVGField(play.count, baseState)}</div>
         </div>
       </div>`;
     return el;
