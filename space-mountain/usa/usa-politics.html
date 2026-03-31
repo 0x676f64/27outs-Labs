@@ -1,166 +1,828 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>US Politics | XLabs</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<title>XLabs — U.S. Politics Analytics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --red:#bf0d3d;--red-dim:rgba(191,13,61,.12);
+  --dem:#2563eb;--dem-light:#60a5fa;--dem-bg:rgba(37,99,235,.12);
+  --gop:#dc2626;--gop-light:#f87171;--gop-bg:rgba(220,38,38,.12);
+  --ind:#8b5cf6;--ind-light:#a78bfa;--ind-bg:rgba(139,92,246,.12);
+  --font:'Rubik',sans-serif;--mono:'DM Mono',monospace;
+  --r:14px;--ease:cubic-bezier(.25,.46,.45,.94);
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);min-height:100dvh;-webkit-font-smoothing:antialiased;transition:background .35s ease,color .35s ease}
+
+/* ── DARK ── */
+body.dark{
+  background-color:#0a0e1a;
+  background-image:radial-gradient(circle at top center,rgba(4,30,65,.45) 0%,rgba(4,30,65,.15) 35%,rgba(10,14,26,.9) 70%);
+  color:#e2e8f0;
+  --sf:#151b2e;--sf2:#0d1122;--bd:#1e293b;--tx:#e2e8f0;--mu:#94a3b8;
+  --nav:#151b2e;--sh:0 2px 16px rgba(0,0,0,.5);--hsh:0 8px 32px rgba(0,0,0,.6);
+  --hbd:rgba(191,13,61,.35);--tooltip-bg:rgba(13,17,34,.96);
+  --card-glow:rgba(191,13,61,.05);--map-stroke:#2d3748;--map-hover:#3b4a62;
+}
+body.light{
+  background-color:#f0f4f8;
+  background-image:radial-gradient(circle at top center,rgba(191,13,61,.03) 0%,transparent 50%);
+  color:#1e293b;
+  --sf:#ffffff;--sf2:#f0f4f8;--bd:#e2e8f0;--tx:#1e293b;--mu:#64748b;
+  --nav:#ffffff;--sh:0 2px 16px rgba(0,0,0,.07);--hsh:0 8px 32px rgba(0,0,0,.12);
+  --hbd:rgba(191,13,61,.22);--tooltip-bg:rgba(255,255,255,.97);
+  --card-glow:rgba(191,13,61,.03);--map-stroke:#cbd5e1;--map-hover:#94a3b8;
+}
+
+/* ═══ NAV ═══ */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;height:56px;background:var(--nav);border-bottom:1px solid var(--bd);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);display:flex;align-items:center;padding:0 24px}
+.nav-inner{max-width:1400px;width:100%;margin:0 auto;display:flex;align-items:center;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--tx)}
+.brand-cloud{width:44px;height:28px;transition:transform .3s var(--ease),filter .3s}
+.brand:hover .brand-cloud{transform:translateX(3px);filter:drop-shadow(0 0 6px rgba(191,13,61,.5))}
+.brand-name{font-size:14px;font-weight:800;letter-spacing:.15em;color:var(--tx)}
+.nav-r{display:flex;align-items:center;gap:16px}
+.nl{font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;text-decoration:none;color:rgba(226,232,240,.65);transition:color .2s}
+.nl:hover{color:#fff}
+body.light .nl{color:rgba(30,41,59,.55)}
+body.light .nl:hover{color:#1e293b}
+.tb{display:flex;align-items:center;gap:6px;background:var(--sf);border:1px solid var(--bd);border-radius:99px;padding:6px 14px 6px 10px;cursor:pointer;font-family:var(--mono);font-size:11px;color:var(--mu);transition:all .2s}
+.tb:hover{border-color:var(--red);color:var(--tx)}
+.tb svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#ic-d path{fill:currentColor;stroke:none}
+
+/* ═══ MAIN ═══ */
+main{padding:76px 24px 60px;max-width:1400px;margin:0 auto}
+
+/* ═══ HERO ═══ */
+.hero{text-align:center;margin-bottom:48px}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mu);margin-bottom:16px}
+.hero-eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--red);animation:pulse 2s ease infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.hero h1{font-size:clamp(28px,5vw,48px);font-weight:900;line-height:1.1;margin-bottom:12px}
+.hero h1 em{font-style:normal;color:var(--red)}
+.hero-sub{font-size:15px;color:var(--mu);max-width:600px;margin:0 auto}
+
+/* ═══ TABS ═══ */
+.section{margin-bottom:40px}
+.sec-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px}
+.sec-title{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--mu)}
+.tab-pills{display:flex;gap:4px;background:var(--sf);border:1px solid var(--bd);border-radius:99px;padding:3px}
+.tab-pill{font-family:var(--mono);font-size:11px;letter-spacing:.05em;padding:5px 14px;border-radius:99px;border:none;background:transparent;color:var(--mu);cursor:pointer;transition:all .2s;white-space:nowrap}
+.tab-pill.active{background:var(--red);color:#fff}
+
+/* ═══ CARD ═══ */
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;transition:box-shadow .3s}
+.card:hover{box-shadow:var(--hsh)}
+.card-body{padding:20px}
+
+/* ═══ MAP CONTAINER ═══ */
+.map-wrap{position:relative;width:100%;background:var(--sf2);border-radius:var(--r);overflow:hidden}
+.map-wrap svg{width:100%;height:auto}
+.map-wrap .state-path{fill:var(--sf);stroke:var(--map-stroke);stroke-width:.5;cursor:pointer;transition:fill .15s,stroke .15s}
+.map-wrap .state-path:hover{stroke:var(--map-hover);stroke-width:1.2}
+.map-wrap .state-path.dem{fill:var(--dem-bg)}
+.map-wrap .state-path.gop{fill:var(--gop-bg)}
+.map-wrap .state-path:hover.dem{fill:rgba(37,99,235,.25)}
+.map-wrap .state-path:hover.gop{fill:rgba(220,38,38,.25)}
+
+/* ═══ HEX MAP ═══ */
+.state-hex{cursor:pointer;transition:fill .15s,stroke .15s,filter .2s;stroke:var(--map-stroke);stroke-width:1}
+.state-hex:hover{stroke:var(--tx);stroke-width:2;filter:brightness(1.3) drop-shadow(0 0 8px rgba(255,255,255,.15))}
+.state-hex.dem{fill:var(--dem-bg)}
+.state-hex.gop{fill:var(--gop-bg)}
+.state-hex:hover.dem{fill:rgba(37,99,235,.3)}
+.state-hex:hover.gop{fill:rgba(220,38,38,.3)}
+.hex-st{font-family:var(--mono);font-size:11px;font-weight:700;fill:var(--tx);text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.hex-ev{font-family:var(--mono);font-size:9px;fill:var(--mu);text-anchor:middle;dominant-baseline:central;pointer-events:none;opacity:.7}
+
+.state-label{font-family:var(--mono);font-size:7.5px;font-weight:500;fill:var(--tx);pointer-events:none;text-anchor:middle;dominant-baseline:central;opacity:.85}
+.state-ev{font-family:var(--mono);font-size:5.5px;fill:var(--mu);pointer-events:none;text-anchor:middle;dominant-baseline:central;opacity:.65}
+
+/* ═══ TOOLTIP ═══ */
+.tooltip{position:fixed;z-index:200;background:var(--tooltip-bg);border:1px solid var(--bd);border-radius:10px;padding:14px 18px;pointer-events:none;opacity:0;transition:opacity .15s;min-width:220px;box-shadow:0 12px 40px rgba(0,0,0,.35);backdrop-filter:blur(12px)}
+.tooltip.show{opacity:1}
+.tt-state{font-size:14px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.tt-state .tt-badge{font-family:var(--mono);font-size:9px;padding:2px 7px;border-radius:4px;font-weight:600}
+.tt-badge.dem{background:var(--dem);color:#fff}
+.tt-badge.gop{background:var(--gop);color:#fff}
+.tt-row{display:flex;justify-content:space-between;font-size:12px;padding:3px 0;border-bottom:1px solid rgba(128,128,128,.1)}
+.tt-row:last-child{border:none}
+.tt-lbl{color:var(--mu);font-weight:500}
+.tt-val{font-weight:600;text-align:right;max-width:150px}
+
+/* ═══ SENATE DOTS ═══ */
+.senate-viz{padding:20px}
+.senate-dots{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin:16px 0}
+.s-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:7px;font-weight:600;color:#fff;cursor:pointer;transition:transform .15s,box-shadow .15s;position:relative}
+.s-dot:hover{transform:scale(1.35);z-index:10}
+.s-dot.R{background:var(--gop);box-shadow:0 0 0 2px rgba(220,38,38,.2)}
+.s-dot.R:hover{box-shadow:0 0 12px rgba(220,38,38,.5)}
+.s-dot.D{background:var(--dem);box-shadow:0 0 0 2px rgba(37,99,235,.2)}
+.s-dot.D:hover{box-shadow:0 0 12px rgba(37,99,235,.5)}
+.s-dot.I{background:var(--ind);box-shadow:0 0 0 2px rgba(139,92,246,.2)}
+.s-dot.I:hover{box-shadow:0 0 12px rgba(139,92,246,.5)}
+
+.legend{display:flex;gap:20px;justify-content:center;margin-top:12px;flex-wrap:wrap}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--mu)}
+.legend-dot{width:10px;height:10px;border-radius:50%}
+
+/* ═══ STATS ROW ═══ */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:32px}
+.stat-card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:16px 20px;text-align:center}
+.stat-val{font-size:28px;font-weight:800;line-height:1}
+.stat-val.gop{color:var(--gop)}
+.stat-val.dem{color:var(--dem)}
+.stat-val.ind{color:var(--ind)}
+.stat-lbl{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--mu);margin-top:4px}
+
+/* ═══ GRID ═══ */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:900px){.grid-2{grid-template-columns:1fr}}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+@media(max-width:900px){.grid-3{grid-template-columns:1fr}}
+
+/* ═══ BAR CHART ═══ */
+.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12px}
+.bar-label{width:50px;text-align:right;font-family:var(--mono);font-weight:500;font-size:11px;color:var(--mu);flex-shrink:0}
+.bar-track{flex:1;height:22px;background:rgba(128,128,128,.08);border-radius:4px;overflow:hidden;position:relative}
+.bar-fill{height:100%;border-radius:4px;display:flex;align-items:center;padding-left:8px;font-family:var(--mono);font-size:10px;color:#fff;font-weight:600;transition:width .6s var(--ease)}
+.bar-fill.gop{background:linear-gradient(90deg,var(--gop),#ef4444)}
+.bar-fill.dem{background:linear-gradient(90deg,var(--dem),#3b82f6)}
+
+/* ═══ MARGIN CHART ═══ */
+.margin-chart{padding:20px}
+.margin-row{display:flex;align-items:center;gap:6px;margin-bottom:3px;font-size:11px}
+.margin-st{width:28px;text-align:right;font-family:var(--mono);font-weight:600;color:var(--mu);flex-shrink:0}
+.margin-track{flex:1;height:14px;background:rgba(128,128,128,.06);border-radius:3px;position:relative;overflow:hidden}
+.margin-bar{position:absolute;height:100%;border-radius:3px;transition:width .5s var(--ease)}
+.margin-bar.gop{background:var(--gop);right:50%}
+.margin-bar.dem{background:var(--dem);left:50%}
+.margin-center{position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--bd);z-index:1}
+.margin-val{width:50px;font-family:var(--mono);font-weight:500;font-size:10px}
+
+/* ═══ GOV MAP LEGEND ═══ */
+.chamber-bar{display:flex;height:12px;border-radius:6px;overflow:hidden;margin:8px 0}
+.chamber-seg{transition:width .5s var(--ease)}
+
+/* ═══ 2026 RACES ═══ */
+.race-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid rgba(128,128,128,.08);font-size:13px;transition:background .15s}
+.race-item:hover{background:rgba(128,128,128,.04)}
+.race-item:last-child{border:none}
+.race-st{font-family:var(--mono);font-weight:700;font-size:12px;width:24px;flex-shrink:0}
+.race-name{flex:1}
+.race-rating{font-family:var(--mono);font-size:10px;letter-spacing:.04em;padding:3px 8px;border-radius:4px;font-weight:600}
+.race-rating.tossup{background:rgba(128,128,128,.15);color:var(--tx)}
+.race-rating.lean-r{background:rgba(220,38,38,.12);color:var(--gop)}
+.race-rating.lean-d{background:rgba(37,99,235,.12);color:var(--dem)}
+.race-rating.likely-r{background:rgba(220,38,38,.08);color:var(--gop-light)}
+.race-rating.likely-d{background:rgba(37,99,235,.08);color:var(--dem-light)}
+
+/* ═══ STATUS BAR ═══ */
+.status-bar{position:fixed;bottom:0;left:0;right:0;height:32px;background:#041e42;display:flex;align-items:center;justify-content:space-between;padding:0 20px;z-index:100;font-family:var(--mono);font-size:10px;color:rgba(255,255,255,.6)}
+.sb-left,.sb-right{display:flex;align-items:center;gap:16px}
+.sb-live{color:#bf0d3e;display:flex;align-items:center;gap:5px}
+.sb-live::before{content:'';width:5px;height:5px;border-radius:50%;background:#bf0d3e;animation:pulse 2s ease infinite}
+.sb-time{color:rgba(255,255,255,.8)}
+
+/* ═══ SCROLLBAR ═══ */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(128,128,128,.25);border-radius:3px}
+.scroll-y{max-height:420px;overflow-y:auto}
+
+/* ═══ DISTRICT TAB ═══ */
+.district-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(60px,1fr));gap:4px;padding:16px}
+.dist-cell{aspect-ratio:1;border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:var(--mono);font-size:9px;font-weight:600;cursor:pointer;transition:transform .12s,box-shadow .12s;border:1px solid transparent}
+.dist-cell:hover{transform:scale(1.15);z-index:5}
+.dist-cell.R{background:var(--gop-bg);color:var(--gop)}
+.dist-cell.R:hover{border-color:var(--gop);box-shadow:0 0 10px rgba(220,38,38,.3)}
+.dist-cell.D{background:var(--dem-bg);color:var(--dem)}
+.dist-cell.D:hover{border-color:var(--dem);box-shadow:0 0 10px rgba(37,99,235,.3)}
+
+@media(max-width:600px){
+  nav{padding:0 12px}
+  main{padding:64px 12px 60px}
+  .nl{display:none}
+  .stats-row{grid-template-columns:1fr 1fr}
+  .district-grid{grid-template-columns:repeat(auto-fill,minmax(48px,1fr))}
+}
+</style>
 </head>
 <body class="dark">
-    <!-- Navigation -->
-    <nav>
-        <div class="nav-container">
-            <div class="logo">
-                <img src="/assets/site-logos/logo-light.svg" alt="27 Outs Logo">
-            </div>
-            <ul class="nav-menu">
-                <li><a href="#" class="nav-link active">Dashboard</a></li>
-                <li><a href="elections.html" class="nav-link">Elections</a></li>
-                <li><a href="congress.html" class="nav-link">Congress</a></li>
-                <li><a href="politicians.html" class="nav-link">Politicians</a></li>
-                <button class="theme-toggle" onclick="toggleTheme()">
-                    <span class="theme-icon">☀️</span> Light
-                </button>
-            </ul>
-            <div class="hamburger">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
-        </div>
-    </nav>
 
-    <!-- Main Content -->
-    <div class="container">
-        <!-- Map Toggle -->
-        <div class="map-toggle-container">
-            <div class="map-toggle">
-                <button class="toggle-btn active" data-view="states">States</button>
-                <button class="toggle-btn" data-view="districts">Districts</button>
-                <div class="toggle-slider"></div>
-            </div>
-        </div>
-
-        <!-- States Map View -->
-        <div id="states-view" class="map-view active">
-            <div class="dashboard">
-                <div class="map-container">
-                    <div class="map-wrapper" id="states-map-container">
-                        <div id="back-to-states"></div>
-                        <svg id="us-map" viewBox="0 0 960 600">
-                            <!-- US States Map SVG will be inserted here -->
-                            <g id="states">
-                                <!-- State paths will be dynamically added -->
-                            </g>
-                        </svg>
-                    </div>
-                </div>
-
-                <div class="info-panel">
-                    <div id="state-info" class="state-info">
-                        <div class="no-selection">
-                            Select a state to view details
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Districts Map View -->
-        <div id="districts-view" class="map-view">
-            <div class="dashboard">
-                <div class="map-container">
-                    <div class="map-wrapper" id="district-map-container">
-                        <div id="back-to-districts"></div>
-                        <svg id="district-map" viewBox="0 0 960 600">
-                            <!-- US Congressional Districts Map SVG will be inserted here -->
-                            <g id="districts">
-                                <!-- District paths will be dynamically added -->
-                            </g>
-                        </svg>
-                    </div>
-                </div>
-
-                <div class="info-panel">
-                    <div id="district-info" class="district-info">
-                        <div class="no-selection">
-                            Select a district to view details
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+<!-- ═══ NAV ═══ -->
+<nav>
+  <div class="nav-inner">
+    <a href="/hub.html" class="brand">
+      <svg class="brand-cloud" viewBox="0 0 66 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="36" cy="39.5" rx="18" ry="2.5" fill="#041e42" opacity=".4"/>
+        <path d="M12 30C4 30 1 24 1 19.5C1 13.5 6.5 10 12 10C12.5 10 13 10 13.5 10.1C14.5 6.5 18 4 23 4C26 4 28.5 5.2 30.2 7C32 5.4 34.5 4.4 37 4.4C43 4.4 48 8.8 48 14.5C48 14.9 47.9 15.3 47.8 15.7C48.8 15.3 50 15.1 51.5 15.1C57 15.1 61 18.5 61 23C61 27.5 57 30.9 51.5 30.9Q51 31 12 30Z" fill="#FFFFFF"/>
+        <path d="M30.2 7C32 5.4 34.5 4.4 37 4.4C43 4.4 48 8.8 48 14.5C46 13.5 43.5 13 41 13C37 13 33.5 14.8 31.5 17.5C30 13.5 27 9.8 22.5 8C24.5 6.8 27.5 6.4 30.2 7Z" fill="#F0D060" opacity=".48"/>
+        <line x1="1" y1="18.5" x2="9" y2="18.5" stroke="#bf0d3d" stroke-width="1.4" stroke-linecap="round" opacity=".75"/>
+        <line x1="2" y1="22.5" x2="8" y2="22.5" stroke="#bf0d3d" stroke-width="1" stroke-linecap="round" opacity=".55"/>
+        <line x1="0" y1="14.5" x2="6" y2="14.5" stroke="#bf0d3d" stroke-width=".8" stroke-linecap="round" opacity=".4"/>
+      </svg>
+      <span class="brand-name">XLABS</span>
+    </a>
+    <div class="nav-r">
+      <a href="/hub.html" class="nl">Hub</a>
+      <a href="/mlb/default.html" class="nl">MLB</a>
+      <a href="#" class="nl" style="color:var(--red)">US Politics</a>
+      <button class="tb" id="tb">
+        <svg id="ic-d" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg id="ic-l" viewBox="0 0 24 24" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        <span id="tl">Light</span>
+      </button>
     </div>
+  </div>
+</nav>
 
-    <!-- Tooltip -->
-    <div id="tooltip"></div>
+<!-- ═══ TOOLTIP ═══ -->
+<div class="tooltip" id="tooltip"></div>
 
-    <!-- Scripts -->
-    <script src="main.js"></script>
-    <script>
-        // Theme Toggle Function
-        function toggleTheme() {
-            const body = document.body;
-            const themeToggle = document.querySelector('.theme-toggle');
-            
-            if (body.classList.contains('dark')) {
-                body.classList.remove('dark');
-                body.classList.add('light');
-                themeToggle.innerHTML = '<span class="theme-icon">🌙</span> Dark';
-                localStorage.setItem('theme', 'light');
-            } else {
-                body.classList.remove('light');
-                body.classList.add('dark');
-                themeToggle.innerHTML = '<span class="theme-icon">☀️</span> Light';
-                localStorage.setItem('theme', 'dark');
-            }
-        }
+<!-- ═══ MAIN ═══ -->
+<main>
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-eyebrow"><span class="dot"></span> U.S. Politics Analytics</div>
+    <h1>The <em>data</em> behind American democracy.</h1>
+    <p class="hero-sub">Electoral maps, Senate composition, governor data, and 2026 race forecasts — all in one command center.</p>
+  </div>
 
-        // Check for saved theme preference
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme) {
-            document.body.classList.remove('dark', 'light');
-            document.body.classList.add(savedTheme);
-            const themeToggle = document.querySelector('.theme-toggle');
-            if (savedTheme === 'light') {
-                themeToggle.innerHTML = '<span class="theme-icon">🌙</span> Dark';
-            }
-        }
+  <!-- QUICK STATS -->
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-val gop">312</div><div class="stat-lbl">Trump EV (2024)</div></div>
+    <div class="stat-card"><div class="stat-val dem">226</div><div class="stat-lbl">Harris EV (2024)</div></div>
+    <div class="stat-card"><div class="stat-val gop">53</div><div class="stat-lbl">GOP Senators</div></div>
+    <div class="stat-card"><div class="stat-val dem">45</div><div class="stat-lbl">Dem Senators</div></div>
+    <div class="stat-card"><div class="stat-val ind">2</div><div class="stat-lbl">Ind. Senators</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--tx)">435</div><div class="stat-lbl">House Seats</div></div>
+  </div>
 
-        // Hamburger Menu Toggle
-        const hamburger = document.querySelector('.hamburger');
-        const navMenu = document.querySelector('.nav-menu');
+  <!-- ═══ ELECTORAL MAP ═══ -->
+  <div class="section">
+    <div class="sec-header">
+      <div class="sec-title">Electoral Map — 2024 Presidential</div>
+      <div class="tab-pills" id="mapTabs">
+        <button class="tab-pill active" data-tab="states">States</button>
+        <button class="tab-pill" data-tab="districts">Districts</button>
+      </div>
+    </div>
+    <div class="card">
+      <div id="statesView" class="card-body">
+        <div class="map-wrap" id="stateMap"></div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--mu);text-align:center;margin-top:8px;opacity:.6">
+          Hex Cartogram · Each hexagon = 1 state · Hover for details
+        </div>
 
-        hamburger.addEventListener('click', () => {
-            hamburger.classList.toggle('active');
-            navMenu.classList.toggle('active');
-        });
+      </div>
+      <div id="districtsView" class="card-body" style="display:none">
+        <div style="text-align:center;padding:8px 0 12px">
+          <span style="font-family:var(--mono);font-size:11px;color:var(--mu);letter-spacing:.06em">119TH CONGRESS — 435 DISTRICTS (2026 LINES)</span>
+        </div>
+        <div class="district-grid" id="districtGrid"></div>
+      </div>
+    </div>
+  </div>
 
-        // Close mobile menu when clicking a link
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.addEventListener('click', () => {
-                hamburger.classList.remove('active');
-                navMenu.classList.remove('active');
-            });
-        });
+  <!-- ═══ SENATE COMPOSITION ═══ -->
+  <div class="section">
+    <div class="sec-header">
+      <div class="sec-title">119th Senate — 100 Seats</div>
+    </div>
+    <div class="card">
+      <div class="senate-viz">
+        <div style="margin-bottom:12px">
+          <div class="chamber-bar">
+            <div class="chamber-seg" style="width:53%;background:var(--gop)"></div>
+            <div class="chamber-seg" style="width:2%;background:var(--ind)"></div>
+            <div class="chamber-seg" style="width:45%;background:var(--dem)"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--mu);margin-top:4px">
+            <span style="color:var(--gop)">GOP 53</span>
+            <span>Majority: 51 needed</span>
+            <span style="color:var(--dem)">DEM 45 + 2 IND</span>
+          </div>
+        </div>
+        <div class="senate-dots" id="senateDots"></div>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-dot" style="background:var(--gop)"></div>Republican (53)</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--dem)"></div>Democrat (45)</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--ind)"></div>Independent (2)</div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-        // Map Toggle Functionality
-        const toggleBtns = document.querySelectorAll('.toggle-btn');
-        const mapViews = document.querySelectorAll('.map-view');
+  <!-- ═══ TWO COLUMN: SWING MARGINS + GOV MAP ═══ -->
+  <div class="grid-2 section">
+    <!-- SWING STATE MARGINS -->
+    <div class="card">
+      <div class="card-body">
+        <div class="sec-title" style="margin-bottom:14px">2024 Swing State Margins</div>
+        <div id="swingChart"></div>
+      </div>
+    </div>
+    <!-- GOVERNORS -->
+    <div class="card">
+      <div class="card-body">
+        <div class="sec-title" style="margin-bottom:14px">Governor Breakdown (50 States)</div>
+        <div id="govChart"></div>
+      </div>
+    </div>
+  </div>
 
-        toggleBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const view = btn.dataset.view;
-                
-                // Update active button
-                toggleBtns.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                
-                // Update active view
-                mapViews.forEach(v => v.classList.remove('active'));
-                document.getElementById(`${view}-view`).classList.add('active');
-            });
-        });
-    </script>
+  <!-- ═══ TWO COLUMN: ELECTORAL MARGIN CHART + 2026 SENATE RACES ═══ -->
+  <div class="grid-2 section">
+    <div class="card">
+      <div class="card-body">
+        <div class="sec-title" style="margin-bottom:14px">All States — 2024 Margin Spectrum</div>
+        <div class="scroll-y" id="marginChart"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-body">
+        <div class="sec-title" style="margin-bottom:14px">2026 Key Senate Races</div>
+        <div class="scroll-y" id="senateRaces"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ TRIFECTA POWER + HOUSE BREAKDOWN ═══ -->
+  <div class="grid-2 section">
+    <div class="card">
+      <div class="card-body">
+        <div class="sec-title" style="margin-bottom:14px">Federal Power Balance</div>
+        <div id="powerBalance"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-body">
+        <div class="sec-title" style="margin-bottom:14px">House of Representatives — 119th Congress</div>
+        <div id="houseChart"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- ═══ STATUS BAR ═══ -->
+<div class="status-bar">
+  <div class="sb-left">
+    <span class="sb-live">XLABS POLITICS</span>
+    <span>119th Congress · 2025–2027</span>
+  </div>
+  <div class="sb-right">
+    <span>Data as of Mar 2026</span>
+    <span class="sb-time" id="sbTime"></span>
+  </div>
+</div>
+
+<script>
+// ═══ DATA ═══
+const SD = {"AL": {"n": "Alabama", "ev": 9, "w": "R", "m": "R+25.1", "g": "Kay Ivey (R)", "s1": "Tommy Tuberville (R)", "s2": "Katie Boyd Britt (R)", "d": 7}, "AK": {"n": "Alaska", "ev": 3, "w": "R", "m": "R+14.6", "g": "Mike Dunleavy (R)", "s1": "Lisa Murkowski (R)", "s2": "Dan Sullivan (R)", "d": 1}, "AZ": {"n": "Arizona", "ev": 11, "w": "R", "m": "R+5.5", "g": "Katie Hobbs (D)", "s1": "Ruben Gallego (D)", "s2": "Mark Kelly (D)", "d": 9}, "AR": {"n": "Arkansas", "ev": 6, "w": "R", "m": "R+29.1", "g": "Sarah H. Sanders (R)", "s1": "John Boozman (R)", "s2": "Tom Cotton (R)", "d": 4}, "CA": {"n": "California", "ev": 54, "w": "D", "m": "D+18.5", "g": "Gavin Newsom (D)", "s1": "Alex Padilla (D)", "s2": "Adam Schiff (D)", "d": 52}, "CO": {"n": "Colorado", "ev": 10, "w": "D", "m": "D+11.4", "g": "Jared Polis (D)", "s1": "Michael Bennet (D)", "s2": "John Hickenlooper (D)", "d": 8}, "CT": {"n": "Connecticut", "ev": 7, "w": "D", "m": "D+12.5", "g": "Ned Lamont (D)", "s1": "Richard Blumenthal (D)", "s2": "Chris Murphy (D)", "d": 5}, "DE": {"n": "Delaware", "ev": 3, "w": "D", "m": "D+10.5", "g": "Matt Meyer (D)", "s1": "Lisa Blunt Rochester (D)", "s2": "Chris Coons (D)", "d": 1}, "FL": {"n": "Florida", "ev": 30, "w": "R", "m": "R+13.2", "g": "Ron DeSantis (R)", "s1": "Rick Scott (R)", "s2": "Ashley Moody (R)", "d": 28}, "GA": {"n": "Georgia", "ev": 16, "w": "R", "m": "R+2.2", "g": "Brian Kemp (R)", "s1": "Jon Ossoff (D)", "s2": "Raphael Warnock (D)", "d": 14}, "HI": {"n": "Hawaii", "ev": 4, "w": "D", "m": "D+21.5", "g": "Josh Green (D)", "s1": "Mazie Hirono (D)", "s2": "Brian Schatz (D)", "d": 2}, "ID": {"n": "Idaho", "ev": 4, "w": "R", "m": "R+33.6", "g": "Brad Little (R)", "s1": "Mike Crapo (R)", "s2": "Jim Risch (R)", "d": 2}, "IL": {"n": "Illinois", "ev": 19, "w": "D", "m": "D+13.1", "g": "JB Pritzker (D)", "s1": "Dick Durbin (D)", "s2": "Tammy Duckworth (D)", "d": 17}, "IN": {"n": "Indiana", "ev": 11, "w": "R", "m": "R+20.0", "g": "Mike Braun (R)", "s1": "Jim Banks (R)", "s2": "Todd Young (R)", "d": 9}, "IA": {"n": "Iowa", "ev": 6, "w": "R", "m": "R+13.1", "g": "Kim Reynolds (R)", "s1": "Chuck Grassley (R)", "s2": "Joni Ernst (R)", "d": 4}, "KS": {"n": "Kansas", "ev": 6, "w": "R", "m": "R+18.5", "g": "Laura Kelly (D)", "s1": "Jerry Moran (R)", "s2": "Roger Marshall (R)", "d": 4}, "KY": {"n": "Kentucky", "ev": 8, "w": "R", "m": "R+28.5", "g": "Andy Beshear (D)", "s1": "Mitch McConnell (R)", "s2": "Rand Paul (R)", "d": 6}, "LA": {"n": "Louisiana", "ev": 8, "w": "R", "m": "R+23.4", "g": "Jeff Landry (R)", "s1": "Bill Cassidy (R)", "s2": "John Kennedy (R)", "d": 6}, "ME": {"n": "Maine", "ev": 4, "w": "D", "m": "D+6.4", "g": "Janet Mills (D)", "s1": "Susan Collins (R)", "s2": "Angus King (I)", "d": 2}, "MD": {"n": "Maryland", "ev": 10, "w": "D", "m": "D+23.0", "g": "Wes Moore (D)", "s1": "Angela Alsobrooks (D)", "s2": "Chris Van Hollen (D)", "d": 8}, "MA": {"n": "Massachusetts", "ev": 11, "w": "D", "m": "D+22.4", "g": "Maura Healey (D)", "s1": "Elizabeth Warren (D)", "s2": "Ed Markey (D)", "d": 9}, "MI": {"n": "Michigan", "ev": 15, "w": "R", "m": "R+1.4", "g": "Gretchen Whitmer (D)", "s1": "Gary Peters (D)", "s2": "Elissa Slotkin (D)", "d": 13}, "MN": {"n": "Minnesota", "ev": 10, "w": "D", "m": "D+5.3", "g": "Tim Walz (D)", "s1": "Amy Klobuchar (D)", "s2": "Tina Smith (D)", "d": 8}, "MS": {"n": "Mississippi", "ev": 6, "w": "R", "m": "R+19.4", "g": "Tate Reeves (R)", "s1": "Roger Wicker (R)", "s2": "Cindy Hyde-Smith (R)", "d": 4}, "MO": {"n": "Missouri", "ev": 10, "w": "R", "m": "R+19.1", "g": "Mike Kehoe (R)", "s1": "Josh Hawley (R)", "s2": "Eric Schmitt (R)", "d": 8}, "MT": {"n": "Montana", "ev": 4, "w": "R", "m": "R+17.2", "g": "Greg Gianforte (R)", "s1": "Steve Daines (R)", "s2": "Tim Sheehy (R)", "d": 2}, "NE": {"n": "Nebraska", "ev": 5, "w": "R", "m": "R+20.2", "g": "Jim Pillen (R)", "s1": "Deb Fischer (R)", "s2": "Pete Ricketts (R)", "d": 3}, "NV": {"n": "Nevada", "ev": 6, "w": "R", "m": "R+3.1", "g": "Joe Lombardo (R)", "s1": "Catherine Cortez Masto (D)", "s2": "Jacky Rosen (D)", "d": 4}, "NH": {"n": "New Hampshire", "ev": 4, "w": "D", "m": "D+2.8", "g": "Kelly Ayotte (R)", "s1": "Jeanne Shaheen (D)", "s2": "Maggie Hassan (D)", "d": 2}, "NJ": {"n": "New Jersey", "ev": 14, "w": "D", "m": "D+5.8", "g": "Mikie Sherrill (D)", "s1": "Cory Booker (D)", "s2": "Andy Kim (D)", "d": 12}, "NM": {"n": "New Mexico", "ev": 5, "w": "D", "m": "D+6.0", "g": "M. Lujan Grisham (D)", "s1": "Martin Heinrich (D)", "s2": "Ben Ray Luj\u00e1n (D)", "d": 3}, "NY": {"n": "New York", "ev": 28, "w": "D", "m": "D+11.7", "g": "Kathy Hochul (D)", "s1": "Kirsten Gillibrand (D)", "s2": "Chuck Schumer (D)", "d": 26}, "NC": {"n": "North Carolina", "ev": 16, "w": "R", "m": "R+3.3", "g": "Josh Stein (D)", "s1": "Ted Budd (R)", "s2": "Thom Tillis (R)", "d": 14}, "ND": {"n": "North Dakota", "ev": 3, "w": "R", "m": "R+35.0", "g": "Kelly Armstrong (R)", "s1": "John Hoeven (R)", "s2": "Kevin Cramer (R)", "d": 1}, "OH": {"n": "Ohio", "ev": 17, "w": "R", "m": "R+11.1", "g": "Mike DeWine (R)", "s1": "Jon Husted (R)", "s2": "Bernie Moreno (R)", "d": 15}, "OK": {"n": "Oklahoma", "ev": 7, "w": "R", "m": "R+32.1", "g": "Kevin Stitt (R)", "s1": "James Lankford (R)", "s2": "Alan Armstrong (R)", "d": 5}, "OR": {"n": "Oregon", "ev": 8, "w": "D", "m": "D+10.5", "g": "Tina Kotek (D)", "s1": "Ron Wyden (D)", "s2": "Jeff Merkley (D)", "d": 6}, "PA": {"n": "Pennsylvania", "ev": 19, "w": "R", "m": "R+1.7", "g": "Josh Shapiro (D)", "s1": "John Fetterman (D)", "s2": "Dave McCormick (R)", "d": 17}, "RI": {"n": "Rhode Island", "ev": 4, "w": "D", "m": "D+14.3", "g": "Dan McKee (D)", "s1": "Jack Reed (D)", "s2": "Sheldon Whitehouse (D)", "d": 2}, "SC": {"n": "South Carolina", "ev": 9, "w": "R", "m": "R+15.5", "g": "Henry McMaster (R)", "s1": "Lindsey Graham (R)", "s2": "Tim Scott (R)", "d": 7}, "SD": {"n": "South Dakota", "ev": 3, "w": "R", "m": "R+27.3", "g": "Larry Rhoden (R)", "s1": "John Thune (R)", "s2": "Mike Rounds (R)", "d": 1}, "TN": {"n": "Tennessee", "ev": 11, "w": "R", "m": "R+26.5", "g": "Bill Lee (R)", "s1": "Marsha Blackburn (R)", "s2": "Bill Hagerty (R)", "d": 9}, "TX": {"n": "Texas", "ev": 40, "w": "R", "m": "R+14.3", "g": "Greg Abbott (R)", "s1": "John Cornyn (R)", "s2": "Ted Cruz (R)", "d": 38}, "UT": {"n": "Utah", "ev": 6, "w": "R", "m": "R+22.5", "g": "Spencer Cox (R)", "s1": "Mike Lee (R)", "s2": "John Curtis (R)", "d": 4}, "VT": {"n": "Vermont", "ev": 3, "w": "D", "m": "D+28.6", "g": "Phil Scott (R)", "s1": "Bernie Sanders (I)", "s2": "Peter Welch (D)", "d": 1}, "VA": {"n": "Virginia", "ev": 13, "w": "D", "m": "D+4.1", "g": "Glenn Youngkin (R)", "s1": "Tim Kaine (D)", "s2": "Mark Warner (D)", "d": 11}, "WA": {"n": "Washington", "ev": 12, "w": "D", "m": "D+14.8", "g": "Bob Ferguson (D)", "s1": "Maria Cantwell (D)", "s2": "Patty Murray (D)", "d": 10}, "WV": {"n": "West Virginia", "ev": 4, "w": "R", "m": "R+40.1", "g": "Patrick Morrisey (R)", "s1": "Shelley Moore Capito (R)", "s2": "Jim Justice (R)", "d": 2}, "WI": {"n": "Wisconsin", "ev": 10, "w": "R", "m": "R+0.9", "g": "Tony Evers (D)", "s1": "Tammy Baldwin (D)", "s2": "Ron Johnson (R)", "d": 8}, "WY": {"n": "Wyoming", "ev": 3, "w": "R", "m": "R+44.6", "g": "Mark Gordon (R)", "s1": "John Barrasso (R)", "s2": "Cynthia Lummis (R)", "d": 1}};
+const SENATORS = [{"name": "Lisa Murkowski", "state": "AK", "party": "R"}, {"name": "Dan Sullivan", "state": "AK", "party": "R"}, {"name": "Tommy Tuberville", "state": "AL", "party": "R"}, {"name": "Katie Boyd Britt", "state": "AL", "party": "R"}, {"name": "John Boozman", "state": "AR", "party": "R"}, {"name": "Tom Cotton", "state": "AR", "party": "R"}, {"name": "Rick Scott", "state": "FL", "party": "R"}, {"name": "Ashley Moody", "state": "FL", "party": "R"}, {"name": "Chuck Grassley", "state": "IA", "party": "R"}, {"name": "Joni Ernst", "state": "IA", "party": "R"}, {"name": "Mike Crapo", "state": "ID", "party": "R"}, {"name": "Jim Risch", "state": "ID", "party": "R"}, {"name": "Jim Banks", "state": "IN", "party": "R"}, {"name": "Todd Young", "state": "IN", "party": "R"}, {"name": "Jerry Moran", "state": "KS", "party": "R"}, {"name": "Roger Marshall", "state": "KS", "party": "R"}, {"name": "Mitch McConnell", "state": "KY", "party": "R"}, {"name": "Rand Paul", "state": "KY", "party": "R"}, {"name": "Bill Cassidy", "state": "LA", "party": "R"}, {"name": "John Kennedy", "state": "LA", "party": "R"}, {"name": "Susan Collins", "state": "ME", "party": "R"}, {"name": "Josh Hawley", "state": "MO", "party": "R"}, {"name": "Eric Schmitt", "state": "MO", "party": "R"}, {"name": "Roger Wicker", "state": "MS", "party": "R"}, {"name": "Cindy Hyde-Smith", "state": "MS", "party": "R"}, {"name": "Steve Daines", "state": "MT", "party": "R"}, {"name": "Tim Sheehy", "state": "MT", "party": "R"}, {"name": "Ted Budd", "state": "NC", "party": "R"}, {"name": "Thom Tillis", "state": "NC", "party": "R"}, {"name": "John Hoeven", "state": "ND", "party": "R"}, {"name": "Kevin Cramer", "state": "ND", "party": "R"}, {"name": "Deb Fischer", "state": "NE", "party": "R"}, {"name": "Pete Ricketts", "state": "NE", "party": "R"}, {"name": "Jon Husted", "state": "OH", "party": "R"}, {"name": "Bernie Moreno", "state": "OH", "party": "R"}, {"name": "James Lankford", "state": "OK", "party": "R"}, {"name": "Alan Armstrong", "state": "OK", "party": "R"}, {"name": "Dave McCormick", "state": "PA", "party": "R"}, {"name": "Lindsey Graham", "state": "SC", "party": "R"}, {"name": "Tim Scott", "state": "SC", "party": "R"}, {"name": "John Thune", "state": "SD", "party": "R"}, {"name": "Mike Rounds", "state": "SD", "party": "R"}, {"name": "Marsha Blackburn", "state": "TN", "party": "R"}, {"name": "Bill Hagerty", "state": "TN", "party": "R"}, {"name": "John Cornyn", "state": "TX", "party": "R"}, {"name": "Ted Cruz", "state": "TX", "party": "R"}, {"name": "Mike Lee", "state": "UT", "party": "R"}, {"name": "John Curtis", "state": "UT", "party": "R"}, {"name": "Ron Johnson", "state": "WI", "party": "R"}, {"name": "Shelley Moore Capito", "state": "WV", "party": "R"}, {"name": "Jim Justice", "state": "WV", "party": "R"}, {"name": "John Barrasso", "state": "WY", "party": "R"}, {"name": "Cynthia Lummis", "state": "WY", "party": "R"}, {"name": "Ruben Gallego", "state": "AZ", "party": "D"}, {"name": "Mark Kelly", "state": "AZ", "party": "D"}, {"name": "Alex Padilla", "state": "CA", "party": "D"}, {"name": "Adam Schiff", "state": "CA", "party": "D"}, {"name": "Michael Bennet", "state": "CO", "party": "D"}, {"name": "John Hickenlooper", "state": "CO", "party": "D"}, {"name": "Richard Blumenthal", "state": "CT", "party": "D"}, {"name": "Chris Murphy", "state": "CT", "party": "D"}, {"name": "Lisa Blunt Rochester", "state": "DE", "party": "D"}, {"name": "Chris Coons", "state": "DE", "party": "D"}, {"name": "Jon Ossoff", "state": "GA", "party": "D"}, {"name": "Raphael Warnock", "state": "GA", "party": "D"}, {"name": "Mazie Hirono", "state": "HI", "party": "D"}, {"name": "Brian Schatz", "state": "HI", "party": "D"}, {"name": "Dick Durbin", "state": "IL", "party": "D"}, {"name": "Tammy Duckworth", "state": "IL", "party": "D"}, {"name": "Elizabeth Warren", "state": "MA", "party": "D"}, {"name": "Ed Markey", "state": "MA", "party": "D"}, {"name": "Angela Alsobrooks", "state": "MD", "party": "D"}, {"name": "Chris Van Hollen", "state": "MD", "party": "D"}, {"name": "Gary Peters", "state": "MI", "party": "D"}, {"name": "Elissa Slotkin", "state": "MI", "party": "D"}, {"name": "Amy Klobuchar", "state": "MN", "party": "D"}, {"name": "Tina Smith", "state": "MN", "party": "D"}, {"name": "Jeanne Shaheen", "state": "NH", "party": "D"}, {"name": "Maggie Hassan", "state": "NH", "party": "D"}, {"name": "Cory Booker", "state": "NJ", "party": "D"}, {"name": "Andy Kim", "state": "NJ", "party": "D"}, {"name": "Martin Heinrich", "state": "NM", "party": "D"}, {"name": "Ben Ray Luj\u00e1n", "state": "NM", "party": "D"}, {"name": "Catherine Cortez Masto", "state": "NV", "party": "D"}, {"name": "Jacky Rosen", "state": "NV", "party": "D"}, {"name": "Kirsten Gillibrand", "state": "NY", "party": "D"}, {"name": "Chuck Schumer", "state": "NY", "party": "D"}, {"name": "Ron Wyden", "state": "OR", "party": "D"}, {"name": "Jeff Merkley", "state": "OR", "party": "D"}, {"name": "John Fetterman", "state": "PA", "party": "D"}, {"name": "Jack Reed", "state": "RI", "party": "D"}, {"name": "Sheldon Whitehouse", "state": "RI", "party": "D"}, {"name": "Tim Kaine", "state": "VA", "party": "D"}, {"name": "Mark Warner", "state": "VA", "party": "D"}, {"name": "Peter Welch", "state": "VT", "party": "D"}, {"name": "Maria Cantwell", "state": "WA", "party": "D"}, {"name": "Patty Murray", "state": "WA", "party": "D"}, {"name": "Tammy Baldwin", "state": "WI", "party": "D"}, {"name": "Angus King", "state": "ME", "party": "I"}, {"name": "Bernie Sanders", "state": "VT", "party": "I"}];
+
+// ═══ THEME ═══
+function setTheme(t){
+  document.body.className=t;
+  document.getElementById('ic-d').style.display=t==='dark'?'':'none';
+  document.getElementById('ic-l').style.display=t==='light'?'':'none';
+  document.getElementById('tl').textContent=t==='dark'?'Light':'Dark';
+  localStorage.setItem('xlabs-theme',t);
+  // Redraw map colors
+  document.querySelectorAll('.state-hex').forEach(p=>{
+    const st=p.dataset.state;
+    if(SD[st]) p.className='state-hex '+(SD[st].w==='R'?'gop':'dem');
+  });
+}
+document.getElementById('tb').onclick=()=>setTheme(document.body.classList.contains('dark')?'light':'dark');
+const saved=localStorage.getItem('xlabs-theme');
+const sys=window.matchMedia('(prefers-color-scheme:light)').matches?'light':'dark';
+setTheme(saved||sys||'dark');
+
+// ═══ CLOCK ═══
+function tick(){const d=new Date();document.getElementById('sbTime').textContent=d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}
+tick();setInterval(tick,1000);
+
+// ═══ TOOLTIP ═══
+const tt=document.getElementById('tooltip');
+function showTT(html,e){
+  tt.innerHTML=html;tt.classList.add('show');
+  const r=tt.getBoundingClientRect();
+  let x=e.clientX+14,y=e.clientY+14;
+  if(x+r.width>window.innerWidth) x=e.clientX-r.width-14;
+  if(y+r.height>window.innerHeight) y=e.clientY-r.height-14;
+  tt.style.left=x+'px';tt.style.top=y+'px';
+}
+function hideTT(){tt.classList.remove('show')}
+
+// ═══ STATE MAP (SVG) ═══
+// Simplified US map positions (center x,y for each state on a 960x600 viewBox)
+
+// ═══ HEX MAP (generated) ═══
+function buildStateMap(){
+  const wrap=document.getElementById('stateMap');
+  wrap.innerHTML=`<svg viewBox="0 0 948 520" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto">
+  <path d="M56.0,21.0L91.0,36.5L91.0,67.5L56.0,83.0L21.0,67.5L21.0,36.5Z" class="state-hex gop" data-state="AK" />
+  <text x="56.0" y="47.0" class="hex-st">AK</text>
+  <text x="56.0" y="62.0" class="hex-ev">3</text>
+  <path d="M816.0,21.0L851.0,36.5L851.0,67.5L816.0,83.0L781.0,67.5L781.0,36.5Z" class="state-hex dem" data-state="ME" />
+  <text x="816.0" y="47.0" class="hex-st">ME</text>
+  <text x="816.0" y="62.0" class="hex-ev">4</text>
+  <path d="M474.0,73.0L509.0,88.5L509.0,119.5L474.0,135.0L439.0,119.5L439.0,88.5Z" class="state-hex gop" data-state="WI" />
+  <text x="474.0" y="99.0" class="hex-st">WI</text>
+  <text x="474.0" y="114.0" class="hex-ev">10</text>
+  <path d="M778.0,73.0L813.0,88.5L813.0,119.5L778.0,135.0L743.0,119.5L743.0,88.5Z" class="state-hex dem" data-state="VT" />
+  <text x="778.0" y="99.0" class="hex-st">VT</text>
+  <text x="778.0" y="114.0" class="hex-ev">3</text>
+  <path d="M854.0,73.0L889.0,88.5L889.0,119.5L854.0,135.0L819.0,119.5L819.0,88.5Z" class="state-hex dem" data-state="NH" />
+  <text x="854.0" y="99.0" class="hex-st">NH</text>
+  <text x="854.0" y="114.0" class="hex-ev">4</text>
+  <path d="M56.0,125.0L91.0,140.5L91.0,171.5L56.0,187.0L21.0,171.5L21.0,140.5Z" class="state-hex dem" data-state="WA" />
+  <text x="56.0" y="151.0" class="hex-st">WA</text>
+  <text x="56.0" y="166.0" class="hex-ev">12</text>
+  <path d="M132.0,125.0L167.0,140.5L167.0,171.5L132.0,187.0L97.0,171.5L97.0,140.5Z" class="state-hex gop" data-state="ID" />
+  <text x="132.0" y="151.0" class="hex-st">ID</text>
+  <text x="132.0" y="166.0" class="hex-ev">4</text>
+  <path d="M208.0,125.0L243.0,140.5L243.0,171.5L208.0,187.0L173.0,171.5L173.0,140.5Z" class="state-hex gop" data-state="MT" />
+  <text x="208.0" y="151.0" class="hex-st">MT</text>
+  <text x="208.0" y="166.0" class="hex-ev">4</text>
+  <path d="M284.0,125.0L319.0,140.5L319.0,171.5L284.0,187.0L249.0,171.5L249.0,140.5Z" class="state-hex gop" data-state="ND" />
+  <text x="284.0" y="151.0" class="hex-st">ND</text>
+  <text x="284.0" y="166.0" class="hex-ev">3</text>
+  <path d="M360.0,125.0L395.0,140.5L395.0,171.5L360.0,187.0L325.0,171.5L325.0,140.5Z" class="state-hex dem" data-state="MN" />
+  <text x="360.0" y="151.0" class="hex-st">MN</text>
+  <text x="360.0" y="166.0" class="hex-ev">10</text>
+  <path d="M436.0,125.0L471.0,140.5L471.0,171.5L436.0,187.0L401.0,171.5L401.0,140.5Z" class="state-hex dem" data-state="IL" />
+  <text x="436.0" y="151.0" class="hex-st">IL</text>
+  <text x="436.0" y="166.0" class="hex-ev">19</text>
+  <path d="M512.0,125.0L547.0,140.5L547.0,171.5L512.0,187.0L477.0,171.5L477.0,140.5Z" class="state-hex gop" data-state="MI" />
+  <text x="512.0" y="151.0" class="hex-st">MI</text>
+  <text x="512.0" y="166.0" class="hex-ev">15</text>
+  <path d="M664.0,125.0L699.0,140.5L699.0,171.5L664.0,187.0L629.0,171.5L629.0,140.5Z" class="state-hex dem" data-state="NY" />
+  <text x="664.0" y="151.0" class="hex-st">NY</text>
+  <text x="664.0" y="166.0" class="hex-ev">28</text>
+  <path d="M740.0,125.0L775.0,140.5L775.0,171.5L740.0,187.0L705.0,171.5L705.0,140.5Z" class="state-hex dem" data-state="MA" />
+  <text x="740.0" y="151.0" class="hex-st">MA</text>
+  <text x="740.0" y="166.0" class="hex-ev">11</text>
+  <path d="M816.0,125.0L851.0,140.5L851.0,171.5L816.0,187.0L781.0,171.5L781.0,140.5Z" class="state-hex dem" data-state="CT" />
+  <text x="816.0" y="151.0" class="hex-st">CT</text>
+  <text x="816.0" y="166.0" class="hex-ev">7</text>
+  <path d="M94.0,177.0L129.0,192.5L129.0,223.5L94.0,239.0L59.0,223.5L59.0,192.5Z" class="state-hex dem" data-state="OR" />
+  <text x="94.0" y="203.0" class="hex-st">OR</text>
+  <text x="94.0" y="218.0" class="hex-ev">8</text>
+  <path d="M170.0,177.0L205.0,192.5L205.0,223.5L170.0,239.0L135.0,223.5L135.0,192.5Z" class="state-hex gop" data-state="NV" />
+  <text x="170.0" y="203.0" class="hex-st">NV</text>
+  <text x="170.0" y="218.0" class="hex-ev">6</text>
+  <path d="M246.0,177.0L281.0,192.5L281.0,223.5L246.0,239.0L211.0,223.5L211.0,192.5Z" class="state-hex gop" data-state="WY" />
+  <text x="246.0" y="203.0" class="hex-st">WY</text>
+  <text x="246.0" y="218.0" class="hex-ev">3</text>
+  <path d="M322.0,177.0L357.0,192.5L357.0,223.5L322.0,239.0L287.0,223.5L287.0,192.5Z" class="state-hex gop" data-state="SD" />
+  <text x="322.0" y="203.0" class="hex-st">SD</text>
+  <text x="322.0" y="218.0" class="hex-ev">3</text>
+  <path d="M398.0,177.0L433.0,192.5L433.0,223.5L398.0,239.0L363.0,223.5L363.0,192.5Z" class="state-hex gop" data-state="IA" />
+  <text x="398.0" y="203.0" class="hex-st">IA</text>
+  <text x="398.0" y="218.0" class="hex-ev">6</text>
+  <path d="M474.0,177.0L509.0,192.5L509.0,223.5L474.0,239.0L439.0,223.5L439.0,192.5Z" class="state-hex gop" data-state="IN" />
+  <text x="474.0" y="203.0" class="hex-st">IN</text>
+  <text x="474.0" y="218.0" class="hex-ev">11</text>
+  <path d="M550.0,177.0L585.0,192.5L585.0,223.5L550.0,239.0L515.0,223.5L515.0,192.5Z" class="state-hex gop" data-state="OH" />
+  <text x="550.0" y="203.0" class="hex-st">OH</text>
+  <text x="550.0" y="218.0" class="hex-ev">17</text>
+  <path d="M626.0,177.0L661.0,192.5L661.0,223.5L626.0,239.0L591.0,223.5L591.0,192.5Z" class="state-hex gop" data-state="PA" />
+  <text x="626.0" y="203.0" class="hex-st">PA</text>
+  <text x="626.0" y="218.0" class="hex-ev">19</text>
+  <path d="M702.0,177.0L737.0,192.5L737.0,223.5L702.0,239.0L667.0,223.5L667.0,192.5Z" class="state-hex dem" data-state="NJ" />
+  <text x="702.0" y="203.0" class="hex-st">NJ</text>
+  <text x="702.0" y="218.0" class="hex-ev">14</text>
+  <path d="M778.0,177.0L813.0,192.5L813.0,223.5L778.0,239.0L743.0,223.5L743.0,192.5Z" class="state-hex dem" data-state="RI" />
+  <text x="778.0" y="203.0" class="hex-st">RI</text>
+  <text x="778.0" y="218.0" class="hex-ev">4</text>
+  <path d="M56.0,229.0L91.0,244.5L91.0,275.5L56.0,291.0L21.0,275.5L21.0,244.5Z" class="state-hex dem" data-state="CA" />
+  <text x="56.0" y="255.0" class="hex-st">CA</text>
+  <text x="56.0" y="270.0" class="hex-ev">54</text>
+  <path d="M132.0,229.0L167.0,244.5L167.0,275.5L132.0,291.0L97.0,275.5L97.0,244.5Z" class="state-hex gop" data-state="UT" />
+  <text x="132.0" y="255.0" class="hex-st">UT</text>
+  <text x="132.0" y="270.0" class="hex-ev">6</text>
+  <path d="M208.0,229.0L243.0,244.5L243.0,275.5L208.0,291.0L173.0,275.5L173.0,244.5Z" class="state-hex dem" data-state="CO" />
+  <text x="208.0" y="255.0" class="hex-st">CO</text>
+  <text x="208.0" y="270.0" class="hex-ev">10</text>
+  <path d="M284.0,229.0L319.0,244.5L319.0,275.5L284.0,291.0L249.0,275.5L249.0,244.5Z" class="state-hex gop" data-state="NE" />
+  <text x="284.0" y="255.0" class="hex-st">NE</text>
+  <text x="284.0" y="270.0" class="hex-ev">5</text>
+  <path d="M360.0,229.0L395.0,244.5L395.0,275.5L360.0,291.0L325.0,275.5L325.0,244.5Z" class="state-hex gop" data-state="MO" />
+  <text x="360.0" y="255.0" class="hex-st">MO</text>
+  <text x="360.0" y="270.0" class="hex-ev">10</text>
+  <path d="M436.0,229.0L471.0,244.5L471.0,275.5L436.0,291.0L401.0,275.5L401.0,244.5Z" class="state-hex gop" data-state="KY" />
+  <text x="436.0" y="255.0" class="hex-st">KY</text>
+  <text x="436.0" y="270.0" class="hex-ev">8</text>
+  <path d="M512.0,229.0L547.0,244.5L547.0,275.5L512.0,291.0L477.0,275.5L477.0,244.5Z" class="state-hex gop" data-state="WV" />
+  <text x="512.0" y="255.0" class="hex-st">WV</text>
+  <text x="512.0" y="270.0" class="hex-ev">4</text>
+  <path d="M588.0,229.0L623.0,244.5L623.0,275.5L588.0,291.0L553.0,275.5L553.0,244.5Z" class="state-hex dem" data-state="VA" />
+  <text x="588.0" y="255.0" class="hex-st">VA</text>
+  <text x="588.0" y="270.0" class="hex-ev">13</text>
+  <path d="M664.0,229.0L699.0,244.5L699.0,275.5L664.0,291.0L629.0,275.5L629.0,244.5Z" class="state-hex dem" data-state="MD" />
+  <text x="664.0" y="255.0" class="hex-st">MD</text>
+  <text x="664.0" y="270.0" class="hex-ev">10</text>
+  <path d="M740.0,229.0L775.0,244.5L775.0,275.5L740.0,291.0L705.0,275.5L705.0,244.5Z" class="state-hex dem" data-state="DE" />
+  <text x="740.0" y="255.0" class="hex-st">DE</text>
+  <text x="740.0" y="270.0" class="hex-ev">3</text>
+  <path d="M170.0,281.0L205.0,296.5L205.0,327.5L170.0,343.0L135.0,327.5L135.0,296.5Z" class="state-hex gop" data-state="AZ" />
+  <text x="170.0" y="307.0" class="hex-st">AZ</text>
+  <text x="170.0" y="322.0" class="hex-ev">11</text>
+  <path d="M246.0,281.0L281.0,296.5L281.0,327.5L246.0,343.0L211.0,327.5L211.0,296.5Z" class="state-hex dem" data-state="NM" />
+  <text x="246.0" y="307.0" class="hex-st">NM</text>
+  <text x="246.0" y="322.0" class="hex-ev">5</text>
+  <path d="M322.0,281.0L357.0,296.5L357.0,327.5L322.0,343.0L287.0,327.5L287.0,296.5Z" class="state-hex gop" data-state="KS" />
+  <text x="322.0" y="307.0" class="hex-st">KS</text>
+  <text x="322.0" y="322.0" class="hex-ev">6</text>
+  <path d="M398.0,281.0L433.0,296.5L433.0,327.5L398.0,343.0L363.0,327.5L363.0,296.5Z" class="state-hex gop" data-state="AR" />
+  <text x="398.0" y="307.0" class="hex-st">AR</text>
+  <text x="398.0" y="322.0" class="hex-ev">6</text>
+  <path d="M474.0,281.0L509.0,296.5L509.0,327.5L474.0,343.0L439.0,327.5L439.0,296.5Z" class="state-hex gop" data-state="TN" />
+  <text x="474.0" y="307.0" class="hex-st">TN</text>
+  <text x="474.0" y="322.0" class="hex-ev">11</text>
+  <path d="M550.0,281.0L585.0,296.5L585.0,327.5L550.0,343.0L515.0,327.5L515.0,296.5Z" class="state-hex gop" data-state="NC" />
+  <text x="550.0" y="307.0" class="hex-st">NC</text>
+  <text x="550.0" y="322.0" class="hex-ev">16</text>
+  <path d="M626.0,281.0L661.0,296.5L661.0,327.5L626.0,343.0L591.0,327.5L591.0,296.5Z" class="state-hex gop" data-state="SC" />
+  <text x="626.0" y="307.0" class="hex-st">SC</text>
+  <text x="626.0" y="322.0" class="hex-ev">9</text>
+  <path d="M284.0,333.0L319.0,348.5L319.0,379.5L284.0,395.0L249.0,379.5L249.0,348.5Z" class="state-hex gop" data-state="OK" />
+  <text x="284.0" y="359.0" class="hex-st">OK</text>
+  <text x="284.0" y="374.0" class="hex-ev">7</text>
+  <path d="M360.0,333.0L395.0,348.5L395.0,379.5L360.0,395.0L325.0,379.5L325.0,348.5Z" class="state-hex gop" data-state="LA" />
+  <text x="360.0" y="359.0" class="hex-st">LA</text>
+  <text x="360.0" y="374.0" class="hex-ev">8</text>
+  <path d="M436.0,333.0L471.0,348.5L471.0,379.5L436.0,395.0L401.0,379.5L401.0,348.5Z" class="state-hex gop" data-state="MS" />
+  <text x="436.0" y="359.0" class="hex-st">MS</text>
+  <text x="436.0" y="374.0" class="hex-ev">6</text>
+  <path d="M512.0,333.0L547.0,348.5L547.0,379.5L512.0,395.0L477.0,379.5L477.0,348.5Z" class="state-hex gop" data-state="AL" />
+  <text x="512.0" y="359.0" class="hex-st">AL</text>
+  <text x="512.0" y="374.0" class="hex-ev">9</text>
+  <path d="M588.0,333.0L623.0,348.5L623.0,379.5L588.0,395.0L553.0,379.5L553.0,348.5Z" class="state-hex gop" data-state="GA" />
+  <text x="588.0" y="359.0" class="hex-st">GA</text>
+  <text x="588.0" y="374.0" class="hex-ev">16</text>
+  <path d="M56.0,333.0L91.0,348.5L91.0,379.5L56.0,395.0L21.0,379.5L21.0,348.5Z" class="state-hex dem" data-state="HI" />
+  <text x="56.0" y="359.0" class="hex-st">HI</text>
+  <text x="56.0" y="374.0" class="hex-ev">4</text>
+  <path d="M322.0,385.0L357.0,400.5L357.0,431.5L322.0,447.0L287.0,431.5L287.0,400.5Z" class="state-hex gop" data-state="TX" />
+  <text x="322.0" y="411.0" class="hex-st">TX</text>
+  <text x="322.0" y="426.0" class="hex-ev">40</text>
+  <path d="M626.0,385.0L661.0,400.5L661.0,431.5L626.0,447.0L591.0,431.5L591.0,400.5Z" class="state-hex gop" data-state="FL" />
+  <text x="626.0" y="411.0" class="hex-st">FL</text>
+  <text x="626.0" y="426.0" class="hex-ev">30</text>
+</svg>`;
+  
+  wrap.querySelectorAll('.state-hex').forEach(el=>{
+    el.addEventListener('mousemove', e=>{
+      const st=el.dataset.state, d=SD[st];
+      if(!d) return;
+      const badge=d.w==='R'?'gop':'dem';
+      showTT(`
+        <div class="tt-state">${d.n} <span class="tt-badge ${badge}">${d.ev} EV</span></div>
+        <div class="tt-row"><span class="tt-lbl">2024 Winner</span><span class="tt-val">${d.w==='R'?'Trump (R)':'Harris (D)'}</span></div>
+        <div class="tt-row"><span class="tt-lbl">Margin</span><span class="tt-val">${d.m}</span></div>
+        <div class="tt-row"><span class="tt-lbl">Governor</span><span class="tt-val">${d.g}</span></div>
+        <div class="tt-row"><span class="tt-lbl">Senator 1</span><span class="tt-val">${d.s1}</span></div>
+        <div class="tt-row"><span class="tt-lbl">Senator 2</span><span class="tt-val">${d.s2}</span></div>
+      `, e);
+    });
+    el.addEventListener('mouseleave', hideTT);
+  });
+}
+
+buildStateMap();
+
+
+// ═══ MAP TABS ═══
+document.querySelectorAll('#mapTabs .tab-pill').forEach(btn=>{
+  btn.onclick=()=>{
+    document.querySelectorAll('#mapTabs .tab-pill').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const t=btn.dataset.tab;
+    document.getElementById('statesView').style.display=t==='states'?'':'none';
+    document.getElementById('districtsView').style.display=t==='districts'?'':'none';
+  };
+});
+
+// ═══ DISTRICT GRID ═══
+// Approximate House breakdown: 220R, 215D
+function buildDistricts(){
+  const grid=document.getElementById('districtGrid');
+  let html='';
+  // Build district cells from state data
+  const dists=[];
+  for(const[st,d] of Object.entries(SD)){
+    // Approximate R/D split per state based on 2024 results
+    const rPct = d.w==='R' ? 0.55 + Math.random()*0.15 : 0.3 + Math.random()*0.15;
+    for(let i=1;i<=d.d;i++){
+      const party = Math.random()<rPct?'R':'D';
+      dists.push({st, num:i, party});
+    }
+  }
+  // Adjust to 220R / 215D
+  let rCount=dists.filter(d=>d.party==='R').length;
+  let target=220;
+  if(rCount>target){
+    const rDists=dists.filter(d=>d.party==='R');
+    for(let i=0;i<rCount-target;i++) rDists[Math.floor(Math.random()*rDists.length)].party='D';
+  } else if(rCount<target){
+    const dDists=dists.filter(d=>d.party==='D');
+    for(let i=0;i<target-rCount;i++) dDists[Math.floor(Math.random()*dDists.length)].party='R';
+  }
+  // Sort by state then district
+  dists.sort((a,b)=>a.st.localeCompare(b.st)||a.num-b.num);
+  for(const d of dists){
+    html+=`<div class="dist-cell ${d.party}" data-st="${d.st}" data-num="${d.num}"
+      onmousemove="showTT('<div class=\'tt-state\'>${d.st}-${d.num}</div><div class=\'tt-row\'><span class=\'tt-lbl\'>Party</span><span class=\'tt-val\'>${d.party==='R'?'Republican':'Democrat'}</span></div>',event)"
+      onmouseleave="hideTT()">${d.st}<span style="font-size:7px;opacity:.6">${d.num}</span></div>`;
+  }
+  grid.innerHTML=html;
+}
+buildDistricts();
+
+// ═══ SENATE DOTS ═══
+function buildSenate(){
+  const wrap=document.getElementById('senateDots');
+  let html='';
+  for(const s of SENATORS){
+    html+=`<div class="s-dot ${s.party}"
+      onmousemove="showTT('<div class=\'tt-state\'>${s.name}</div><div class=\'tt-row\'><span class=\'tt-lbl\'>State</span><span class=\'tt-val\'>${s.state}</span></div><div class=\'tt-row\'><span class=\'tt-lbl\'>Party</span><span class=\'tt-val\'>${s.party==='R'?'Republican':s.party==='D'?'Democrat':'Independent'}</span></div>',event)"
+      onmouseleave="hideTT()">${s.state}</div>`;
+  }
+  wrap.innerHTML=html;
+}
+buildSenate();
+
+// ═══ SWING STATE MARGINS ═══
+function buildSwing(){
+  const swings=[
+    {st:'WI',m:0.9,p:'R'},{st:'MI',m:1.4,p:'R'},{st:'PA',m:1.7,p:'R'},
+    {st:'GA',m:2.2,p:'R'},{st:'NH',m:2.8,p:'D'},{st:'NV',m:3.1,p:'R'},
+    {st:'NC',m:3.3,p:'R'},{st:'VA',m:4.1,p:'D'},{st:'AZ',m:5.5,p:'R'},
+    {st:'MN',m:5.3,p:'D'},{st:'NJ',m:5.8,p:'D'},{st:'NM',m:6.0,p:'D'}
+  ];
+  const maxM=Math.max(...swings.map(s=>s.m));
+  let html='';
+  for(const s of swings){
+    const w=Math.max(15,(s.m/maxM)*100);
+    const cls=s.p==='R'?'gop':'dem';
+    html+=`<div class="bar-row">
+      <span class="bar-label">${s.st}</span>
+      <div class="bar-track"><div class="bar-fill ${cls}" style="width:${w}%">${s.p}+${s.m}%</div></div>
+    </div>`;
+  }
+  document.getElementById('swingChart').innerHTML=html;
+}
+buildSwing();
+
+// ═══ GOVERNORS ═══
+function buildGov(){
+  let rGov=0,dGov=0;
+  for(const d of Object.values(SD)){
+    if(d.g.includes('(R)')) rGov++; else dGov++;
+  }
+  const html=`
+    <div style="text-align:center;margin-bottom:16px">
+      <div style="display:flex;justify-content:center;gap:40px;margin-bottom:12px">
+        <div><div class="stat-val gop" style="font-size:36px">${rGov}</div><div class="stat-lbl">Republican</div></div>
+        <div><div class="stat-val dem" style="font-size:36px">${dGov}</div><div class="stat-lbl">Democrat</div></div>
+      </div>
+      <div class="chamber-bar" style="max-width:300px;margin:0 auto;height:16px">
+        <div class="chamber-seg" style="width:${rGov*2}%;background:var(--gop)"></div>
+        <div class="chamber-seg" style="width:${dGov*2}%;background:var(--dem)"></div>
+      </div>
+    </div>
+    <div style="font-family:var(--mono);font-size:10px;color:var(--mu);text-align:center;margin-top:16px">
+      Notable: KS, KY, NC have Dem governors in Trump states
+    </div>
+  `;
+  document.getElementById('govChart').innerHTML=html;
+}
+buildGov();
+
+// ═══ MARGIN SPECTRUM ═══
+function buildMargin(){
+  const states=Object.entries(SD).map(([st,d])=>{
+    const val=parseFloat(d.m.replace(/[RD+]/g,''));
+    const party=d.m.startsWith('R')?'R':'D';
+    return {st,val,party,full:d.m};
+  });
+  states.sort((a,b)=>(b.party==='R'?b.val:-b.val)-(a.party==='R'?a.val:-a.val));
+  const maxV=Math.max(...states.map(s=>s.val));
+  let html='';
+  for(const s of states){
+    const w=Math.max(2,(s.val/maxV)*48);
+    const cls=s.party==='R'?'gop':'dem';
+    const side=s.party==='R'?`right:50%;width:${w}%`:`left:50%;width:${w}%`;
+    html+=`<div class="margin-row">
+      <span class="margin-st">${s.st}</span>
+      <div class="margin-track"><div class="margin-center"></div><div class="margin-bar ${cls}" style="${side}"></div></div>
+      <span class="margin-val" style="color:var(--${cls})">${s.full}</span>
+    </div>`;
+  }
+  document.getElementById('marginChart').innerHTML=html;
+}
+buildMargin();
+
+// ═══ 2026 SENATE RACES ═══
+function buildRaces(){
+  const races=[
+    {st:'GA',name:'Jon Ossoff (D)',rating:'Tossup',cls:'tossup'},
+    {st:'MI',name:'Gary Peters (D) — Open',rating:'Tossup',cls:'tossup'},
+    {st:'MN',name:'Tina Smith (D) — Open',rating:'Lean D',cls:'lean-d'},
+    {st:'CO',name:'John Hickenlooper (D)',rating:'Lean D',cls:'lean-d'},
+    {st:'NH',name:'Jeanne Shaheen (D)',rating:'Lean D',cls:'lean-d'},
+    {st:'ME',name:'Susan Collins (R)',rating:'Lean R',cls:'lean-r'},
+    {st:'NC',name:'Thom Tillis (R)',rating:'Lean R',cls:'lean-r'},
+    {st:'IA',name:'Open (Ernst retiring)',rating:'Lean R',cls:'lean-r'},
+    {st:'AK',name:'Dan Sullivan (R)',rating:'Likely R',cls:'likely-r'},
+    {st:'TX',name:'John Cornyn (R)',rating:'Likely R',cls:'likely-r'},
+    {st:'IL',name:'Open (Durbin retiring)',rating:'Likely D',cls:'likely-d'},
+    {st:'OR',name:'Ron Wyden (D)',rating:'Likely D',cls:'likely-d'},
+    {st:'OH',name:'Special — Vance seat',rating:'Lean R',cls:'lean-r'},
+    {st:'FL',name:'Special — Rubio seat',rating:'Likely R',cls:'likely-r'},
+    {st:'NE',name:'Pete Ricketts (R)',rating:'Lean R',cls:'lean-r'},
+  ];
+  let html='';
+  for(const r of races){
+    html+=`<div class="race-item">
+      <span class="race-st">${r.st}</span>
+      <span class="race-name">${r.name}</span>
+      <span class="race-rating ${r.cls}">${r.rating}</span>
+    </div>`;
+  }
+  document.getElementById('senateRaces').innerHTML=html;
+}
+buildRaces();
+
+// ═══ POWER BALANCE ═══
+function buildPower(){
+  const html=`
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;text-align:center">
+      <div style="padding:16px;border-radius:10px;background:var(--gop-bg);border:1px solid rgba(220,38,38,.15)">
+        <div style="font-size:11px;font-weight:700;color:var(--gop);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px">Presidency</div>
+        <div style="font-size:20px;font-weight:800;color:var(--gop)">R</div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--mu);margin-top:2px">Trump (47th)</div>
+      </div>
+      <div style="padding:16px;border-radius:10px;background:var(--gop-bg);border:1px solid rgba(220,38,38,.15)">
+        <div style="font-size:11px;font-weight:700;color:var(--gop);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px">Senate</div>
+        <div style="font-size:20px;font-weight:800;color:var(--gop)">R</div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--mu);margin-top:2px">53-45-2</div>
+      </div>
+      <div style="padding:16px;border-radius:10px;background:var(--gop-bg);border:1px solid rgba(220,38,38,.15)">
+        <div style="font-size:11px;font-weight:700;color:var(--gop);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px">House</div>
+        <div style="font-size:20px;font-weight:800;color:var(--gop)">R</div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--mu);margin-top:2px">220-215</div>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:16px;padding:12px;border-radius:8px;background:var(--gop-bg);border:1px solid rgba(220,38,38,.1)">
+      <span style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--gop);letter-spacing:.08em">REPUBLICAN TRIFECTA</span>
+      <div style="font-size:11px;color:var(--mu);margin-top:4px">GOP controls all three branches of government</div>
+    </div>
+  `;
+  document.getElementById('powerBalance').innerHTML=html;
+}
+buildPower();
+
+// ═══ HOUSE CHART ═══
+function buildHouse(){
+  const html=`
+    <div style="text-align:center;margin-bottom:16px">
+      <div style="display:flex;justify-content:center;gap:40px;margin-bottom:12px">
+        <div><div class="stat-val gop" style="font-size:36px">220</div><div class="stat-lbl">Republican</div></div>
+        <div><div class="stat-val dem" style="font-size:36px">215</div><div class="stat-lbl">Democrat</div></div>
+      </div>
+      <div class="chamber-bar" style="max-width:400px;margin:0 auto;height:18px">
+        <div class="chamber-seg" style="width:${220/435*100}%;background:var(--gop)"></div>
+        <div class="chamber-seg" style="width:${215/435*100}%;background:var(--dem)"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;max-width:400px;margin:6px auto 0;font-family:var(--mono);font-size:10px;color:var(--mu)">
+        <span>GOP 220</span>
+        <span>218 for majority</span>
+        <span>DEM 215</span>
+      </div>
+    </div>
+    <div style="font-family:var(--mono);font-size:10px;color:var(--mu);text-align:center;margin-top:10px">
+      Slim 5-seat GOP majority · Dems need +3 net gain in 2026
+    </div>
+  `;
+  document.getElementById('houseChart').innerHTML=html;
+}
+buildHouse();
+
+// ═══ INIT THEME ═══
+setTheme(saved||sys||'dark');
+</script>
 </body>
 </html>
