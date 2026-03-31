@@ -118,16 +118,7 @@ main{padding:76px 24px 60px;max-width:1400px;margin:0 auto}
 .tt-val{font-weight:600;text-align:right;max-width:150px}
 
 /* ═══ SENATE DOTS ═══ */
-.senate-viz{padding:20px}
-.senate-dots{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin:16px 0}
-.s-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:7px;font-weight:600;color:#fff;cursor:pointer;transition:transform .15s,box-shadow .15s;position:relative}
-.s-dot:hover{transform:scale(1.35);z-index:10}
-.s-dot.R{background:var(--gop);box-shadow:0 0 0 2px rgba(220,38,38,.2)}
-.s-dot.R:hover{box-shadow:0 0 12px rgba(220,38,38,.5)}
-.s-dot.D{background:var(--dem);box-shadow:0 0 0 2px rgba(37,99,235,.2)}
-.s-dot.D:hover{box-shadow:0 0 12px rgba(37,99,235,.5)}
-.s-dot.I{background:var(--ind);box-shadow:0 0 0 2px rgba(139,92,246,.2)}
-.s-dot.I:hover{box-shadow:0 0 12px rgba(139,92,246,.5)}
+/* (old senate dots removed — using hemicycle) */
 
 .legend{display:flex;gap:20px;justify-content:center;margin-top:12px;flex-wrap:wrap}
 .legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--mu)}
@@ -191,6 +182,92 @@ main{padding:76px 24px 60px;max-width:1400px;margin:0 auto}
 .sb-live::before{content:'';width:5px;height:5px;border-radius:50%;background:#bf0d3e;animation:pulse 2s ease infinite}
 .sb-time{color:rgba(255,255,255,.8)}
 
+
+/* ═══ STATE DETAIL PANEL ═══ */
+.state-panel-overlay{position:fixed;inset:0;z-index:150;background:rgba(0,0,0,0);pointer-events:none;transition:background .4s}
+.state-panel-overlay.open{background:rgba(0,0,0,.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);pointer-events:all}
+.state-panel{position:fixed;top:0;right:0;bottom:0;width:min(520px,92vw);z-index:151;background:var(--sf);border-left:1px solid var(--bd);box-shadow:-12px 0 60px rgba(0,0,0,.4);transform:translateX(105%);transition:transform .45s cubic-bezier(.4,.0,.2,1);overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+.state-panel.open{transform:translateX(0)}
+
+.sp-close{position:absolute;top:16px;right:16px;width:36px;height:36px;border-radius:50%;border:1px solid var(--bd);background:var(--sf2);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:5;transition:all .2s}
+.sp-close:hover{border-color:var(--red);background:var(--red);color:#fff}
+.sp-close svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round}
+
+.sp-header{padding:32px 24px 20px;position:relative;overflow:hidden}
+.sp-header::before{content:'';position:absolute;inset:0;opacity:.08}
+.sp-header.gop::before{background:linear-gradient(135deg,var(--gop),transparent 70%)}
+.sp-header.dem::before{background:linear-gradient(135deg,var(--dem),transparent 70%)}
+
+.sp-top{display:flex;align-items:flex-start;gap:16px;position:relative}
+.sp-abbr{font-family:var(--mono);font-size:48px;font-weight:900;line-height:1;opacity:.12;position:absolute;top:-8px;right:20px}
+.sp-name{font-size:24px;font-weight:800;line-height:1.1}
+.sp-nickname{font-family:var(--mono);font-size:11px;color:var(--mu);letter-spacing:.04em;margin-top:4px}
+.sp-badges{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.sp-badge{font-family:var(--mono);font-size:10px;padding:3px 10px;border-radius:99px;font-weight:600;letter-spacing:.03em}
+.sp-badge.gop{background:var(--gop);color:#fff}
+.sp-badge.dem{background:var(--dem);color:#fff}
+.sp-badge.ind{background:var(--ind);color:#fff}
+.sp-badge.outline{background:transparent;border:1px solid var(--bd);color:var(--mu)}
+
+.sp-body{padding:0 24px 32px}
+.sp-section{margin-top:24px}
+.sp-sec-title{font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--mu);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.sp-sec-title::after{content:'';flex:1;height:1px;background:var(--bd)}
+
+.sp-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sp-metric{background:var(--sf2);border:1px solid var(--bd);border-radius:10px;padding:12px 14px;transition:border-color .2s}
+.sp-metric:hover{border-color:rgba(191,13,61,.25)}
+.sp-metric-val{font-size:20px;font-weight:800;line-height:1}
+.sp-metric-lbl{font-family:var(--mono);font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--mu);margin-top:2px}
+
+.sp-officials{display:flex;flex-direction:column;gap:8px}
+.sp-official{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--sf2);border:1px solid var(--bd);border-radius:10px;transition:border-color .2s}
+.sp-official:hover{border-color:rgba(191,13,61,.2)}
+.sp-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.sp-dot.R{background:var(--gop)}
+.sp-dot.D{background:var(--dem)}
+.sp-dot.I{background:var(--ind)}
+.sp-off-info{flex:1;min-width:0}
+.sp-off-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sp-off-role{font-family:var(--mono);font-size:9px;color:var(--mu);letter-spacing:.04em}
+
+.sp-margin-bar{height:28px;border-radius:6px;background:rgba(128,128,128,.08);position:relative;overflow:hidden;margin-top:8px}
+.sp-margin-fill{height:100%;border-radius:6px;display:flex;align-items:center;padding:0 10px;font-family:var(--mono);font-size:11px;font-weight:700;color:#fff;transition:width .6s var(--ease)}
+.sp-margin-fill.gop{background:linear-gradient(90deg,var(--gop),#ef4444)}
+.sp-margin-fill.dem{background:linear-gradient(90deg,var(--dem),#3b82f6)}
+
+.sp-industry-tags{display:flex;flex-wrap:wrap;gap:6px}
+.sp-tag{font-family:var(--mono);font-size:10px;padding:4px 10px;border-radius:6px;background:var(--sf2);border:1px solid var(--bd);color:var(--mu);letter-spacing:.02em}
+
+.sp-motto{font-style:italic;font-size:13px;color:var(--mu);text-align:center;padding:16px 20px;border-top:1px solid var(--bd);margin-top:20px;line-height:1.5}
+.sp-motto q{color:var(--tx);font-weight:500}
+
+/* GDP mini bar */
+.sp-gdp-bar{height:6px;border-radius:3px;background:rgba(128,128,128,.1);margin-top:6px;overflow:hidden}
+.sp-gdp-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--red),#f59e0b);transition:width .8s var(--ease)}
+
+/* Animations for staggered entry */
+.sp-anim{opacity:0;transform:translateY(16px);transition:opacity .35s ease,transform .35s ease}
+.state-panel.open .sp-anim{opacity:1;transform:translateY(0)}
+.sp-d1{transition-delay:.08s}.sp-d2{transition-delay:.14s}.sp-d3{transition-delay:.2s}
+.sp-d4{transition-delay:.26s}.sp-d5{transition-delay:.32s}.sp-d6{transition-delay:.38s}
+.sp-d7{transition-delay:.44s}.sp-d8{transition-delay:.5s}
+
+/* Hex click pulse animation */
+@keyframes hexPulse{
+  0%{filter:brightness(1) drop-shadow(0 0 0 transparent)}
+  50%{filter:brightness(1.6) drop-shadow(0 0 18px rgba(191,13,61,.6))}
+  100%{filter:brightness(1) drop-shadow(0 0 0 transparent)}
+}
+.state-hex.clicked{animation:hexPulse .5s ease}
+
+/* Income sparkline */
+.sp-spark{display:flex;align-items:flex-end;gap:2px;height:32px;margin-top:8px}
+.sp-spark-bar{flex:1;border-radius:2px 2px 0 0;background:var(--red);opacity:.25;transition:height .4s var(--ease),opacity .4s}
+.sp-spark-bar.active{opacity:1}
+
+@media(max-width:600px){.state-panel{width:100vw}}
+
 /* ═══ SCROLLBAR ═══ */
 ::-webkit-scrollbar{width:6px}
 ::-webkit-scrollbar-track{background:transparent}
@@ -198,20 +275,75 @@ main{padding:76px 24px 60px;max-width:1400px;margin:0 auto}
 .scroll-y{max-height:420px;overflow-y:auto}
 
 /* ═══ DISTRICT TAB ═══ */
-.district-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(60px,1fr));gap:4px;padding:16px}
-.dist-cell{aspect-ratio:1;border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:var(--mono);font-size:9px;font-weight:600;cursor:pointer;transition:transform .12s,box-shadow .12s;border:1px solid transparent}
-.dist-cell:hover{transform:scale(1.15);z-index:5}
-.dist-cell.R{background:var(--gop-bg);color:var(--gop)}
-.dist-cell.R:hover{border-color:var(--gop);box-shadow:0 0 10px rgba(220,38,38,.3)}
-.dist-cell.D{background:var(--dem-bg);color:var(--dem)}
-.dist-cell.D:hover{border-color:var(--dem);box-shadow:0 0 10px rgba(37,99,235,.3)}
+/* ═══ HEMICYCLE CHAMBER (shared) ═══ */
+.hemi-wrap{position:relative;width:100%;padding:12px 0 0}
+.hemi-canvas{position:relative;width:100%;aspect-ratio:2/1;overflow:visible}
+.hemi-seat{position:absolute;border-radius:50%;cursor:pointer;transition:transform .18s var(--ease),box-shadow .2s,opacity .25s;opacity:0;transform:scale(0);will-change:transform}
+.hemi-seat.show{opacity:1;transform:scale(1)}
+.hemi-seat:hover{transform:scale(1.9)!important;z-index:20}
+.hemi-seat.R{background:var(--gop);box-shadow:inset 0 -1px 2px rgba(0,0,0,.25),0 0 0 1px rgba(220,38,38,.25)}
+.hemi-seat.R:hover{box-shadow:0 0 16px 5px rgba(220,38,38,.55),inset 0 -1px 2px rgba(0,0,0,.15)}
+.hemi-seat.D{background:var(--dem);box-shadow:inset 0 -1px 2px rgba(0,0,0,.25),0 0 0 1px rgba(37,99,235,.25)}
+.hemi-seat.D:hover{box-shadow:0 0 16px 5px rgba(37,99,235,.55),inset 0 -1px 2px rgba(0,0,0,.15)}
+.hemi-seat.I{background:var(--ind);box-shadow:inset 0 -1px 2px rgba(0,0,0,.25),0 0 0 1px rgba(139,92,246,.25)}
+.hemi-seat.I:hover{box-shadow:0 0 16px 5px rgba(139,92,246,.55),inset 0 -1px 2px rgba(0,0,0,.15)}
+.hemi-seat.dimmed{opacity:.1!important;transform:scale(1)!important}
+.hemi-seat.highlighted{opacity:1!important;transform:scale(1.6)!important;z-index:15;filter:brightness(1.3)}
+.hemi-podium{position:absolute;bottom:-2px;left:50%;transform:translateX(-50%);width:48px;height:8px;border-radius:4px 4px 0 0;background:var(--mu);opacity:.25}
+.hemi-aisle{position:absolute;bottom:0;left:50%;width:1px;background:var(--bd);transform:translateX(-50%);opacity:.3}
+.hemi-label-left,.hemi-label-right{position:absolute;bottom:6px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.05em;opacity:.5}
+.hemi-label-left{left:8%}
+.hemi-label-right{right:8%}
+
+/* Chamber controls */
+.hemi-controls{display:flex;align-items:center;gap:10px;padding:8px 16px;flex-wrap:wrap}
+.hemi-count{display:flex;gap:16px;font-family:var(--mono);font-size:12px;font-weight:600}
+.hemi-count span{display:flex;align-items:center;gap:5px}
+.hemi-count .cd{width:8px;height:8px;border-radius:50%}
+.hemi-search{flex:1;min-width:120px;max-width:200px;font-family:var(--mono);font-size:11px;padding:5px 12px;border-radius:99px;border:1px solid var(--bd);background:var(--sf2);color:var(--tx);outline:none;transition:border-color .2s}
+.hemi-search:focus{border-color:var(--red)}
+.hemi-search::placeholder{color:var(--mu);opacity:.6}
+.hemi-sort-btn{font-family:var(--mono);font-size:10px;padding:4px 12px;border-radius:99px;border:1px solid var(--bd);background:transparent;color:var(--mu);cursor:pointer;transition:all .2s;letter-spacing:.03em}
+.hemi-sort-btn:hover,.hemi-sort-btn.active{border-color:var(--red);color:var(--red);background:var(--red-dim)}
+
+/* Senate hemicycle */
+.sen-hemi-canvas{position:relative;width:100%;aspect-ratio:2.2/1;overflow:visible}
+.sen-hemi-canvas .hemi-seat{transition:transform .2s var(--ease),box-shadow .2s,opacity .3s}
+.sen-hemi-canvas .hemi-seat:hover{transform:scale(1.7)!important}
+.sen-hemi-canvas .hemi-seat .seat-lbl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:7px;font-weight:700;color:#fff;pointer-events:none;opacity:.85}
+
+/* ═══ TAB VIEW TRANSITIONS ═══ */
+.tab-view{position:relative;overflow:hidden}
+.tab-pane{transition:opacity .35s var(--ease),transform .35s var(--ease);will-change:opacity,transform}
+.tab-pane.leaving{opacity:0;transform:translateY(12px) scale(.985);pointer-events:none;position:absolute;inset:0}
+.tab-pane.entering{animation:tabEnter .4s var(--ease) forwards}
+@keyframes tabEnter{
+  from{opacity:0;transform:translateY(-14px) scale(.985)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+
+/* Mobile: House switches to compact bar chart, Senate stays hemicycle but smaller */
+.hemi-mobile{display:none}
+@media(max-width:700px){
+  .hemi-canvas{display:none}
+  .hemi-mobile{display:block}
+  .hm-state{display:flex;align-items:center;gap:4px;margin-bottom:2px;font-size:10px;font-family:var(--mono)}
+  .hm-st{width:22px;font-weight:700;color:var(--mu);text-align:right;flex-shrink:0}
+  .hm-bar-wrap{flex:1;height:10px;display:flex;border-radius:3px;overflow:hidden}
+  .hm-bar{height:100%;transition:width .4s var(--ease)}
+  .hm-bar.R{background:var(--gop)}
+  .hm-bar.D{background:var(--dem)}
+  .hm-ct{width:36px;font-size:9px;color:var(--mu);flex-shrink:0;text-align:right}
+  .sen-hemi-canvas .hemi-seat .seat-lbl{font-size:6px}
+}
 
 @media(max-width:600px){
   nav{padding:0 12px}
   main{padding:64px 12px 60px}
   .nl{display:none}
   .stats-row{grid-template-columns:1fr 1fr}
-  .district-grid{grid-template-columns:repeat(auto-fill,minmax(48px,1fr))}
+  .hemi-seat{transition-duration:.08s!important}
+  .sen-hemi-canvas .hemi-seat .seat-lbl{font-size:6px}
 }
 </style>
 </head>
@@ -275,19 +407,32 @@ main{padding:76px 24px 60px;max-width:1400px;margin:0 auto}
         <button class="tab-pill" data-tab="districts">Districts</button>
       </div>
     </div>
-    <div class="card">
-      <div id="statesView" class="card-body">
+    <div class="card tab-view">
+      <div id="statesView" class="card-body tab-pane">
         <div class="map-wrap" id="stateMap"></div>
         <div style="font-family:var(--mono);font-size:10px;color:var(--mu);text-align:center;margin-top:8px;opacity:.6">
-          Hex Cartogram · Each hexagon = 1 state · Hover for details
+          Hex Cartogram · Each hexagon = 1 state · Hover for preview · <strong style="color:var(--red)">Click to explore</strong>
         </div>
 
       </div>
-      <div id="districtsView" class="card-body" style="display:none">
-        <div style="text-align:center;padding:8px 0 12px">
-          <span style="font-family:var(--mono);font-size:11px;color:var(--mu);letter-spacing:.06em">119TH CONGRESS — 435 DISTRICTS (2026 LINES)</span>
+      <div id="districtsView" class="card-body tab-pane" style="display:none">
+        <div class="hemi-controls">
+          <div class="hemi-count">
+            <span><span class="cd" style="background:var(--gop)"></span> <span id="hemiR">220</span> GOP</span>
+            <span style="color:var(--mu);font-weight:400">218 for majority</span>
+            <span><span class="cd" style="background:var(--dem)"></span> <span id="hemiD">215</span> DEM</span>
+          </div>
+          <input class="hemi-search" id="hemiSearch" type="text" placeholder="Filter by state (e.g. TX)" maxlength="2" autocomplete="off" spellcheck="false">
+          <button class="hemi-sort-btn active" id="hemiSortBtn" onclick="toggleHemiSort()">BY PARTY</button>
         </div>
-        <div class="district-grid" id="districtGrid"></div>
+        <div class="hemi-wrap">
+          <div class="hemi-canvas" id="hemiCanvas"></div>
+        </div>
+        <div style="text-align:center;padding:6px 0 4px">
+          <span style="font-family:var(--mono);font-size:10px;color:var(--mu);letter-spacing:.06em;opacity:.5">
+            119th Congress · 435 Seats · Hover to inspect · Click for state detail
+          </span>
+        </div>
       </div>
     </div>
   </div>
@@ -298,25 +443,24 @@ main{padding:76px 24px 60px;max-width:1400px;margin:0 auto}
       <div class="sec-title">119th Senate — 100 Seats</div>
     </div>
     <div class="card">
-      <div class="senate-viz">
-        <div style="margin-bottom:12px">
-          <div class="chamber-bar">
-            <div class="chamber-seg" style="width:53%;background:var(--gop)"></div>
-            <div class="chamber-seg" style="width:2%;background:var(--ind)"></div>
-            <div class="chamber-seg" style="width:45%;background:var(--dem)"></div>
+      <div style="padding:12px 16px 0">
+        <div class="hemi-controls" style="padding:0">
+          <div class="hemi-count">
+            <span><span class="cd" style="background:var(--gop)"></span> <span id="senR">53</span> GOP</span>
+            <span><span class="cd" style="background:var(--ind)"></span> 2 IND</span>
+            <span style="color:var(--mu);font-weight:400">51 for majority</span>
+            <span><span class="cd" style="background:var(--dem)"></span> <span id="senD">45</span> DEM</span>
           </div>
-          <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--mu);margin-top:4px">
-            <span style="color:var(--gop)">GOP 53</span>
-            <span>Majority: 51 needed</span>
-            <span style="color:var(--dem)">DEM 45 + 2 IND</span>
-          </div>
+          <input class="hemi-search" id="senSearch" type="text" placeholder="Filter (e.g. TX)" maxlength="2" autocomplete="off" spellcheck="false">
         </div>
-        <div class="senate-dots" id="senateDots"></div>
-        <div class="legend">
-          <div class="legend-item"><div class="legend-dot" style="background:var(--gop)"></div>Republican (53)</div>
-          <div class="legend-item"><div class="legend-dot" style="background:var(--dem)"></div>Democrat (45)</div>
-          <div class="legend-item"><div class="legend-dot" style="background:var(--ind)"></div>Independent (2)</div>
-        </div>
+      </div>
+      <div class="hemi-wrap" style="padding-bottom:8px">
+        <div class="sen-hemi-canvas" id="senateCanvas"></div>
+      </div>
+      <div style="text-align:center;padding:0 0 12px">
+        <span style="font-family:var(--mono);font-size:10px;color:var(--mu);letter-spacing:.06em;opacity:.5">
+          Hover for senator details · Click for state profile
+        </span>
       </div>
     </div>
   </div>
@@ -372,6 +516,14 @@ main{padding:76px 24px 60px;max-width:1400px;margin:0 auto}
   </div>
 
 </main>
+
+
+<!-- ═══ STATE DETAIL PANEL ═══ -->
+<div class="state-panel-overlay" id="spOverlay" onclick="closeStatePanel()"></div>
+<div class="state-panel" id="statePanel">
+  <button class="sp-close" onclick="closeStatePanel()"><svg viewBox="0 0 24 24"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></button>
+  <div id="spContent"></div>
+</div>
 
 <!-- ═══ STATUS BAR ═══ -->
 <div class="status-bar">
@@ -598,71 +750,430 @@ function buildStateMap(){
       `, e);
     });
     el.addEventListener('mouseleave', hideTT);
+    el.addEventListener('click', e=>{ hideTT(); openStatePanel(el.dataset.state); });
+    el.style.cursor='pointer';
   });
 }
 
 buildStateMap();
 
 
-// ═══ MAP TABS ═══
-document.querySelectorAll('#mapTabs .tab-pill').forEach(btn=>{
-  btn.onclick=()=>{
-    document.querySelectorAll('#mapTabs .tab-pill').forEach(b=>b.classList.remove('active'));
+// ═══ MAP TABS (animated) ═══
+let activeTab = 'states';
+let tabAnimating = false;
+
+document.querySelectorAll('#mapTabs .tab-pill').forEach(btn => {
+  btn.onclick = () => {
+    const t = btn.dataset.tab;
+    if (t === activeTab || tabAnimating) return;
+    tabAnimating = true;
+
+    document.querySelectorAll('#mapTabs .tab-pill').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    const t=btn.dataset.tab;
-    document.getElementById('statesView').style.display=t==='states'?'':'none';
-    document.getElementById('districtsView').style.display=t==='districts'?'':'none';
+
+    const outgoing = document.getElementById(activeTab === 'states' ? 'statesView' : 'districtsView');
+    const incoming = document.getElementById(t === 'states' ? 'statesView' : 'districtsView');
+
+    // Animate out
+    outgoing.classList.add('leaving');
+
+    setTimeout(() => {
+      outgoing.style.display = 'none';
+      outgoing.classList.remove('leaving');
+
+      // Animate in
+      incoming.style.display = '';
+      incoming.classList.add('entering');
+
+      // Trigger hemicycle render on first district view
+      if (t === 'districts' && !hemiAnimated) {
+        hemiAnimated = true;
+        renderHemicycle(true);
+      }
+
+      incoming.addEventListener('animationend', () => {
+        incoming.classList.remove('entering');
+        tabAnimating = false;
+      }, { once: true });
+
+      activeTab = t;
+    }, 300);
   };
 });
 
-// ═══ DISTRICT GRID ═══
-// Approximate House breakdown: 220R, 215D
-function buildDistricts(){
-  const grid=document.getElementById('districtGrid');
-  let html='';
-  // Build district cells from state data
-  const dists=[];
-  for(const[st,d] of Object.entries(SD)){
-    // Approximate R/D split per state based on 2024 results
-    const rPct = d.w==='R' ? 0.55 + Math.random()*0.15 : 0.3 + Math.random()*0.15;
-    for(let i=1;i<=d.d;i++){
-      const party = Math.random()<rPct?'R':'D';
-      dists.push({st, num:i, party});
+// ═══ HEMICYCLE CHAMBER ═══
+let hemiSeats = [];
+let hemiSortByParty = true;
+let hemiAnimated = false;
+
+function generateSeats() {
+  // Seed-based pseudo-random for consistent results
+  let seed = 42;
+  function sRand() { seed=(seed*16807+0)%2147483647; return (seed-1)/2147483646; }
+
+  const dists = [];
+  for (const [st, d] of Object.entries(SD)) {
+    const rPct = d.w==='R' ? 0.55 + sRand()*0.15 : 0.3 + sRand()*0.15;
+    for (let i = 1; i <= d.d; i++) {
+      dists.push({ st, num: i, party: sRand() < rPct ? 'R' : 'D' });
     }
   }
-  // Adjust to 220R / 215D
-  let rCount=dists.filter(d=>d.party==='R').length;
-  let target=220;
-  if(rCount>target){
-    const rDists=dists.filter(d=>d.party==='R');
-    for(let i=0;i<rCount-target;i++) rDists[Math.floor(Math.random()*rDists.length)].party='D';
-  } else if(rCount<target){
-    const dDists=dists.filter(d=>d.party==='D');
-    for(let i=0;i<target-rCount;i++) dDists[Math.floor(Math.random()*dDists.length)].party='R';
+  // Normalize to 220R / 215D
+  let rCount = dists.filter(d => d.party === 'R').length;
+  const target = 220;
+  if (rCount > target) {
+    const rs = dists.filter(d => d.party === 'R');
+    for (let i = 0; i < rCount - target; i++) {
+      const idx = Math.floor(sRand() * rs.length);
+      rs[idx].party = 'D'; rs.splice(idx, 1);
+    }
+  } else if (rCount < target) {
+    const ds = dists.filter(d => d.party === 'D');
+    for (let i = 0; i < target - rCount; i++) {
+      const idx = Math.floor(sRand() * ds.length);
+      ds[idx].party = 'R'; ds.splice(idx, 1);
+    }
   }
-  // Sort by state then district
-  dists.sort((a,b)=>a.st.localeCompare(b.st)||a.num-b.num);
-  for(const d of dists){
-    html+=`<div class="dist-cell ${d.party}" data-st="${d.st}" data-num="${d.num}"
-      onmousemove="showTT('<div class=\'tt-state\'>${d.st}-${d.num}</div><div class=\'tt-row\'><span class=\'tt-lbl\'>Party</span><span class=\'tt-val\'>${d.party==='R'?'Republican':'Democrat'}</span></div>',event)"
-      onmouseleave="hideTT()">${d.st}<span style="font-size:7px;opacity:.6">${d.num}</span></div>`;
-  }
-  grid.innerHTML=html;
+  return dists;
 }
-buildDistricts();
 
-// ═══ SENATE DOTS ═══
-function buildSenate(){
-  const wrap=document.getElementById('senateDots');
-  let html='';
-  for(const s of SENATORS){
-    html+=`<div class="s-dot ${s.party}"
-      onmousemove="showTT('<div class=\'tt-state\'>${s.name}</div><div class=\'tt-row\'><span class=\'tt-lbl\'>State</span><span class=\'tt-val\'>${s.state}</span></div><div class=\'tt-row\'><span class=\'tt-lbl\'>Party</span><span class=\'tt-val\'>${s.party==='R'?'Republican':s.party==='D'?'Democrat':'Independent'}</span></div>',event)"
-      onmouseleave="hideTT()">${s.state}</div>`;
+function layoutHemicycle(seats, sortByParty) {
+  // Sort seats: party sort puts all R on right, D on left
+  // State sort groups by state alphabetically
+  const sorted = [...seats];
+  if (sortByParty) {
+    sorted.sort((a, b) => {
+      if (a.party !== b.party) return a.party === 'D' ? -1 : 1;
+      return a.st.localeCompare(b.st) || a.num - b.num;
+    });
+  } else {
+    sorted.sort((a, b) => a.st.localeCompare(b.st) || a.num - b.num);
   }
-  wrap.innerHTML=html;
+
+  const total = sorted.length; // 435
+  const rows = 9;
+  const positions = [];
+
+  // Distribute seats across concentric arcs
+  const baseSeats = Math.floor(total / rows);
+  const rowCounts = [];
+  let remaining = total;
+  for (let r = 0; r < rows; r++) {
+    const count = Math.round(baseSeats + (r - rows/2) * 2.5);
+    rowCounts.push(Math.max(28, count));
+  }
+  // Normalize to exactly 435
+  const sum = rowCounts.reduce((a, b) => a + b, 0);
+  const scale = total / sum;
+  let assigned = 0;
+  for (let r = 0; r < rows; r++) {
+    rowCounts[r] = Math.round(rowCounts[r] * scale);
+    assigned += rowCounts[r];
+  }
+  // Fix rounding
+  rowCounts[rows - 1] += (total - assigned);
+
+  let seatIdx = 0;
+  for (let r = 0; r < rows; r++) {
+    const count = rowCounts[r];
+    const radius = 0.28 + (r / (rows - 1)) * 0.68; // 28% to 96% of container height
+    for (let s = 0; s < count; s++) {
+      if (seatIdx >= total) break;
+      // Angle from PI (left) to 0 (right)
+      const pad = 0.06; // small padding from edges
+      const angle = Math.PI * (1 - pad) - (s / (count - 1 || 1)) * Math.PI * (1 - 2 * pad);
+      const x = 50 + Math.cos(angle) * radius * 48; // percentage
+      const y = 98 - Math.sin(angle) * radius * 92; // percentage, flip Y
+      const seat = sorted[seatIdx];
+      positions.push({
+        ...seat,
+        x: x,
+        y: y,
+        row: r,
+        idx: seatIdx,
+        angle: angle
+      });
+      seatIdx++;
+    }
+  }
+  return positions;
 }
-buildSenate();
+
+function renderHemicycle(animate) {
+  const canvas = document.getElementById('hemiCanvas');
+  if (!canvas) return;
+  
+  const positions = layoutHemicycle(hemiSeats, hemiSortByParty);
+  // Responsive seat sizing
+  const cW = canvas.offsetWidth || 800;
+  const seatSize = Math.max(5, Math.min(10, cW / 85));
+  
+  let html = '';
+  // Aisle line
+  html += '<div class="hemi-aisle" style="height:92%;bottom:0"></div>';
+  // Podium
+  html += '<div class="hemi-podium"></div>';
+  html += '<div class="hemi-label-left" style="color:var(--dem)">DEM</div>';
+  html += '<div class="hemi-label-right" style="color:var(--gop)">GOP</div>';
+  
+  positions.forEach((p, i) => {
+    const delay = animate ? (p.row * 40 + (i % 10) * 8) : 0;
+    const showClass = animate ? '' : 'show';
+    html += `<div class="hemi-seat ${p.party} ${showClass}" 
+      data-st="${p.st}" data-num="${p.num}" data-idx="${i}"
+      style="left:calc(${p.x.toFixed(2)}% - ${seatSize/2}px);top:calc(${p.y.toFixed(2)}% - ${seatSize/2}px);width:${seatSize}px;height:${seatSize}px;transition-delay:${delay}ms"
+      onmousemove="showSeatTT(this,event)"
+      onmouseleave="hideTT()"
+      onclick="hideTT();openStatePanel('${p.st}')"></div>`;
+  });
+  
+  canvas.innerHTML = html;
+
+  // Mobile fallback: stacked bars per state
+  buildHouseMobile();
+  
+  if (animate) {
+    // Trigger staggered show animation
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        canvas.querySelectorAll('.hemi-seat').forEach(s => s.classList.add('show'));
+      });
+    });
+  }
+}
+
+function showSeatTT(el, e) {
+  const st = el.dataset.st;
+  const num = el.dataset.num;
+  const d = SD[st];
+  if (!d) return;
+  const party = el.classList.contains('R') ? 'Republican' : 'Democrat';
+  const pCls = el.classList.contains('R') ? 'gop' : 'dem';
+  showTT(`
+    <div class="tt-state">${d.n} <span class="tt-badge ${pCls}">${st}-${num}</span></div>
+    <div class="tt-row"><span class="tt-lbl">Party</span><span class="tt-val">${party}</span></div>
+    <div class="tt-row"><span class="tt-lbl">Districts</span><span class="tt-val">${d.d} total</span></div>
+    <div class="tt-row"><span class="tt-lbl">2024 Pres.</span><span class="tt-val">${d.m}</span></div>
+  `, e);
+}
+
+function toggleHemiSort() {
+  hemiSortByParty = !hemiSortByParty;
+  const btn = document.getElementById('hemiSortBtn');
+  btn.textContent = hemiSortByParty ? 'BY PARTY' : 'BY STATE';
+  btn.classList.toggle('active', hemiSortByParty);
+  renderHemicycle(true);
+}
+
+// State filter
+document.addEventListener('DOMContentLoaded', () => {
+  const searchEl = document.getElementById('hemiSearch');
+  if (searchEl) {
+    searchEl.addEventListener('input', () => {
+      const val = searchEl.value.toUpperCase().trim();
+      const seats = document.querySelectorAll('.hemi-seat');
+      if (!val) {
+        seats.forEach(s => { s.classList.remove('dimmed','highlighted'); });
+        // Reset counts
+        document.getElementById('hemiR').textContent = '220';
+        document.getElementById('hemiD').textContent = '215';
+        return;
+      }
+      let rF = 0, dF = 0;
+      seats.forEach(s => {
+        if (s.dataset.st === val) {
+          s.classList.add('highlighted');
+          s.classList.remove('dimmed');
+          if (s.classList.contains('R')) rF++; else dF++;
+        } else {
+          s.classList.add('dimmed');
+          s.classList.remove('highlighted');
+        }
+      });
+      if (rF || dF) {
+        document.getElementById('hemiR').textContent = rF;
+        document.getElementById('hemiD').textContent = dF;
+      }
+    });
+  }
+});
+
+// Build seats data once
+hemiSeats = generateSeats();
+
+// Pre-generate seats, hemicycle renders on first tab switch
+// (handled in tab animation code above)
+
+// ═══ SENATE HEMICYCLE ═══
+let senAnimated = false;
+
+function layoutSenate(senators, sortByParty) {
+  const sorted = [...senators];
+  if (sortByParty) {
+    sorted.sort((a, b) => {
+      const po = {D:0, I:1, R:2};
+      if (po[a.party] !== po[b.party]) return po[a.party] - po[b.party];
+      return a.state.localeCompare(b.state) || a.name.localeCompare(b.name);
+    });
+  } else {
+    sorted.sort((a, b) => a.state.localeCompare(b.state) || a.name.localeCompare(b.name));
+  }
+  const total = sorted.length;
+  const rows = 5;
+  const rowCounts = [16, 18, 20, 22, 24];
+  // Normalize
+  const sum = rowCounts.reduce((a,b)=>a+b,0);
+  const scale = total / sum;
+  let assigned = 0;
+  for (let r = 0; r < rows; r++) { rowCounts[r] = Math.round(rowCounts[r] * scale); assigned += rowCounts[r]; }
+  rowCounts[rows-1] += (total - assigned);
+  
+  const positions = [];
+  let idx = 0;
+  for (let r = 0; r < rows; r++) {
+    const count = rowCounts[r];
+    const radius = 0.3 + (r / (rows - 1)) * 0.65;
+    for (let s = 0; s < count; s++) {
+      if (idx >= total) break;
+      const pad = 0.05;
+      const angle = Math.PI * (1 - pad) - (s / (count - 1 || 1)) * Math.PI * (1 - 2*pad);
+      const x = 50 + Math.cos(angle) * radius * 46;
+      const y = 96 - Math.sin(angle) * radius * 88;
+      positions.push({ ...sorted[idx], x, y, row: r, idx });
+      idx++;
+    }
+  }
+  return positions;
+}
+
+function renderSenate(animate) {
+  const canvas = document.getElementById('senateCanvas');
+  if (!canvas) return;
+  const positions = layoutSenate(SENATORS, true);
+  const cW = canvas.offsetWidth || 600;
+  const seatSize = Math.max(12, Math.min(22, cW / 32));
+
+  let html = '';
+  html += '<div class="hemi-aisle" style="height:88%;bottom:0"></div>';
+  html += '<div class="hemi-podium"></div>';
+  html += '<div class="hemi-label-left" style="color:var(--dem)">DEM</div>';
+  html += '<div class="hemi-label-right" style="color:var(--gop)">GOP</div>';
+
+  positions.forEach((p, i) => {
+    const delay = animate ? (p.row * 60 + (i % 8) * 15) : 0;
+    const showClass = animate ? '' : 'show';
+    const pName = p.party === 'R' ? 'Republican' : p.party === 'D' ? 'Democrat' : 'Independent';
+    html += '<div class="hemi-seat ' + p.party + ' ' + showClass + '" '
+      + 'data-st="' + p.state + '" data-name="' + p.name.replace(/"/g,'&quot;') + '" '
+      + 'style="left:calc(' + p.x.toFixed(2) + '% - ' + (seatSize/2) + 'px);'
+      + 'top:calc(' + p.y.toFixed(2) + '% - ' + (seatSize/2) + 'px);'
+      + 'width:' + seatSize + 'px;height:' + seatSize + 'px;'
+      + 'transition-delay:' + delay + 'ms" '
+      + 'onmousemove="showSenTT(this,event)" '
+      + 'onmouseleave="hideTT()" '
+      + 'onclick="hideTT();openStatePanel(\'' + p.state + '\')">'
+      + '<span class="seat-lbl">' + p.state + '</span></div>';
+  });
+
+  canvas.innerHTML = html;
+  if (animate) {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        canvas.querySelectorAll('.hemi-seat').forEach(s => s.classList.add('show'));
+      });
+    });
+  }
+}
+
+function showSenTT(el, e) {
+  const name = el.dataset.name;
+  const st = el.dataset.st;
+  const d = SD[st];
+  const pCls = el.classList.contains('R') ? 'gop' : el.classList.contains('D') ? 'dem' : 'ind';
+  const pName = el.classList.contains('R') ? 'Republican' : el.classList.contains('D') ? 'Democrat' : 'Independent';
+  showTT(
+    '<div class="tt-state">' + name + ' <span class="tt-badge ' + pCls + '">' + st + '</span></div>'
+    + '<div class="tt-row"><span class="tt-lbl">Party</span><span class="tt-val">' + pName + '</span></div>'
+    + '<div class="tt-row"><span class="tt-lbl">Governor</span><span class="tt-val">' + (d ? d.g : '') + '</span></div>'
+    + '<div class="tt-row"><span class="tt-lbl">2024 Margin</span><span class="tt-val">' + (d ? d.m : '') + '</span></div>'
+  , e);
+}
+
+// Senate search filter
+document.addEventListener('DOMContentLoaded', () => {
+  const senSrch = document.getElementById('senSearch');
+  if (senSrch) {
+    senSrch.addEventListener('input', () => {
+      const val = senSrch.value.toUpperCase().trim();
+      const seats = document.querySelectorAll('#senateCanvas .hemi-seat');
+      if (!val) {
+        seats.forEach(s => { s.classList.remove('dimmed','highlighted'); });
+        document.getElementById('senR').textContent = '53';
+        document.getElementById('senD').textContent = '45';
+        return;
+      }
+      let rF=0,dF=0,iF=0;
+      seats.forEach(s => {
+        if (s.dataset.st === val) {
+          s.classList.add('highlighted'); s.classList.remove('dimmed');
+          if (s.classList.contains('R')) rF++; else if (s.classList.contains('D')) dF++; else iF++;
+        } else { s.classList.add('dimmed'); s.classList.remove('highlighted'); }
+      });
+      if (rF||dF||iF) { document.getElementById('senR').textContent=rF; document.getElementById('senD').textContent=dF; }
+    });
+  }
+});
+
+// Build senate on scroll into view
+function initSenateObserver() {
+  const canvas = document.getElementById('senateCanvas');
+  if (!canvas) return;
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting && !senAnimated) {
+        senAnimated = true;
+        renderSenate(true);
+        obs.disconnect();
+      }
+    });
+  }, { threshold: 0.2 });
+  obs.observe(canvas);
+}
+initSenateObserver();
+
+// ═══ HOUSE MOBILE FALLBACK ═══
+function buildHouseMobile() {
+  let wrap = document.querySelector('.hemi-mobile');
+  if (!wrap) {
+    wrap = document.createElement('div');
+    wrap.className = 'hemi-mobile';
+    const canvas = document.getElementById('hemiCanvas');
+    if (canvas) canvas.parentElement.appendChild(wrap);
+  }
+  // Group seats by state
+  const byState = {};
+  hemiSeats.forEach(s => {
+    if (!byState[s.st]) byState[s.st] = {R:0,D:0,total:0};
+    byState[s.st][s.party]++;
+    byState[s.st].total++;
+  });
+  const states = Object.entries(byState).sort((a,b) => b[1].total - a[1].total);
+  const maxD = Math.max(...states.map(s=>s[1].total));
+  let html = '';
+  states.forEach(([st, counts]) => {
+    const rW = (counts.R / maxD) * 100;
+    const dW = (counts.D / maxD) * 100;
+    html += '<div class="hm-state" onclick="openStatePanel(\'' + st + '\')" style="cursor:pointer">'
+      + '<span class="hm-st">' + st + '</span>'
+      + '<div class="hm-bar-wrap">'
+      + '<div class="hm-bar D" style="width:' + dW.toFixed(1) + '%"></div>'
+      + '<div class="hm-bar R" style="width:' + rW.toFixed(1) + '%"></div>'
+      + '</div>'
+      + '<span class="hm-ct">' + counts.D + '-' + counts.R + '</span>'
+      + '</div>';
+  });
+  wrap.innerHTML = html;
+}
 
 // ═══ SWING STATE MARGINS ═══
 function buildSwing(){
@@ -823,6 +1334,171 @@ buildHouse();
 
 // ═══ INIT THEME ═══
 setTheme(saved||sys||'dark');
+
+
+// ═══ EXTENDED ECON DATA ═══
+const ECON = {"AL": {"gdp": 272, "pop": 5.1, "unemp": 3.1, "income": 56726, "cap": "Montgomery", "area": 52420, "industries": ["Aerospace & Defense", "Automotive", "Agriculture"], "founded": 1819, "motto": "We Dare Maintain Our Rights", "nickname": "The Yellowhammer State"}, "AK": {"gdp": 64, "pop": 0.73, "unemp": 4.8, "income": 77790, "cap": "Juneau", "area": 665384, "industries": ["Oil & Gas", "Fishing", "Tourism"], "founded": 1959, "motto": "North to the Future", "nickname": "The Last Frontier"}, "AZ": {"gdp": 462, "pop": 7.4, "unemp": 3.5, "income": 65913, "cap": "Phoenix", "area": 113990, "industries": ["Technology", "Aerospace", "Tourism"], "founded": 1912, "motto": "God Enriches", "nickname": "The Grand Canyon State"}, "AR": {"gdp": 156, "pop": 3.0, "unemp": 3.4, "income": 52528, "cap": "Little Rock", "area": 53179, "industries": ["Agriculture", "Food Processing", "Retail (Walmart)"], "founded": 1836, "motto": "The People Rule", "nickname": "The Natural State"}, "CA": {"gdp": 3900, "pop": 39.0, "unemp": 4.9, "income": 84907, "cap": "Sacramento", "area": 163696, "industries": ["Technology", "Entertainment", "Agriculture"], "founded": 1850, "motto": "Eureka (I Have Found It)", "nickname": "The Golden State"}, "CO": {"gdp": 475, "pop": 5.9, "unemp": 3.2, "income": 82254, "cap": "Denver", "area": 104094, "industries": ["Technology", "Aerospace", "Energy"], "founded": 1876, "motto": "Nothing Without Providence", "nickname": "The Centennial State"}, "CT": {"gdp": 315, "pop": 3.6, "unemp": 3.6, "income": 83771, "cap": "Hartford", "area": 5543, "industries": ["Finance & Insurance", "Defense", "Pharmaceuticals"], "founded": 1788, "motto": "He Who Transplanted Still Sustains", "nickname": "The Constitution State"}, "DE": {"gdp": 87, "pop": 1.0, "unemp": 3.8, "income": 72724, "cap": "Dover", "area": 2489, "industries": ["Finance", "Chemicals", "Pharmaceuticals"], "founded": 1787, "motto": "Liberty and Independence", "nickname": "The First State"}, "FL": {"gdp": 1430, "pop": 22.6, "unemp": 3.0, "income": 63062, "cap": "Tallahassee", "area": 65758, "industries": ["Tourism", "Agriculture", "Aerospace"], "founded": 1845, "motto": "In God We Trust", "nickname": "The Sunshine State"}, "GA": {"gdp": 730, "pop": 11.0, "unemp": 3.2, "income": 65030, "cap": "Atlanta", "area": 59425, "industries": ["Logistics", "Film & Media", "Technology"], "founded": 1788, "motto": "Wisdom, Justice, Moderation", "nickname": "The Peach State"}, "HI": {"gdp": 99, "pop": 1.4, "unemp": 2.8, "income": 84857, "cap": "Honolulu", "area": 10932, "industries": ["Tourism", "Military", "Agriculture"], "founded": 1959, "motto": "The Life of the Land Is Perpetuated in Righteousness", "nickname": "The Aloha State"}, "ID": {"gdp": 104, "pop": 2.0, "unemp": 2.8, "income": 64930, "cap": "Boise", "area": 83569, "industries": ["Technology", "Agriculture", "Manufacturing"], "founded": 1890, "motto": "Let It Be Perpetual", "nickname": "The Gem State"}, "IL": {"gdp": 1000, "pop": 12.5, "unemp": 4.3, "income": 72205, "cap": "Springfield", "area": 57914, "industries": ["Finance", "Manufacturing", "Agriculture"], "founded": 1818, "motto": "State Sovereignty, National Union", "nickname": "The Prairie State"}, "IN": {"gdp": 432, "pop": 6.9, "unemp": 3.2, "income": 61944, "cap": "Indianapolis", "area": 36420, "industries": ["Manufacturing", "Agriculture", "Pharmaceuticals"], "founded": 1816, "motto": "The Crossroads of America", "nickname": "The Hoosier State"}, "IA": {"gdp": 214, "pop": 3.2, "unemp": 2.7, "income": 65573, "cap": "Des Moines", "area": 56273, "industries": ["Agriculture", "Manufacturing", "Finance"], "founded": 1846, "motto": "Our Liberties We Prize", "nickname": "The Hawkeye State"}, "KS": {"gdp": 194, "pop": 2.9, "unemp": 2.9, "income": 64521, "cap": "Topeka", "area": 82278, "industries": ["Agriculture", "Aviation", "Energy"], "founded": 1861, "motto": "To the Stars Through Difficulties", "nickname": "The Sunflower State"}, "KY": {"gdp": 240, "pop": 4.5, "unemp": 3.9, "income": 55573, "cap": "Frankfort", "area": 40408, "industries": ["Automotive", "Energy", "Bourbon/Distilling"], "founded": 1792, "motto": "United We Stand, Divided We Fall", "nickname": "The Bluegrass State"}, "LA": {"gdp": 281, "pop": 4.6, "unemp": 3.8, "income": 52087, "cap": "Baton Rouge", "area": 52378, "industries": ["Oil & Gas", "Petrochemicals", "Tourism"], "founded": 1812, "motto": "Union, Justice, Confidence", "nickname": "The Pelican State"}, "ME": {"gdp": 86, "pop": 1.4, "unemp": 2.9, "income": 64767, "cap": "Augusta", "area": 35380, "industries": ["Tourism", "Fishing", "Forestry"], "founded": 1820, "motto": "I Direct", "nickname": "The Pine Tree State"}, "MD": {"gdp": 470, "pop": 6.2, "unemp": 2.8, "income": 90203, "cap": "Annapolis", "area": 12406, "industries": ["Biotech", "Defense", "Cybersecurity"], "founded": 1788, "motto": "Manly Deeds, Womanly Words", "nickname": "The Old Line State"}, "MA": {"gdp": 670, "pop": 7.0, "unemp": 3.1, "income": 89026, "cap": "Boston", "area": 10554, "industries": ["Biotech", "Technology", "Higher Education"], "founded": 1788, "motto": "By the Sword We Seek Peace", "nickname": "The Bay State"}, "MI": {"gdp": 590, "pop": 10.0, "unemp": 4.1, "income": 63498, "cap": "Lansing", "area": 96714, "industries": ["Automotive", "Manufacturing", "Technology"], "founded": 1837, "motto": "If You Seek a Pleasant Peninsula, Look About You", "nickname": "The Great Lakes State"}, "MN": {"gdp": 430, "pop": 5.7, "unemp": 2.7, "income": 77706, "cap": "St. Paul", "area": 86936, "industries": ["Healthcare", "Agriculture", "Technology"], "founded": 1858, "motto": "The Star of the North", "nickname": "The North Star State"}, "MS": {"gdp": 130, "pop": 2.9, "unemp": 3.6, "income": 46511, "cap": "Jackson", "area": 48432, "industries": ["Agriculture", "Manufacturing", "Energy"], "founded": 1817, "motto": "By Valor and Arms", "nickname": "The Magnolia State"}, "MO": {"gdp": 372, "pop": 6.2, "unemp": 3.0, "income": 60599, "cap": "Jefferson City", "area": 69707, "industries": ["Agriculture", "Manufacturing", "Aerospace"], "founded": 1821, "motto": "The Welfare of the People", "nickname": "The Show-Me State"}, "MT": {"gdp": 63, "pop": 1.1, "unemp": 2.5, "income": 60560, "cap": "Helena", "area": 147040, "industries": ["Agriculture", "Mining", "Tourism"], "founded": 1889, "motto": "Gold and Silver", "nickname": "The Treasure State"}, "NE": {"gdp": 156, "pop": 2.0, "unemp": 2.2, "income": 66644, "cap": "Lincoln", "area": 77348, "industries": ["Agriculture", "Finance", "Transportation"], "founded": 1867, "motto": "Equality Before the Law", "nickname": "The Cornhusker State"}, "NV": {"gdp": 218, "pop": 3.2, "unemp": 5.1, "income": 65686, "cap": "Carson City", "area": 110572, "industries": ["Gaming & Tourism", "Mining", "Technology"], "founded": 1864, "motto": "All for Our Country", "nickname": "The Silver State"}, "NH": {"gdp": 106, "pop": 1.4, "unemp": 2.3, "income": 83449, "cap": "Concord", "area": 9349, "industries": ["Technology", "Manufacturing", "Tourism"], "founded": 1788, "motto": "Live Free or Die", "nickname": "The Granite State"}, "NJ": {"gdp": 690, "pop": 9.3, "unemp": 4.2, "income": 85245, "cap": "Trenton", "area": 8723, "industries": ["Pharmaceuticals", "Finance", "Technology"], "founded": 1787, "motto": "Liberty and Prosperity", "nickname": "The Garden State"}, "NM": {"gdp": 118, "pop": 2.1, "unemp": 4.0, "income": 53992, "cap": "Santa Fe", "area": 121590, "industries": ["Energy", "National Labs", "Tourism"], "founded": 1912, "motto": "It Grows as It Goes", "nickname": "The Land of Enchantment"}, "NY": {"gdp": 2000, "pop": 19.6, "unemp": 4.0, "income": 75910, "cap": "Albany", "area": 54555, "industries": ["Finance", "Media", "Technology"], "founded": 1788, "motto": "Excelsior (Ever Upward)", "nickname": "The Empire State"}, "NC": {"gdp": 680, "pop": 10.7, "unemp": 3.4, "income": 61972, "cap": "Raleigh", "area": 53819, "industries": ["Technology", "Banking", "Biotechnology"], "founded": 1789, "motto": "To Be, Rather Than to Seem", "nickname": "The Tar Heel State"}, "ND": {"gdp": 59, "pop": 0.78, "unemp": 1.9, "income": 68131, "cap": "Bismarck", "area": 70698, "industries": ["Energy", "Agriculture", "Technology"], "founded": 1889, "motto": "Liberty and Union", "nickname": "The Peace Garden State"}, "OH": {"gdp": 740, "pop": 11.8, "unemp": 3.7, "income": 59855, "cap": "Columbus", "area": 44826, "industries": ["Manufacturing", "Healthcare", "Technology"], "founded": 1803, "motto": "With God, All Things Are Possible", "nickname": "The Buckeye State"}, "OK": {"gdp": 222, "pop": 4.0, "unemp": 3.0, "income": 55826, "cap": "Oklahoma City", "area": 69899, "industries": ["Energy", "Agriculture", "Aerospace"], "founded": 1907, "motto": "Labor Conquers All Things", "nickname": "The Sooner State"}, "OR": {"gdp": 278, "pop": 4.2, "unemp": 3.7, "income": 67058, "cap": "Salem", "area": 98379, "industries": ["Technology", "Forestry", "Agriculture"], "founded": 1859, "motto": "She Flies With Her Own Wings", "nickname": "The Beaver State"}, "PA": {"gdp": 900, "pop": 12.9, "unemp": 3.4, "income": 67587, "cap": "Harrisburg", "area": 46054, "industries": ["Healthcare", "Energy", "Manufacturing"], "founded": 1787, "motto": "Virtue, Liberty and Independence", "nickname": "The Keystone State"}, "RI": {"gdp": 69, "pop": 1.1, "unemp": 3.0, "income": 71169, "cap": "Providence", "area": 1545, "industries": ["Healthcare", "Defense", "Tourism"], "founded": 1790, "motto": "Hope", "nickname": "The Ocean State"}, "SC": {"gdp": 282, "pop": 5.4, "unemp": 3.1, "income": 56227, "cap": "Columbia", "area": 32020, "industries": ["Automotive", "Tourism", "Aerospace"], "founded": 1788, "motto": "While I Breathe, I Hope", "nickname": "The Palmetto State"}, "SD": {"gdp": 66, "pop": 0.91, "unemp": 2.0, "income": 63920, "cap": "Pierre", "area": 77116, "industries": ["Agriculture", "Finance", "Tourism"], "founded": 1889, "motto": "Under God the People Rule", "nickname": "The Mount Rushmore State"}, "TN": {"gdp": 440, "pop": 7.1, "unemp": 3.2, "income": 59695, "cap": "Nashville", "area": 42144, "industries": ["Healthcare", "Music/Entertainment", "Automotive"], "founded": 1796, "motto": "Agriculture and Commerce", "nickname": "The Volunteer State"}, "TX": {"gdp": 2350, "pop": 30.5, "unemp": 3.9, "income": 67321, "cap": "Austin", "area": 268596, "industries": ["Energy", "Technology", "Agriculture"], "founded": 1845, "motto": "Friendship", "nickname": "The Lone Star State"}, "UT": {"gdp": 240, "pop": 3.4, "unemp": 2.5, "income": 74197, "cap": "Salt Lake City", "area": 84897, "industries": ["Technology", "Tourism", "Mining"], "founded": 1896, "motto": "Industry", "nickname": "The Beehive State"}, "VT": {"gdp": 40, "pop": 0.65, "unemp": 2.0, "income": 63477, "cap": "Montpelier", "area": 9616, "industries": ["Tourism", "Agriculture", "Manufacturing"], "founded": 1791, "motto": "Freedom and Unity", "nickname": "The Green Mountain State"}, "VA": {"gdp": 660, "pop": 8.7, "unemp": 2.8, "income": 80963, "cap": "Richmond", "area": 42775, "industries": ["Defense", "Technology", "Agriculture"], "founded": 1788, "motto": "Thus Always to Tyrants", "nickname": "The Old Dominion"}, "WA": {"gdp": 720, "pop": 7.9, "unemp": 3.8, "income": 82228, "cap": "Olympia", "area": 71298, "industries": ["Technology", "Aerospace", "Agriculture"], "founded": 1889, "motto": "Bye and Bye", "nickname": "The Evergreen State"}, "WV": {"gdp": 88, "pop": 1.8, "unemp": 4.0, "income": 48037, "cap": "Charleston", "area": 24230, "industries": ["Energy", "Chemicals", "Tourism"], "founded": 1863, "motto": "Mountaineers Are Always Free", "nickname": "The Mountain State"}, "WI": {"gdp": 380, "pop": 5.9, "unemp": 2.8, "income": 67080, "cap": "Madison", "area": 65496, "industries": ["Manufacturing", "Agriculture", "Healthcare"], "founded": 1848, "motto": "Forward", "nickname": "The Badger State"}, "WY": {"gdp": 45, "pop": 0.58, "unemp": 2.7, "income": 65003, "cap": "Cheyenne", "area": 97813, "industries": ["Energy", "Tourism", "Agriculture"], "founded": 1890, "motto": "Equal Rights", "nickname": "The Equality State"}};
+
+// ═══ STATE PANEL ═══
+let panelOpen = false;
+
+function openStatePanel(st) {
+  const d = SD[st]; if(!d) return;
+  const ec = ECON[st] || {};
+  const party = d.w === 'R' ? 'gop' : 'dem';
+  const partyName = d.w === 'R' ? 'Republican' : 'Democrat';
+  
+  // Extract party from governor/senator strings
+  function getP(str) { const m = str.match(/\(([RDI])\)/); return m ? m[1] : ''; }
+  
+  // Margin value for bar width
+  const marginVal = parseFloat(d.m.replace(/[RD+]/g, ''));
+  const barW = Math.min(100, Math.max(15, marginVal * 2));
+  
+  // GDP rank (rough - % of CA as max)
+  const gdpPct = ec.gdp ? Math.min(100, (ec.gdp / 3900) * 100) : 0;
+  
+  // Format numbers
+  const fmtPop = ec.pop ? (ec.pop >= 1 ? ec.pop.toFixed(1) + 'M' : (ec.pop * 1000).toFixed(0) + 'K') : '—';
+  const fmtGDP = ec.gdp ? (ec.gdp >= 1000 ? '$' + (ec.gdp/1000).toFixed(1) + 'T' : '$' + ec.gdp + 'B') : '—';
+  const fmtIncome = ec.income ? '$' + ec.income.toLocaleString() : '—';
+  const fmtArea = ec.area ? ec.area.toLocaleString() + ' mi²' : '—';
+  
+  // Generate income comparison spark bars (this state vs national median $74,580)
+  const natMedian = 74580;
+  const incRatio = ec.income ? ec.income / natMedian : 1;
+  
+  // Build officials list
+  const officials = [
+    { name: d.g.replace(/ \([RDI]\)/, ''), role: 'Governor', party: getP(d.g) },
+    { name: d.s1.replace(/ \([RDI]\)/, ''), role: 'U.S. Senator', party: getP(d.s1) },
+    { name: d.s2.replace(/ \([RDI]\)/, ''), role: 'U.S. Senator', party: getP(d.s2) },
+  ];
+  
+  let officialsHtml = '';
+  officials.forEach(o => {
+    const pLabel = o.party === 'R' ? 'Republican' : o.party === 'D' ? 'Democrat' : 'Independent';
+    officialsHtml += `
+      <div class="sp-official">
+        <div class="sp-dot ${o.party}"></div>
+        <div class="sp-off-info">
+          <div class="sp-off-name">${o.name}</div>
+          <div class="sp-off-role">${o.role} · ${pLabel}</div>
+        </div>
+      </div>`;
+  });
+  
+  // Industries
+  const tags = (ec.industries || []).map(i => `<span class="sp-tag">${i}</span>`).join('');
+  
+  // Build the panel HTML
+  const html = `
+    <div class="sp-header ${party}">
+      <div class="sp-top sp-anim sp-d1">
+        <div>
+          <div class="sp-name">${d.n}</div>
+          <div class="sp-nickname">${ec.nickname || ''}</div>
+          <div class="sp-badges">
+            <span class="sp-badge ${party}">${d.ev} Electoral Votes</span>
+            <span class="sp-badge outline">${d.d || '—'} Districts</span>
+            <span class="sp-badge outline">Est. ${ec.founded || '—'}</span>
+          </div>
+        </div>
+        <div class="sp-abbr">${st}</div>
+      </div>
+    </div>
+    
+    <div class="sp-body">
+      <!-- 2024 ELECTION -->
+      <div class="sp-section sp-anim sp-d2">
+        <div class="sp-sec-title">2024 Presidential Result</div>
+        <div class="sp-margin-bar">
+          <div class="sp-margin-fill ${party}" style="width:${barW}%">${d.w === 'R' ? 'Trump' : 'Harris'} ${d.m}</div>
+        </div>
+      </div>
+      
+      <!-- OFFICIALS -->
+      <div class="sp-section sp-anim sp-d3">
+        <div class="sp-sec-title">Elected Officials</div>
+        <div class="sp-officials">${officialsHtml}</div>
+      </div>
+      
+      <!-- ECONOMY METRICS -->
+      <div class="sp-section sp-anim sp-d4">
+        <div class="sp-sec-title">Economy & Demographics</div>
+        <div class="sp-grid">
+          <div class="sp-metric">
+            <div class="sp-metric-val">${fmtGDP}</div>
+            <div class="sp-metric-lbl">State GDP</div>
+            <div class="sp-gdp-bar"><div class="sp-gdp-fill" style="width:${gdpPct}%"></div></div>
+          </div>
+          <div class="sp-metric">
+            <div class="sp-metric-val">${fmtPop}</div>
+            <div class="sp-metric-lbl">Population</div>
+          </div>
+          <div class="sp-metric">
+            <div class="sp-metric-val">${fmtIncome}</div>
+            <div class="sp-metric-lbl">Median Income</div>
+            <div style="font-family:var(--mono);font-size:9px;margin-top:4px;color:${incRatio >= 1 ? '#22c55e' : '#ef4444'}">${incRatio >= 1 ? '▲' : '▼'} ${((incRatio - 1) * 100).toFixed(1)}% vs national</div>
+          </div>
+          <div class="sp-metric">
+            <div class="sp-metric-val">${ec.unemp ? ec.unemp + '%' : '—'}</div>
+            <div class="sp-metric-lbl">Unemployment</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- GEOGRAPHY -->
+      <div class="sp-section sp-anim sp-d5">
+        <div class="sp-sec-title">Geography</div>
+        <div class="sp-grid">
+          <div class="sp-metric">
+            <div class="sp-metric-val" style="font-size:16px">${ec.cap || '—'}</div>
+            <div class="sp-metric-lbl">Capital</div>
+          </div>
+          <div class="sp-metric">
+            <div class="sp-metric-val" style="font-size:16px">${fmtArea}</div>
+            <div class="sp-metric-lbl">Land Area</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- INDUSTRIES -->
+      <div class="sp-section sp-anim sp-d6">
+        <div class="sp-sec-title">Key Industries</div>
+        <div class="sp-industry-tags">${tags}</div>
+      </div>
+      
+      <!-- MOTTO -->
+      <div class="sp-motto sp-anim sp-d7">
+        <q>${ec.motto || ''}</q>
+      </div>
+    </div>
+  `;
+  
+  document.getElementById('spContent').innerHTML = html;
+  document.getElementById('statePanel').classList.add('open');
+  document.getElementById('spOverlay').classList.add('open');
+  panelOpen = true;
+  
+  // Animate the clicked hex
+  const hexEl = document.querySelector(`.state-hex[data-state="${st}"]`);
+  if (hexEl) {
+    hexEl.classList.remove('clicked');
+    void hexEl.offsetWidth; // trigger reflow
+    hexEl.classList.add('clicked');
+  }
+}
+
+function closeStatePanel() {
+  document.getElementById('statePanel').classList.remove('open');
+  document.getElementById('spOverlay').classList.remove('open');
+  panelOpen = false;
+}
+
+// Close on Escape
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && panelOpen) closeStatePanel(); });
+
 </script>
 </body>
 </html>
