@@ -278,22 +278,30 @@ main{padding:76px 24px 60px;max-width:1400px;margin:0 auto}
 /* ═══ HEMICYCLE CHAMBER (shared) ═══ */
 .hemi-wrap{position:relative;width:100%;padding:12px 0 0}
 .hemi-canvas{position:relative;width:100%;aspect-ratio:2/1;overflow:visible}
-.hemi-seat{position:absolute;border-radius:50%;cursor:pointer;transition:transform .18s var(--ease),box-shadow .2s,opacity .25s;opacity:0;transform:scale(0);will-change:transform}
+.hemi-seat{position:absolute;border-radius:50%;cursor:pointer;opacity:0;transform:scale(0);will-change:transform,box-shadow;
+  transition:transform .2s cubic-bezier(.34,1.56,.64,1),box-shadow .25s,opacity .25s,filter .2s}
 .hemi-seat.show{opacity:1;transform:scale(1)}
-.hemi-seat:hover{transform:scale(1.9)!important;z-index:20}
-.hemi-seat.R{background:var(--gop);box-shadow:inset 0 -1px 2px rgba(0,0,0,.25),0 0 0 1px rgba(220,38,38,.25)}
-.hemi-seat.R:hover{box-shadow:0 0 16px 5px rgba(220,38,38,.55),inset 0 -1px 2px rgba(0,0,0,.15)}
-.hemi-seat.D{background:var(--dem);box-shadow:inset 0 -1px 2px rgba(0,0,0,.25),0 0 0 1px rgba(37,99,235,.25)}
-.hemi-seat.D:hover{box-shadow:0 0 16px 5px rgba(37,99,235,.55),inset 0 -1px 2px rgba(0,0,0,.15)}
-.hemi-seat.I{background:var(--ind);box-shadow:inset 0 -1px 2px rgba(0,0,0,.25),0 0 0 1px rgba(139,92,246,.25)}
-.hemi-seat.I:hover{box-shadow:0 0 16px 5px rgba(139,92,246,.55),inset 0 -1px 2px rgba(0,0,0,.15)}
-.hemi-seat.dimmed{opacity:.1!important;transform:scale(1)!important}
-.hemi-seat.highlighted{opacity:1!important;transform:scale(1.6)!important;z-index:15;filter:brightness(1.3)}
+.hemi-seat:hover{transform:scale(1.9)!important;z-index:20;filter:brightness(1.15)}
+.hemi-seat:active{transform:scale(1.3)!important;transition-duration:.08s}
+.hemi-seat.R{background:var(--gop);box-shadow:inset 0 -1px 2px rgba(0,0,0,.3),0 0 0 1px rgba(220,38,38,.2)}
+.hemi-seat.R:hover{box-shadow:0 0 18px 6px rgba(220,38,38,.5),0 0 0 2px rgba(220,38,38,.6),inset 0 -1px 2px rgba(0,0,0,.1)}
+.hemi-seat.D{background:var(--dem);box-shadow:inset 0 -1px 2px rgba(0,0,0,.3),0 0 0 1px rgba(37,99,235,.2)}
+.hemi-seat.D:hover{box-shadow:0 0 18px 6px rgba(37,99,235,.5),0 0 0 2px rgba(37,99,235,.6),inset 0 -1px 2px rgba(0,0,0,.1)}
+.hemi-seat.I{background:var(--ind);box-shadow:inset 0 -1px 2px rgba(0,0,0,.3),0 0 0 1px rgba(139,92,246,.2)}
+.hemi-seat.I:hover{box-shadow:0 0 18px 6px rgba(139,92,246,.5),0 0 0 2px rgba(139,92,246,.6),inset 0 -1px 2px rgba(0,0,0,.1)}
+.hemi-seat.dimmed{opacity:.08!important;transform:scale(1)!important;filter:grayscale(.5)}
+.hemi-seat.highlighted{opacity:1!important;transform:scale(1.6)!important;z-index:15;filter:brightness(1.25)}
 .hemi-podium{position:absolute;bottom:-2px;left:50%;transform:translateX(-50%);width:48px;height:8px;border-radius:4px 4px 0 0;background:var(--mu);opacity:.25}
 .hemi-aisle{position:absolute;bottom:0;left:50%;width:1px;background:var(--bd);transform:translateX(-50%);opacity:.3}
 .hemi-label-left,.hemi-label-right{position:absolute;bottom:6px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.05em;opacity:.5}
 .hemi-label-left{left:8%}
 .hemi-label-right{right:8%}
+/* Click ripple */
+@keyframes seatRipple{
+  0%{box-shadow:0 0 0 0 rgba(191,13,61,.6)}
+  100%{box-shadow:0 0 0 14px rgba(191,13,61,0)}
+}
+.hemi-seat.ripple{animation:seatRipple .45s ease-out}
 
 /* Chamber controls */
 .hemi-controls{display:flex;align-items:center;gap:10px;padding:8px 16px;flex-wrap:wrap}
@@ -306,11 +314,59 @@ main{padding:76px 24px 60px;max-width:1400px;margin:0 auto}
 .hemi-sort-btn{font-family:var(--mono);font-size:10px;padding:4px 12px;border-radius:99px;border:1px solid var(--bd);background:transparent;color:var(--mu);cursor:pointer;transition:all .2s;letter-spacing:.03em}
 .hemi-sort-btn:hover,.hemi-sort-btn.active{border-color:var(--red);color:var(--red);background:var(--red-dim)}
 
-/* Senate hemicycle */
-.sen-hemi-canvas{position:relative;width:100%;aspect-ratio:2.2/1;overflow:visible}
-.sen-hemi-canvas .hemi-seat{transition:transform .2s var(--ease),box-shadow .2s,opacity .3s}
-.sen-hemi-canvas .hemi-seat:hover{transform:scale(1.7)!important}
-.sen-hemi-canvas .hemi-seat .seat-lbl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:7px;font-weight:700;color:#fff;pointer-events:none;opacity:.85}
+/* Senate hemicycle — larger, tighter */
+.sen-hemi-canvas{position:relative;width:100%;aspect-ratio:2/1;overflow:visible}
+.sen-hemi-canvas .hemi-seat{transition:transform .22s cubic-bezier(.34,1.56,.64,1),box-shadow .25s,opacity .3s,filter .2s}
+.sen-hemi-canvas .hemi-seat:hover{transform:scale(1.45)!important;filter:brightness(1.2)}
+.sen-hemi-canvas .hemi-seat:active{transform:scale(1.15)!important;transition-duration:.06s}
+.sen-hemi-canvas .hemi-seat .seat-lbl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:8.5px;font-weight:700;color:#fff;pointer-events:none;opacity:.9;text-shadow:0 1px 2px rgba(0,0,0,.4)}
+
+/* ═══ DISTRICT DRILL-DOWN ═══ */
+.drill-container{position:relative;overflow:hidden;min-height:200px}
+.drill-phase{transition:opacity .35s var(--ease),transform .35s var(--ease)}
+.drill-phase.out{opacity:0;transform:scale(.96) translateY(8px);pointer-events:none;position:absolute;inset:0}
+.drill-phase.in{animation:drillIn .4s var(--ease) forwards}
+@keyframes drillIn{from{opacity:0;transform:scale(1.02) translateY(-12px)}to{opacity:1;transform:scale(1) translateY(0)}}
+
+/* District hex map (reuses .state-hex styles) */
+.dist-hex-map .state-hex{cursor:pointer}
+.dist-hex-map .hex-st{font-size:10px}
+.dist-hex-map .hex-ev{font-size:8.5px;opacity:.55}
+
+/* Back / clear button */
+.drill-back{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.04em;padding:6px 16px 6px 12px;border-radius:99px;border:1px solid var(--bd);background:var(--sf2);color:var(--mu);cursor:pointer;transition:all .2s var(--ease);-webkit-tap-highlight-color:transparent}
+.drill-back:hover{border-color:var(--red);color:var(--red);background:var(--red-dim);transform:translateX(-2px)}
+.drill-back:active{transform:scale(.95)}
+.drill-back svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+
+/* District detail header */
+.dist-detail-hdr{display:flex;align-items:center;gap:14px;padding:0 0 16px;border-bottom:1px solid var(--bd);margin-bottom:16px;flex-wrap:wrap}
+.dist-detail-hdr .dd-name{font-size:22px;font-weight:800;line-height:1.1}
+.dist-detail-hdr .dd-sub{font-family:var(--mono);font-size:11px;color:var(--mu);margin-top:2px}
+.dist-detail-hdr .dd-badges{display:flex;gap:6px;margin-left:auto;flex-wrap:wrap}
+.dist-detail-hdr .dd-badge{font-family:var(--mono);font-size:10px;font-weight:600;padding:4px 12px;border-radius:99px}
+.dd-badge.gop-bg{background:var(--gop-bg);color:var(--gop)}
+.dd-badge.dem-bg{background:var(--dem-bg);color:var(--dem)}
+.dd-bar{height:8px;border-radius:4px;display:flex;overflow:hidden;margin-bottom:16px}
+.dd-bar span{height:100%;transition:width .5s var(--ease)}
+
+/* District detail cards */
+.dd-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(105px,1fr));gap:8px}
+.dd-card{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px 8px;border-radius:10px;border:1px solid var(--bd);cursor:pointer;position:relative;overflow:hidden;transition:transform .15s var(--ease),box-shadow .2s,border-color .2s}
+.dd-card:hover{transform:translateY(-3px)}
+.dd-card:active{transform:scale(.95)}
+.dd-card.R{background:var(--gop-bg);border-color:rgba(220,38,38,.12)}
+.dd-card.R:hover{border-color:var(--gop);box-shadow:0 4px 20px rgba(220,38,38,.15)}
+.dd-card.D{background:var(--dem-bg);border-color:rgba(37,99,235,.12)}
+.dd-card.D:hover{border-color:var(--dem);box-shadow:0 4px 20px rgba(37,99,235,.15)}
+.dd-card-dot{position:absolute;top:6px;right:6px;width:6px;height:6px;border-radius:50%}
+.dd-card.R .dd-card-dot{background:var(--gop)}
+.dd-card.D .dd-card-dot{background:var(--dem)}
+.dd-card-id{font-family:var(--mono);font-size:14px;font-weight:800;letter-spacing:.02em}
+.dd-card.R .dd-card-id{color:var(--gop)}
+.dd-card.D .dd-card-id{color:var(--dem)}
+.dd-card-lbl{font-family:var(--mono);font-size:8px;color:var(--mu);margin-top:3px;letter-spacing:.05em;text-transform:uppercase}
+@keyframes ddCardIn{from{opacity:0;transform:translateY(16px) scale(.92)}to{opacity:1;transform:translateY(0) scale(1)}}
 
 /* ═══ TAB VIEW TRANSITIONS ═══ */
 .tab-view{position:relative;overflow:hidden}
@@ -322,28 +378,84 @@ main{padding:76px 24px 60px;max-width:1400px;margin:0 auto}
   to{opacity:1;transform:translateY(0) scale(1)}
 }
 
-/* Mobile: House switches to compact bar chart, Senate stays hemicycle but smaller */
+/* Mobile: House switches to tabbed district explorer */
 .hemi-mobile{display:none}
 @media(max-width:700px){
   .hemi-canvas{display:none}
   .hemi-mobile{display:block}
-  .hm-state{display:flex;align-items:center;gap:4px;margin-bottom:2px;font-size:10px;font-family:var(--mono)}
-  .hm-st{width:22px;font-weight:700;color:var(--mu);text-align:right;flex-shrink:0}
-  .hm-bar-wrap{flex:1;height:10px;display:flex;border-radius:3px;overflow:hidden}
-  .hm-bar{height:100%;transition:width .4s var(--ease)}
-  .hm-bar.R{background:var(--gop)}
-  .hm-bar.D{background:var(--dem)}
-  .hm-ct{width:36px;font-size:9px;color:var(--mu);flex-shrink:0;text-align:right}
-  .sen-hemi-canvas .hemi-seat .seat-lbl{font-size:6px}
+  .sen-hemi-canvas{display:none}
+  .sen-mobile{display:block!important}
 }
-
 @media(max-width:600px){
   nav{padding:0 12px}
   main{padding:64px 12px 60px}
   .nl{display:none}
   .stats-row{grid-template-columns:1fr 1fr}
   .hemi-seat{transition-duration:.08s!important}
-  .sen-hemi-canvas .hemi-seat .seat-lbl{font-size:6px}
+}
+
+/* ═══ SENATE MOBILE LIST ═══ */
+.sen-mobile{display:none;font-family:var(--mono)}
+@media(max-width:700px){.sen-desktop-footer{display:none}.sen-hemi-canvas+div{display:none}#senSearch{display:none}}
+.sen-mob-pills{display:flex;gap:5px;overflow-x:auto;padding:8px 0 10px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.sen-mob-pills::-webkit-scrollbar{display:none}
+.sen-mob-pill{flex-shrink:0;font-size:10px;font-weight:700;padding:5px 10px;border-radius:6px;border:1px solid var(--bd);background:var(--sf2);color:var(--mu);cursor:pointer;transition:all .18s var(--ease);-webkit-tap-highlight-color:transparent}
+.sen-mob-pill:active{transform:scale(.92)}
+.sen-mob-pill.active{background:var(--red);border-color:var(--red);color:#fff;box-shadow:0 2px 12px rgba(191,13,61,.35)}
+.sen-mob-pill.all-pill{font-weight:500;letter-spacing:.06em;font-size:9px;text-transform:uppercase}
+.sen-mob-list{min-height:48px}
+.sen-mob-row{display:flex;align-items:center;gap:10px;padding:9px 10px;border-bottom:1px solid rgba(128,128,128,.07);cursor:pointer;transition:background .12s;-webkit-tap-highlight-color:transparent}
+.sen-mob-row:last-child{border:none}
+.sen-mob-row:active{background:rgba(128,128,128,.06)}
+.sen-mob-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.sen-mob-dot.R{background:var(--gop)}
+.sen-mob-dot.D{background:var(--dem)}
+.sen-mob-dot.I{background:var(--ind)}
+.sen-mob-info{flex:1;min-width:0}
+.sen-mob-name{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--tx);font-family:var(--font)}
+.sen-mob-meta{font-size:9px;color:var(--mu);display:flex;gap:8px;margin-top:1px}
+.sen-mob-st{font-weight:700;font-size:10px;color:var(--mu);width:22px;text-align:center;flex-shrink:0}
+.sen-mob-arrow{width:14px;height:14px;flex-shrink:0;opacity:.25}
+.sen-mob-arrow path{stroke:var(--mu);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.sen-mob-count{padding:4px 8px;text-align:center;font-size:10px;color:var(--mu);opacity:.6}
+@keyframes senRowIn{
+  from{opacity:0;transform:translateX(-8px)}
+  to{opacity:1;transform:translateX(0)}
+}
+
+/* ═══ MOBILE DISTRICT EXPLORER ═══ */
+.mob-dist{font-family:var(--mono)}
+.mob-pills{display:flex;gap:5px;overflow-x:auto;padding:8px 4px 10px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.mob-pills::-webkit-scrollbar{display:none}
+.mob-pill{flex-shrink:0;font-size:10px;font-weight:700;padding:5px 10px;border-radius:6px;border:1px solid var(--bd);background:var(--sf2);color:var(--mu);cursor:pointer;transition:all .18s var(--ease);letter-spacing:.03em;position:relative;-webkit-tap-highlight-color:transparent}
+.mob-pill:active{transform:scale(.92)}
+.mob-pill.active{background:var(--red);border-color:var(--red);color:#fff;box-shadow:0 2px 12px rgba(191,13,61,.35)}
+.mob-pill .pill-ct{display:inline-block;font-size:8px;font-weight:400;opacity:.55;margin-left:2px}
+.mob-pill.active .pill-ct{opacity:.8}
+.mob-cards-wrap{position:relative;min-height:48px;overflow:hidden}
+.mob-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(82px,1fr));gap:6px;padding:4px}
+.mob-card{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 6px;border-radius:8px;border:1px solid var(--bd);cursor:pointer;position:relative;overflow:hidden;-webkit-tap-highlight-color:transparent;transition:transform .12s,box-shadow .2s}
+.mob-card:active{transform:scale(.93)!important}
+.mob-card.R{background:var(--gop-bg);border-color:rgba(220,38,38,.15)}
+.mob-card.D{background:var(--dem-bg);border-color:rgba(37,99,235,.15)}
+.mob-card.R:hover{border-color:var(--gop);box-shadow:0 0 10px rgba(220,38,38,.2)}
+.mob-card.D:hover{border-color:var(--dem);box-shadow:0 0 10px rgba(37,99,235,.2)}
+.mob-card-id{font-size:12px;font-weight:800;letter-spacing:.02em}
+.mob-card.R .mob-card-id{color:var(--gop)}
+.mob-card.D .mob-card-id{color:var(--dem)}
+.mob-card-party{font-size:8px;color:var(--mu);margin-top:2px;letter-spacing:.04em}
+.mob-card-dot{position:absolute;top:5px;right:5px;width:5px;height:5px;border-radius:50%}
+.mob-card.R .mob-card-dot{background:var(--gop)}
+.mob-card.D .mob-card-dot{background:var(--dem)}
+.mob-st-header{display:flex;align-items:center;gap:10px;padding:8px 4px 6px}
+.mob-st-name{font-size:13px;font-weight:700;color:var(--tx)}
+.mob-st-detail{font-size:9px;color:var(--mu);letter-spacing:.03em}
+.mob-st-bar{flex:1;height:4px;border-radius:2px;display:flex;overflow:hidden;max-width:120px}
+.mob-st-bar span{height:100%}
+.mob-empty{padding:24px;text-align:center;color:var(--mu);font-size:11px;opacity:.6}
+@keyframes mobCardIn{
+  from{opacity:0;transform:translateY(14px) scale(.88)}
+  to{opacity:1;transform:translateY(0) scale(1)}
 }
 </style>
 </head>
@@ -416,23 +528,24 @@ main{padding:76px 24px 60px;max-width:1400px;margin:0 auto}
 
       </div>
       <div id="districtsView" class="card-body tab-pane" style="display:none">
-        <div class="hemi-controls">
-          <div class="hemi-count">
-            <span><span class="cd" style="background:var(--gop)"></span> <span id="hemiR">220</span> GOP</span>
-            <span style="color:var(--mu);font-weight:400">218 for majority</span>
-            <span><span class="cd" style="background:var(--dem)"></span> <span id="hemiD">215</span> DEM</span>
+        <div class="drill-container" id="drillContainer">
+          <!-- Phase 1: Hex map -->
+          <div class="drill-phase" id="drillMap">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:0 4px 8px;flex-wrap:wrap;gap:6px">
+              <div class="hemi-count">
+                <span><span class="cd" style="background:var(--gop)"></span> <span id="hemiR">220</span> GOP</span>
+                <span style="color:var(--mu);font-weight:400">218 for majority</span>
+                <span><span class="cd" style="background:var(--dem)"></span> <span id="hemiD">215</span> DEM</span>
+              </div>
+              <span style="font-family:var(--mono);font-size:10px;color:var(--mu);opacity:.45">Click a state to explore districts</span>
+            </div>
+            <div class="map-wrap dist-hex-map" id="distHexMap"></div>
           </div>
-          <input class="hemi-search" id="hemiSearch" type="text" placeholder="Filter by state (e.g. TX)" maxlength="2" autocomplete="off" spellcheck="false">
-          <button class="hemi-sort-btn active" id="hemiSortBtn" onclick="toggleHemiSort()">BY PARTY</button>
+          <!-- Phase 2: District detail -->
+          <div class="drill-phase out" id="drillDetail" style="display:none"></div>
         </div>
-        <div class="hemi-wrap">
-          <div class="hemi-canvas" id="hemiCanvas"></div>
-        </div>
-        <div style="text-align:center;padding:6px 0 4px">
-          <span style="font-family:var(--mono);font-size:10px;color:var(--mu);letter-spacing:.06em;opacity:.5">
-            119th Congress · 435 Seats · Hover to inspect · Click for state detail
-          </span>
-        </div>
+        <!-- Mobile fallback -->
+        <div class="hemi-mobile" id="hemiMobile"></div>
       </div>
     </div>
   </div>
@@ -457,11 +570,12 @@ main{padding:76px 24px 60px;max-width:1400px;margin:0 auto}
       <div class="hemi-wrap" style="padding-bottom:8px">
         <div class="sen-hemi-canvas" id="senateCanvas"></div>
       </div>
-      <div style="text-align:center;padding:0 0 12px">
+      <div class="sen-desktop-footer" style="text-align:center;padding:0 0 12px">
         <span style="font-family:var(--mono);font-size:10px;color:var(--mu);letter-spacing:.06em;opacity:.5">
           Hover for senator details · Click for state profile
         </span>
       </div>
+      <div class="sen-mobile" id="senMobile"></div>
     </div>
   </div>
 
@@ -786,9 +900,8 @@ document.querySelectorAll('#mapTabs .tab-pill').forEach(btn => {
       incoming.classList.add('entering');
 
       // Trigger hemicycle render on first district view
-      if (t === 'districts' && !hemiAnimated) {
-        hemiAnimated = true;
-        renderHemicycle(true);
+      if (t === 'districts') {
+        initDistrictMap();
       }
 
       incoming.addEventListener('animationend', () => {
@@ -801,16 +914,14 @@ document.querySelectorAll('#mapTabs .tab-pill').forEach(btn => {
   };
 });
 
-// ═══ HEMICYCLE CHAMBER ═══
+// ═══ DISTRICT HEX MAP + DRILL-DOWN ═══
 let hemiSeats = [];
-let hemiSortByParty = true;
 let hemiAnimated = false;
+let drillActive = false;
 
 function generateSeats() {
-  // Seed-based pseudo-random for consistent results
   let seed = 42;
   function sRand() { seed=(seed*16807+0)%2147483647; return (seed-1)/2147483646; }
-
   const dists = [];
   for (const [st, d] of Object.entries(SD)) {
     const rPct = d.w==='R' ? 0.55 + sRand()*0.15 : 0.3 + sRand()*0.15;
@@ -818,191 +929,187 @@ function generateSeats() {
       dists.push({ st, num: i, party: sRand() < rPct ? 'R' : 'D' });
     }
   }
-  // Normalize to 220R / 215D
   let rCount = dists.filter(d => d.party === 'R').length;
   const target = 220;
   if (rCount > target) {
     const rs = dists.filter(d => d.party === 'R');
-    for (let i = 0; i < rCount - target; i++) {
-      const idx = Math.floor(sRand() * rs.length);
-      rs[idx].party = 'D'; rs.splice(idx, 1);
-    }
+    for (let i = 0; i < rCount - target; i++) { const idx = Math.floor(sRand()*rs.length); rs[idx].party='D'; rs.splice(idx,1); }
   } else if (rCount < target) {
     const ds = dists.filter(d => d.party === 'D');
-    for (let i = 0; i < target - rCount; i++) {
-      const idx = Math.floor(sRand() * ds.length);
-      ds[idx].party = 'R'; ds.splice(idx, 1);
-    }
+    for (let i = 0; i < target - rCount; i++) { const idx = Math.floor(sRand()*ds.length); ds[idx].party='R'; ds.splice(idx,1); }
   }
   return dists;
 }
 
-function layoutHemicycle(seats, sortByParty) {
-  // Sort seats: party sort puts all R on right, D on left
-  // State sort groups by state alphabetically
-  const sorted = [...seats];
-  if (sortByParty) {
-    sorted.sort((a, b) => {
-      if (a.party !== b.party) return a.party === 'D' ? -1 : 1;
-      return a.st.localeCompare(b.st) || a.num - b.num;
-    });
-  } else {
-    sorted.sort((a, b) => a.st.localeCompare(b.st) || a.num - b.num);
-  }
+// HEX GRID layout (same as States tab)
+const DIST_HEX = {
+  AK:[0,0],ME:[10,0],WI:[5,1],VT:[9,1],NH:[10,1],
+  WA:[0,2],ID:[1,2],MT:[2,2],ND:[3,2],MN:[4,2],IL:[5,2],MI:[6,2],NY:[8,2],MA:[9,2],CT:[10,2],
+  OR:[0,3],NV:[1,3],WY:[2,3],SD:[3,3],IA:[4,3],IN:[5,3],OH:[6,3],PA:[7,3],NJ:[8,3],RI:[9,3],
+  CA:[0,4],UT:[1,4],CO:[2,4],NE:[3,4],MO:[4,4],KY:[5,4],WV:[6,4],VA:[7,4],MD:[8,4],DE:[9,4],
+  AZ:[1,5],NM:[2,5],KS:[3,5],AR:[4,5],TN:[5,5],NC:[6,5],SC:[7,5],
+  OK:[3,6],LA:[4,6],MS:[5,6],AL:[6,6],GA:[7,6],HI:[0,6],TX:[3,7],FL:[7,7]
+};
 
-  const total = sorted.length; // 435
-  const rows = 9;
-  const positions = [];
+function buildDistHexMap() {
+  const wrap = document.getElementById('distHexMap');
+  if (!wrap) return;
 
-  // Distribute seats across concentric arcs
-  const baseSeats = Math.floor(total / rows);
-  const rowCounts = [];
-  let remaining = total;
-  for (let r = 0; r < rows; r++) {
-    const count = Math.round(baseSeats + (r - rows/2) * 2.5);
-    rowCounts.push(Math.max(28, count));
-  }
-  // Normalize to exactly 435
-  const sum = rowCounts.reduce((a, b) => a + b, 0);
-  const scale = total / sum;
-  let assigned = 0;
-  for (let r = 0; r < rows; r++) {
-    rowCounts[r] = Math.round(rowCounts[r] * scale);
-    assigned += rowCounts[r];
-  }
-  // Fix rounding
-  rowCounts[rows - 1] += (total - assigned);
-
-  let seatIdx = 0;
-  for (let r = 0; r < rows; r++) {
-    const count = rowCounts[r];
-    const radius = 0.28 + (r / (rows - 1)) * 0.68; // 28% to 96% of container height
-    for (let s = 0; s < count; s++) {
-      if (seatIdx >= total) break;
-      // Angle from PI (left) to 0 (right)
-      const pad = 0.06; // small padding from edges
-      const angle = Math.PI * (1 - pad) - (s / (count - 1 || 1)) * Math.PI * (1 - 2 * pad);
-      const x = 50 + Math.cos(angle) * radius * 48; // percentage
-      const y = 98 - Math.sin(angle) * radius * 92; // percentage, flip Y
-      const seat = sorted[seatIdx];
-      positions.push({
-        ...seat,
-        x: x,
-        y: y,
-        row: r,
-        idx: seatIdx,
-        angle: angle
-      });
-      seatIdx++;
-    }
-  }
-  return positions;
-}
-
-function renderHemicycle(animate) {
-  const canvas = document.getElementById('hemiCanvas');
-  if (!canvas) return;
-  
-  const positions = layoutHemicycle(hemiSeats, hemiSortByParty);
-  // Responsive seat sizing
-  const cW = canvas.offsetWidth || 800;
-  const seatSize = Math.max(5, Math.min(10, cW / 85));
-  
-  let html = '';
-  // Aisle line
-  html += '<div class="hemi-aisle" style="height:92%;bottom:0"></div>';
-  // Podium
-  html += '<div class="hemi-podium"></div>';
-  html += '<div class="hemi-label-left" style="color:var(--dem)">DEM</div>';
-  html += '<div class="hemi-label-right" style="color:var(--gop)">GOP</div>';
-  
-  positions.forEach((p, i) => {
-    const delay = animate ? (p.row * 40 + (i % 10) * 8) : 0;
-    const showClass = animate ? '' : 'show';
-    html += `<div class="hemi-seat ${p.party} ${showClass}" 
-      data-st="${p.st}" data-num="${p.num}" data-idx="${i}"
-      style="left:calc(${p.x.toFixed(2)}% - ${seatSize/2}px);top:calc(${p.y.toFixed(2)}% - ${seatSize/2}px);width:${seatSize}px;height:${seatSize}px;transition-delay:${delay}ms"
-      onmousemove="showSeatTT(this,event)"
-      onmouseleave="hideTT()"
-      onclick="hideTT();openStatePanel('${p.st}')"></div>`;
+  // Group seats by state for counts
+  const byState = {};
+  hemiSeats.forEach(s => {
+    if (!byState[s.st]) byState[s.st] = { R:0, D:0, total:0 };
+    byState[s.st][s.party]++;
+    byState[s.st].total++;
   });
-  
-  canvas.innerHTML = html;
 
-  // Mobile fallback: stacked bars per state
-  buildHouseMobile();
-  
-  if (animate) {
-    // Trigger staggered show animation
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        canvas.querySelectorAll('.hemi-seat').forEach(s => s.classList.add('show'));
-      });
-    });
+  const HW = 72, HH = 64, PX = 4, PY = 4;
+  function hc(col, row) {
+    let x = col*(HW+PX)+(HW/2)+20;
+    if (row%2===1) x += (HW+PX)/2;
+    const y = row*(HH*0.75+PY)+(HH/2)+20;
+    return [x, y];
   }
+  function hp(cx, cy) {
+    const hw=HW/2-1, hh=HH/2-1;
+    return `M${cx},${cy-hh}L${cx+hw},${cy-hh/2}L${cx+hw},${cy+hh/2}L${cx},${cy+hh}L${cx-hw},${cy+hh/2}L${cx-hw},${cy-hh/2}Z`;
+  }
+
+  const maxC = Math.max(...Object.values(DIST_HEX).map(v=>v[0]));
+  const maxR = Math.max(...Object.values(DIST_HEX).map(v=>v[1]));
+  const svgW = (maxC+1)*(HW+PX)+HW+40;
+  const svgH = (maxR+1)*(HH*0.75+PY)+HH+40;
+
+  let svg = `<svg viewBox="0 0 ${svgW} ${svgH}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto">`;
+
+  for (const [st, [col, row]] of Object.entries(DIST_HEX)) {
+    if (!SD[st]) continue;
+    const [cx, cy] = hc(col, row);
+    const d = hp(cx, cy);
+    const counts = byState[st] || { R:0, D:0, total:0 };
+    const majority = counts.R >= counts.D ? 'gop' : 'dem';
+    svg += `<path d="${d}" class="state-hex ${majority}" data-state="${st}" onclick="drillIntoState('${st}')" style="cursor:pointer"/>`;
+    svg += `<text x="${cx}" y="${cy-5}" class="hex-st">${st}</text>`;
+    svg += `<text x="${cx}" y="${cy+10}" class="hex-ev">${counts.total}d</text>`;
+  }
+  svg += '</svg>';
+  wrap.innerHTML = svg;
+
+  // Add hover tooltips
+  wrap.querySelectorAll('.state-hex').forEach(el => {
+    el.addEventListener('mousemove', e => {
+      const st = el.dataset.state, d = SD[st];
+      if (!d) return;
+      const c = byState[st] || {R:0,D:0,total:0};
+      showTT(`<div class="tt-state">${d.n} <span class="tt-badge ${d.w==='R'?'gop':'dem'}">${c.total} districts</span></div>
+        <div class="tt-row"><span class="tt-lbl">GOP seats</span><span class="tt-val" style="color:var(--gop)">${c.R}</span></div>
+        <div class="tt-row"><span class="tt-lbl">DEM seats</span><span class="tt-val" style="color:var(--dem)">${c.D}</span></div>
+        <div class="tt-row"><span class="tt-lbl">2024 Pres.</span><span class="tt-val">${d.m}</span></div>`, e);
+    });
+    el.addEventListener('mouseleave', hideTT);
+  });
 }
 
-function showSeatTT(el, e) {
-  const st = el.dataset.st;
-  const num = el.dataset.num;
+function drillIntoState(st) {
   const d = SD[st];
   if (!d) return;
-  const party = el.classList.contains('R') ? 'Republican' : 'Democrat';
-  const pCls = el.classList.contains('R') ? 'gop' : 'dem';
-  showTT(`
-    <div class="tt-state">${d.n} <span class="tt-badge ${pCls}">${st}-${num}</span></div>
-    <div class="tt-row"><span class="tt-lbl">Party</span><span class="tt-val">${party}</span></div>
-    <div class="tt-row"><span class="tt-lbl">Districts</span><span class="tt-val">${d.d} total</span></div>
-    <div class="tt-row"><span class="tt-lbl">2024 Pres.</span><span class="tt-val">${d.m}</span></div>
-  `, e);
+  hideTT();
+
+  // Get districts for this state
+  const dists = hemiSeats.filter(s => s.st === st).sort((a,b) => a.num - b.num);
+  const rCount = dists.filter(x => x.party === 'R').length;
+  const dCount = dists.filter(x => x.party === 'D').length;
+  const total = dists.length;
+  const rPct = (rCount/total*100).toFixed(0);
+  const dPct = (dCount/total*100).toFixed(0);
+
+  const mapEl = document.getElementById('drillMap');
+  const detailEl = document.getElementById('drillDetail');
+
+  // Build detail HTML
+  let html = '';
+  html += '<div style="padding:4px 0 0">';
+  // Back button
+  html += '<button class="drill-back" onclick="drillBack()"><svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to Map</button>';
+  html += '</div>';
+
+  // Header
+  html += '<div class="dist-detail-hdr" style="margin-top:14px">';
+  html += '<div><div class="dd-name">' + d.n + '</div>';
+  html += '<div class="dd-sub">' + total + ' Congressional Districts · ' + d.m + '</div></div>';
+  html += '<div class="dd-badges">';
+  html += '<span class="dd-badge gop-bg">' + rCount + ' GOP</span>';
+  html += '<span class="dd-badge dem-bg">' + dCount + ' DEM</span>';
+  html += '</div></div>';
+
+  // Proportion bar
+  html += '<div class="dd-bar">';
+  html += '<span style="width:' + dPct + '%;background:var(--dem)"></span>';
+  html += '<span style="width:' + rPct + '%;background:var(--gop)"></span>';
+  html += '</div>';
+
+  // District cards
+  html += '<div class="dd-cards">';
+  dists.forEach((seat, i) => {
+    const delay = 60 + i * 30;
+    html += '<div class="dd-card ' + seat.party + '" style="animation:ddCardIn .32s var(--ease) ' + delay + 'ms both" '
+      + 'onclick="seatClick(this,\'' + st + '\')">'
+      + '<div class="dd-card-dot"></div>'
+      + '<div class="dd-card-id">' + st + '-' + seat.num + '</div>'
+      + '<div class="dd-card-lbl">' + (seat.party==='R'?'Republican':'Democrat') + '</div>'
+      + '</div>';
+  });
+  html += '</div>';
+
+  detailEl.innerHTML = html;
+
+  // Animate transition
+  mapEl.classList.add('out');
+  detailEl.style.display = '';
+  detailEl.classList.remove('out');
+  detailEl.classList.add('in');
+  detailEl.addEventListener('animationend', () => {
+    detailEl.classList.remove('in');
+    mapEl.style.display = 'none';
+  }, { once: true });
+
+  drillActive = true;
+
+  // Update the counts in the header
+  document.getElementById('hemiR').textContent = rCount;
+  document.getElementById('hemiD').textContent = dCount;
 }
 
-function toggleHemiSort() {
-  hemiSortByParty = !hemiSortByParty;
-  const btn = document.getElementById('hemiSortBtn');
-  btn.textContent = hemiSortByParty ? 'BY PARTY' : 'BY STATE';
-  btn.classList.toggle('active', hemiSortByParty);
-  renderHemicycle(true);
+function drillBack() {
+  const mapEl = document.getElementById('drillMap');
+  const detailEl = document.getElementById('drillDetail');
+
+  detailEl.classList.add('out');
+  mapEl.style.display = '';
+  mapEl.classList.remove('out');
+  mapEl.classList.add('in');
+  mapEl.addEventListener('animationend', () => {
+    mapEl.classList.remove('in');
+    detailEl.style.display = 'none';
+  }, { once: true });
+
+  drillActive = false;
+
+  // Reset counts
+  document.getElementById('hemiR').textContent = '220';
+  document.getElementById('hemiD').textContent = '215';
 }
 
-// State filter
-document.addEventListener('DOMContentLoaded', () => {
-  const searchEl = document.getElementById('hemiSearch');
-  if (searchEl) {
-    searchEl.addEventListener('input', () => {
-      const val = searchEl.value.toUpperCase().trim();
-      const seats = document.querySelectorAll('.hemi-seat');
-      if (!val) {
-        seats.forEach(s => { s.classList.remove('dimmed','highlighted'); });
-        // Reset counts
-        document.getElementById('hemiR').textContent = '220';
-        document.getElementById('hemiD').textContent = '215';
-        return;
-      }
-      let rF = 0, dF = 0;
-      seats.forEach(s => {
-        if (s.dataset.st === val) {
-          s.classList.add('highlighted');
-          s.classList.remove('dimmed');
-          if (s.classList.contains('R')) rF++; else dF++;
-        } else {
-          s.classList.add('dimmed');
-          s.classList.remove('highlighted');
-        }
-      });
-      if (rF || dF) {
-        document.getElementById('hemiR').textContent = rF;
-        document.getElementById('hemiD').textContent = dF;
-      }
-    });
-  }
-});
+// Build on first tab switch
+function initDistrictMap() {
+  if (hemiAnimated) return;
+  hemiAnimated = true;
+  buildDistHexMap();
+  buildHouseMobile();
+}
 
-// Build seats data once
+// Build seats data
 hemiSeats = generateSeats();
-
-// Pre-generate seats, hemicycle renders on first tab switch
-// (handled in tab animation code above)
 
 // ═══ SENATE HEMICYCLE ═══
 let senAnimated = false;
@@ -1018,27 +1125,27 @@ function layoutSenate(senators, sortByParty) {
   } else {
     sorted.sort((a, b) => a.state.localeCompare(b.state) || a.name.localeCompare(b.name));
   }
-  const total = sorted.length;
-  const rows = 5;
-  const rowCounts = [16, 18, 20, 22, 24];
-  // Normalize
+  const total = sorted.length; // 100
+  const rows = 4;
+  const rowCounts = [21, 24, 27, 28];
+  // Normalize to exactly 100
   const sum = rowCounts.reduce((a,b)=>a+b,0);
   const scale = total / sum;
   let assigned = 0;
   for (let r = 0; r < rows; r++) { rowCounts[r] = Math.round(rowCounts[r] * scale); assigned += rowCounts[r]; }
   rowCounts[rows-1] += (total - assigned);
-  
+
   const positions = [];
   let idx = 0;
   for (let r = 0; r < rows; r++) {
     const count = rowCounts[r];
-    const radius = 0.3 + (r / (rows - 1)) * 0.65;
+    const radius = 0.32 + (r / (rows - 1)) * 0.62;
     for (let s = 0; s < count; s++) {
       if (idx >= total) break;
-      const pad = 0.05;
+      const pad = 0.04;
       const angle = Math.PI * (1 - pad) - (s / (count - 1 || 1)) * Math.PI * (1 - 2*pad);
-      const x = 50 + Math.cos(angle) * radius * 46;
-      const y = 96 - Math.sin(angle) * radius * 88;
+      const x = 50 + Math.cos(angle) * radius * 47;
+      const y = 96 - Math.sin(angle) * radius * 90;
       positions.push({ ...sorted[idx], x, y, row: r, idx });
       idx++;
     }
@@ -1051,7 +1158,7 @@ function renderSenate(animate) {
   if (!canvas) return;
   const positions = layoutSenate(SENATORS, true);
   const cW = canvas.offsetWidth || 600;
-  const seatSize = Math.max(12, Math.min(22, cW / 32));
+  const seatSize = Math.max(16, Math.min(30, cW / 22));
 
   let html = '';
   html += '<div class="hemi-aisle" style="height:88%;bottom:0"></div>';
@@ -1071,8 +1178,8 @@ function renderSenate(animate) {
       + 'transition-delay:' + delay + 'ms" '
       + 'onmousemove="showSenTT(this,event)" '
       + 'onmouseleave="hideTT()" '
-      + 'onclick="hideTT();openStatePanel(\'' + p.state + '\')">'
-      + '<span class="seat-lbl">' + p.state + '</span></div>';
+      + 'onclick="seatClick(this,\'' + p.state + '\')">'
+      + '<span class="seat-lbl" style="font-size:' + Math.max(7, seatSize * 0.38) + 'px">' + p.state + '</span></div>';
   });
 
   canvas.innerHTML = html;
@@ -1141,7 +1248,114 @@ function initSenateObserver() {
 }
 initSenateObserver();
 
-// ═══ HOUSE MOBILE FALLBACK ═══
+// ═══ SENATE MOBILE LIST ═══
+let senMobFilter = 'ALL';
+
+function buildSenateMobile() {
+  const wrap = document.getElementById('senMobile');
+  if (!wrap) return;
+
+  // Get unique states from senators
+  const stSet = new Set();
+  SENATORS.forEach(s => stSet.add(s.state));
+  const stateKeys = [...stSet].sort();
+
+  let html = '';
+
+  // Pill scroller — ALL + each state
+  html += '<div class="sen-mob-pills">';
+  html += '<button class="sen-mob-pill all-pill active" data-sf="ALL" onclick="filterSenateMob(\'ALL\')">All 100</button>';
+  html += '<button class="sen-mob-pill" data-sf="R" onclick="filterSenateMob(\'R\')" style="color:var(--gop)">GOP 53</button>';
+  html += '<button class="sen-mob-pill" data-sf="D" onclick="filterSenateMob(\'D\')" style="color:var(--dem)">DEM 45</button>';
+  html += '<button class="sen-mob-pill" data-sf="I" onclick="filterSenateMob(\'I\')" style="color:var(--ind)">IND 2</button>';
+  stateKeys.forEach(st => {
+    html += '<button class="sen-mob-pill" data-sf="ST:' + st + '" onclick="filterSenateMob(\'ST:' + st + '\')">' + st + '</button>';
+  });
+  html += '</div>';
+
+  // List container
+  html += '<div class="sen-mob-list" id="senMobList"></div>';
+
+  wrap.innerHTML = html;
+  renderSenateMobList('ALL');
+}
+
+function renderSenateMobList(filter) {
+  const list = document.getElementById('senMobList');
+  if (!list) return;
+
+  // Update active pill
+  document.querySelectorAll('.sen-mob-pill').forEach(p => {
+    p.classList.toggle('active', p.dataset.sf === filter);
+    // Reset inline color on active
+    if (p.dataset.sf === filter && !p.classList.contains('all-pill')) {
+      p.style.color = '';
+    } else if (!p.classList.contains('all-pill') && !p.classList.contains('active')) {
+      // Restore party color for party filter pills
+      if (p.dataset.sf === 'R') p.style.color = 'var(--gop)';
+      else if (p.dataset.sf === 'D') p.style.color = 'var(--dem)';
+      else if (p.dataset.sf === 'I') p.style.color = 'var(--ind)';
+    }
+  });
+
+  // Scroll active pill
+  const active = document.querySelector('.sen-mob-pill.active');
+  if (active) active.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+
+  // Filter senators
+  let filtered;
+  if (filter === 'ALL') {
+    filtered = [...SENATORS];
+  } else if (filter === 'R' || filter === 'D' || filter === 'I') {
+    filtered = SENATORS.filter(s => s.party === filter);
+  } else if (filter.startsWith('ST:')) {
+    const st = filter.slice(3);
+    filtered = SENATORS.filter(s => s.state === st);
+  } else {
+    filtered = [...SENATORS];
+  }
+
+  // Sort: by state then name
+  filtered.sort((a, b) => a.state.localeCompare(b.state) || a.name.localeCompare(b.name));
+
+  if (filtered.length === 0) {
+    list.innerHTML = '<div class="sen-mob-count">No senators found</div>';
+    return;
+  }
+
+  let html = '<div class="sen-mob-count">' + filtered.length + ' senator' + (filtered.length !== 1 ? 's' : '') + '</div>';
+  const arrow = '<svg class="sen-mob-arrow" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>';
+
+  filtered.forEach((s, i) => {
+    const d = SD[s.state] || {};
+    const pName = s.party === 'R' ? 'Republican' : s.party === 'D' ? 'Democrat' : 'Independent';
+    const delay = Math.min(i * 20, 400);
+    html += '<div class="sen-mob-row" onclick="seatClick(this,\'' + s.state + '\')" '
+      + 'style="animation:senRowIn .25s var(--ease) ' + delay + 'ms both">'
+      + '<div class="sen-mob-dot ' + s.party + '"></div>'
+      + '<span class="sen-mob-st">' + s.state + '</span>'
+      + '<div class="sen-mob-info">'
+      + '<div class="sen-mob-name">' + s.name + '</div>'
+      + '<div class="sen-mob-meta"><span>' + pName + '</span><span>' + (d.n || '') + '</span></div>'
+      + '</div>'
+      + arrow
+      + '</div>';
+  });
+
+  list.innerHTML = html;
+  senMobFilter = filter;
+}
+
+function filterSenateMob(filter) {
+  renderSenateMobList(filter);
+}
+
+// Build on load
+buildSenateMobile();
+
+// ═══ HOUSE MOBILE — TABBED DISTRICT EXPLORER ═══
+let mobActiveState = null;
+
 function buildHouseMobile() {
   let wrap = document.querySelector('.hemi-mobile');
   if (!wrap) {
@@ -1150,29 +1364,97 @@ function buildHouseMobile() {
     const canvas = document.getElementById('hemiCanvas');
     if (canvas) canvas.parentElement.appendChild(wrap);
   }
+
   // Group seats by state
   const byState = {};
   hemiSeats.forEach(s => {
-    if (!byState[s.st]) byState[s.st] = {R:0,D:0,total:0};
-    byState[s.st][s.party]++;
-    byState[s.st].total++;
+    if (!byState[s.st]) byState[s.st] = [];
+    byState[s.st].push(s);
   });
-  const states = Object.entries(byState).sort((a,b) => b[1].total - a[1].total);
-  const maxD = Math.max(...states.map(s=>s[1].total));
-  let html = '';
-  states.forEach(([st, counts]) => {
-    const rW = (counts.R / maxD) * 100;
-    const dW = (counts.D / maxD) * 100;
-    html += '<div class="hm-state" onclick="openStatePanel(\'' + st + '\')" style="cursor:pointer">'
-      + '<span class="hm-st">' + st + '</span>'
-      + '<div class="hm-bar-wrap">'
-      + '<div class="hm-bar D" style="width:' + dW.toFixed(1) + '%"></div>'
-      + '<div class="hm-bar R" style="width:' + rW.toFixed(1) + '%"></div>'
-      + '</div>'
-      + '<span class="hm-ct">' + counts.D + '-' + counts.R + '</span>'
+  // Sort states alphabetically
+  const stateKeys = Object.keys(byState).sort();
+
+  let html = '<div class="mob-dist">';
+
+  // State pill scroller
+  html += '<div class="mob-pills" id="mobPills">';
+  stateKeys.forEach(st => {
+    const ct = byState[st].length;
+    html += '<button class="mob-pill" data-mst="' + st + '" onclick="selectMobState(\'' + st + '\')">'
+      + st + '<span class="pill-ct">' + ct + '</span></button>';
+  });
+  html += '</div>';
+
+  // Cards area
+  html += '<div class="mob-cards-wrap" id="mobCardsWrap">';
+  html += '<div class="mob-empty">Select a state above to view districts</div>';
+  html += '</div>';
+
+  html += '</div>';
+  wrap.innerHTML = html;
+}
+
+function selectMobState(st) {
+  const byState = {};
+  hemiSeats.forEach(s => {
+    if (!byState[s.st]) byState[s.st] = [];
+    byState[s.st].push(s);
+  });
+
+  const dists = byState[st];
+  if (!dists) return;
+  const d = SD[st];
+  if (!d) return;
+
+  // Update active pill
+  document.querySelectorAll('.mob-pill').forEach(p => {
+    p.classList.toggle('active', p.dataset.mst === st);
+  });
+
+  // Scroll active pill into view
+  const activePill = document.querySelector('.mob-pill.active');
+  if (activePill) {
+    activePill.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  }
+
+  const wrap = document.getElementById('mobCardsWrap');
+  if (!wrap) return;
+
+  // Sort districts by number
+  dists.sort((a, b) => a.num - b.num);
+  const rCount = dists.filter(x => x.party === 'R').length;
+  const dCount = dists.filter(x => x.party === 'D').length;
+  const total = dists.length;
+
+  // Build header
+  let html = '<div class="mob-st-header">';
+  html += '<div><div class="mob-st-name">' + d.n + '</div>';
+  html += '<div class="mob-st-detail">' + total + ' districts · ' + rCount + 'R / ' + dCount + 'D · ' + d.m + '</div></div>';
+  html += '<div class="mob-st-bar">';
+  html += '<span style="width:' + (dCount/total*100).toFixed(0) + '%;background:var(--dem)"></span>';
+  html += '<span style="width:' + (rCount/total*100).toFixed(0) + '%;background:var(--gop)"></span>';
+  html += '</div>';
+  html += '</div>';
+
+  // Build district cards
+  html += '<div class="mob-cards">';
+  dists.forEach((seat, i) => {
+    const delay = 30 + i * 25;
+    html += '<div class="mob-card ' + seat.party + '" style="animation:mobCardIn .3s var(--ease) ' + delay + 'ms both" '
+      + 'onclick="seatClick(this,\'' + st + '\')" '
+      + 'onmousemove="showTT(\'<div class=tt-state>' + st + '-' + seat.num + '</div>'
+      + '<div class=tt-row><span class=tt-lbl>Party</span><span class=tt-val>' + (seat.party==='R'?'Republican':'Democrat') + '</span></div>'
+      + '<div class=tt-row><span class=tt-lbl>State</span><span class=tt-val>' + d.n + '</span></div>\',event)" '
+      + 'onmouseleave="hideTT()">'
+      + '<div class="mob-card-dot"></div>'
+      + '<div class="mob-card-id">' + st + '-' + seat.num + '</div>'
+      + '<div class="mob-card-party">' + (seat.party === 'R' ? 'GOP' : 'DEM') + '</div>'
       + '</div>';
   });
+  html += '</div>';
+
   wrap.innerHTML = html;
+  mobActiveState = st;
 }
 
 // ═══ SWING STATE MARGINS ═══
@@ -1341,6 +1623,17 @@ const ECON = {"AL": {"gdp": 272, "pop": 5.1, "unemp": 3.1, "income": 56726, "cap
 
 // ═══ STATE PANEL ═══
 let panelOpen = false;
+
+function seatClick(el, st) {
+  hideTT();
+  // Ripple animation
+  el.classList.remove('ripple');
+  void el.offsetWidth;
+  el.classList.add('ripple');
+  el.addEventListener('animationend', () => el.classList.remove('ripple'), { once: true });
+  // Brief delay so user sees the ripple before panel slides
+  setTimeout(() => openStatePanel(st), 120);
+}
 
 function openStatePanel(st) {
   const d = SD[st]; if(!d) return;
