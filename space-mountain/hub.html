@@ -14,24 +14,20 @@ html{scroll-behavior:smooth}
 body{font-family:var(--font);min-height:100dvh;-webkit-font-smoothing:antialiased;transition:background .35s,color .35s}
 body.dark{background-color:#0a0e1a;background-image:radial-gradient(circle at top center,rgba(4,30,65,.45) 0%,rgba(4,30,65,.15) 35%,rgba(10,14,26,.9) 70%),radial-gradient(ellipse at center,rgba(0,0,0,0) 40%,rgba(0,0,0,.65) 100%);color:#e2e8f0;--sf:#151b2e;--sf2:#0a0e1a;--bd:#1e293b;--tx:#e2e8f0;--mu:#94a3b8;--nav:#151b2e;--sh:0 2px 16px rgba(0,0,0,.5);--hsh:0 20px 50px rgba(0,0,0,.7);--hbd:rgba(191,13,61,.35)}
 body.light{background-color:#f0f4f8;background-image:radial-gradient(circle at top center,rgba(191,13,61,.03) 0%,rgba(191,13,61,.01) 35%,rgba(247,250,252,.95) 70%),radial-gradient(ellipse at center,rgba(0,0,0,0) 40%,rgba(0,0,0,.02) 100%);color:#1e293b;--sf:#ffffff;--sf2:#f0f4f8;--bd:#e2e8f0;--tx:#1e293b;--mu:#64748b;--nav:#ffffff;--sh:0 2px 16px rgba(0,0,0,.07);--hsh:0 20px 50px rgba(0,0,0,.12);--hbd:rgba(191,13,61,.22)}
-nav{position:fixed;top:0;left:0;right:0;z-index:100;height:56px;;border-bottom:1px solid var(--bd);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);transition:background .35s,border-color .35s}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;height:56px;border-bottom:1px solid var(--bd);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);transition:background .35s,border-color .35s;background-color:#041e42}
 .nav-in{max-width:1200px;margin:0 auto;padding:0 24px;height:100%;display:flex;align-items:center;justify-content:space-between}
-body.light .nav-in, nav{background-color:#041e42}
-body.light nav a{color:#e2e8f0}
-body.light nav a{color:#e2e8f0}
-body.light nav a:hover{color:#bf0d3d}
-body.dark nav {background-color:#151b2e}
+body.dark nav{background-color:#151b2e}
 .brand{display:flex;align-items:center;gap:9px;text-decoration:none;transition:transform .25s var(--ease)}
-.brand:hover{transform:tr0anslateY(-1px)}
+.brand:hover{transform:translateY(-1px)}
 .brand-cloud{width:52px;height:32px;flex-shrink:0;transition:filter .3s var(--ease),transform .3s var(--ease)}
 .brand:hover .brand-cloud{transform:translateX(3px);filter:drop-shadow(0 2px 9px rgba(191,13,61,.45))}
 .brand-name{font-size:.95rem;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:#e2e8f0;transition:color .3s;line-height:1}
-.brand:hover .brand-name{color:var(--red)} 0-5t6ryhvbgcnxd60j-;8lk9m
+.brand:hover .brand-name{color:var(--red)}
 .nav-r{display:flex;align-items:center;gap:4px}
-.nl{font-size:12px;font-weight:500;color:var(--mu);text-decoration:none;padding:6px 10px;border-radius:8px;transition:color .2s}
-.nl:hover{color:var(--tx)}
+.nl{font-size:12px;font-weight:500;color:#94a3b8;text-decoration:none;padding:6px 10px;border-radius:8px;transition:color .2s}
+.nl:hover{color:#e2e8f0}
 @media(max-width:520px){.nl{display:none}}
-.tb{display:flex;align-items:center;gap:5px;background:transparent;border:1px solid var(--bd);color:var(--mu);font-family:var(--font);font-size:11px;font-weight:600;letter-spacing:.5px;padding:6px 13px;border-radius:99px;cursor:pointer;transition:color .2s,border-color .2s;white-space:nowrap}
+.tb{display:flex;align-items:center;gap:5px;background:transparent;border:1px solid rgba(255,255,255,.15);color:#94a3b8;font-family:var(--font);font-size:11px;font-weight:600;letter-spacing:.5px;padding:6px 13px;border-radius:99px;cursor:pointer;transition:color .2s,border-color .2s;white-space:nowrap}
 .tb svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
 .tb:hover{color:var(--red);border-color:rgba(191,13,61,.45)}
 main{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px 32px;gap:40px}
@@ -71,7 +67,7 @@ main{min-height:100dvh;display:flex;flex-direction:column;align-items:center;jus
 .sb-top{display:flex;align-items:stretch;border-bottom:1px solid var(--bd)}
 .sb-cell{flex:1;display:flex;flex-direction:column;justify-content:center;gap:3px;padding:13px 18px;border-right:1px solid var(--bd);min-width:0;transition:border-color .35s}
 .sb-cell:last-child{border-right:none}
-.sbl{font-family:var(--mono);font-size:8px;font-weight:500;letter-spacing:1.8px;text-transform:uppercase;color:var(--mu);transition:color .35s;white-space:nowrap;margin-left: 10px}
+.sbl{font-family:var(--mono);font-size:8px;font-weight:500;letter-spacing:1.8px;text-transform:uppercase;color:var(--mu);transition:color .35s;white-space:nowrap;margin-left:10px}
 .sbv{font-family:var(--mono);font-size:15px;font-weight:500;color:var(--tx);line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:color .35s}
 .sbv.red{color:var(--red)}
 .live-pill{display:inline-flex;align-items:center;gap:6px;margin-left:10px}
@@ -137,7 +133,7 @@ footer{padding:0 20px max(24px,env(safe-area-inset-bottom));display:flex;flex-di
     <h1 class="ht">Data-driven<br><em>predictions</em> for every game.</h1>
     <p class="hs">Advanced stats, win probabilities, and forecasts &mdash; choose your sport to get started.</p>
   </div>
-    <div class="cards">
+  <div class="cards">
     <a href="/mlb/default.html" class="card" tabindex="0">
       <div class="cl cl-mlb"><img src="assets/logos/mlb.svg" alt="MLB"></div>
       <div class="ct"><div class="cn">MLB</div><div class="cd">Baseball analytics &amp; projections</div></div>
@@ -150,7 +146,7 @@ footer{padding:0 20px max(24px,env(safe-area-inset-bottom));display:flex;flex-di
       <div class="ct"><div class="cn">NBA</div><div class="cd">Basketball predictions &amp; trends</div></div>
     </div>
 
-    <a href="usa/usa-politics.html" class="card" tabindex="2">
+    <a href="usa/usa-politics.html" class="card" tabindex="0">
       <div class="cl cl-pol"><img src="assets/logos/US Politics Logo.svg" alt="US Politics"></div>
       <div class="ct"><div class="cn">Politics</div><div class="cd">Elections &amp; policy modeling</div></div>
       <div class="carr"><svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
@@ -189,7 +185,7 @@ const MO=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec
 function tick(){const n=new Date();let h=n.getHours(),m=n.getMinutes(),s=n.getSeconds();const ap=h>=12?'PM':'AM';h=h%12||12;timeEl.textContent=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')+' '+ap;dateEl.textContent=WD[n.getDay()]+' '+MO[n.getMonth()]+' '+n.getDate();}
 tick();setInterval(tick,1000);
 const gamesEl=document.getElementById('sb-games'),tickerEl=document.getElementById('sb-ticker');
-function shortSt(s){if(!s)return'';if(s==='In Progress')return'LIVE';if(s==='Final'||s==='Game Over'||s==='Final: Tied' || s==='Completed Early')return'Final';if(s.startsWith('Delayed'))return'DLY';if(s==='Postponed')return'PPD';if(s==='Suspended: Rain')return'SUSPENED';return s.substring(0,3).toUpperCase();}
+function shortSt(s){if(!s)return'';if(s==='In Progress')return'LIVE';if(s==='Final'||s==='Game Over'||s==='Final: Tied'||s==='Completed Early')return'Final';if(s.startsWith('Delayed'))return'DLY';if(s==='Postponed')return'PPD';if(s==='Suspended: Rain')return'SUSPENDED';return s.substring(0,3).toUpperCase();}
 function buildTicker(games){
   if(!games.length){tickerEl.innerHTML='<div class="tg"><span class="state">No MLB games today</span></div>';return;}
   var html=games.map(function(g){
