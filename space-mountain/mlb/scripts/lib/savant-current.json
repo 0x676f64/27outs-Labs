@@ -1,11 +1,11 @@
 {
-  "generated": "2026-04-09T13:57:13",
+  "generated": "2026-04-12T21:17:55",
   "current_year": 2026,
   "prior_year": 2025,
   "season_status": "in-season",
-  "min_pa_used": 10,
+  "min_pa_used": 25,
   "player_counts": {
-    "batter_current": 373,
+    "batter_current": 310,
     "batter_prior": 632,
     "pitcher_current": 0,
     "pitcher_prior": 0
@@ -13,49 +13,49 @@
   "metrics": {
     "hard_hit": {
       "label": "Hard Hit%",
-      "val": "39.5%",
-      "delta": "+0.6%",
-      "current": 39.4853,
+      "val": "40.2%",
+      "delta": "+1.3%",
+      "current": 40.1894,
       "prior": 38.9068,
       "source": "Baseball Savant"
     },
     "barrel": {
       "label": "Barrel%",
-      "val": "8.1%",
-      "delta": "+0.4%",
-      "current": 8.141,
+      "val": "8.5%",
+      "delta": "+0.8%",
+      "current": 8.5477,
       "prior": 7.7411,
       "source": "Baseball Savant"
     },
     "xba": {
       "label": "xBA",
-      "val": ".234",
-      "delta": "+0.007",
-      "current": 0.234,
+      "val": ".240",
+      "delta": "+0.013",
+      "current": 0.2404,
       "prior": 0.2269,
       "source": "Baseball Savant"
     },
     "sprint": {
       "label": "Spd(ft/s)",
-      "val": "26.8",
-      "delta": "-0.56",
-      "current": 26.7584,
+      "val": "26.9",
+      "delta": "-0.45",
+      "current": 26.8685,
       "prior": 27.3205,
       "source": "Baseball Savant"
     },
     "chase": {
       "label": "Chase%",
-      "val": "30.4%",
-      "delta": "+1.5%",
-      "current": 30.3743,
+      "val": "29.9%",
+      "delta": "+1.0%",
+      "current": 29.8687,
       "prior": 28.9062,
       "source": "Baseball Savant"
     },
     "hr_per_game": {
       "label": "HR/G",
-      "val": "0.088",
-      "delta": "-0.000",
-      "current": 0.088,
+      "val": "0.097",
+      "delta": "+0.008",
+      "current": 0.0967,
       "prior": 0.0882,
       "source": "Baseball Savant"
     }
